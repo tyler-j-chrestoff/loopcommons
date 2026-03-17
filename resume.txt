@@ -1,0 +1,62 @@
+Tyler J. Chrestoff
+§ github.com/tyler-j-chrestoff
+SUMMARY
+Senior Data Engineer with 10+ years building reliable, scalable data systems across batch and streaming.
+Strong focus on data modeling, ETL/ELT pipelines, orchestration, cost-aware cloud architecture, and ML
+enablement. Known for simplifying complex systems, mentoring engineers, and delivering measurable business
+impact.
+Core: Data Pipelines | ETL/ELT | Data Warehousing | Stream Processing | Data Modeling | AWS | Python |
+SQL
+EXPERIENCE
+Root Insurance Columbus, Ohio
+Lead Data Platform Engineer September 2024 – July 2025
+Senior Data Platform Engineer September 2021 – September 2024
+Data Platform Engineer May 2019 – September 2021
+• Designed and built ML-ready data marts using dimensional modeling, reducing LTV-model development
+cycles by 50% and accelerating experimentation across Data Science teams.
+• Architected event-driven streaming pipeline (Python, Kinesis, Lambda) delivering partner funnel data with
+sub-minute latency from 10+ embedded insurance integrations.
+• Owned and scaled internal data orchestration platform (Rails + Python) running 400+ daily ETL jobs,
+serving Analytics, Data Science, and Actuarial teams.
+• Built serverless data pipelines on AWS (Lambda, SQS/SNS, S3, Kinesis) processing millions of events daily
+for downstream ML and reporting use cases.
+• Administered 100+ TB Amazon Redshift data warehouse; optimized for 100+ concurrent queries via WLM
+tuning, query monitoring, and workload isolation.
+• Led orchestration tool evaluation (Airflow, Dagster) to modernize legacy scheduling infrastructure.
+• Mentored 5 engineers through AWS certification study group; all obtained Data Engineer Associate certifi-
+cation.
+Dynamit Columbus, Ohio
+Software Engineer May 2018 – April 2019
+• Delivered information architecture and authoring experiences using Crownpeak CMS + ASP.NET for Na-
+tional Grid.
+• Built Sitecore–Eventbrite integration to centralize hospital event creation and management.
+• Supported legacy apps (PhoneGap, Angular) and multiple Hippo CMS sites; improved reliability and content
+workflows.
+Capital.Energy Columbus, Ohio
+IT Director June 2016 – May 2018
+• Owned core IT infrastructure and data systems; built integrations and automated reporting pipelines sup-
+porting daily business operations.
+• Introduced Git-based version control and CI/CD practices, reducing deployment failures and improving
+system uptime.
+Village Communities Columbus, Ohio
+Software Developer June 2015 – June 2016
+• Built C# ETL application replacing legacy batch scripts; automated daily data transfers between utility
+database and accounting system with SQL Server audit logging and alerting.
+• Developed Excel/CSV data import tool, eliminating manual data entry for bulk accounting uploads.
+Broadview Instrumentation Services Valley View, Ohio
+Software Developer August 2012 – May 2015
+• Developed C# applications for automated control and data acquisition from precision instrumentation
+(calibrators, oscilloscopes, piston gauges), improving measurement workflow efficiency.
+SKILLS
+Data Engineering: ETL/ELT Pipelines, Data Modeling, Dimensional Modeling, Data Warehousing, Stream
+Processing, Batch Processing, Data Quality, Pipeline Orchestration
+Languages: Python, SQL, Ruby, C#, JavaScript | Familiar: Rust, Go, Java
+Databases & Warehouses: Amazon Redshift, PostgreSQL, SQL Server, MySQL | Familiar: Cassandra,
+MongoDB
+AWS: Lambda, Kinesis, SQS/SNS, S3, EC2, ECS, Redshift, IAM, CloudFormation, Step Functions
+Tools & Frameworks: PySpark, Terraform, Buildkite, Rails, Git | Familiar: Airflow, Dagster, dbt
+AI/ML Integration: ML pipeline deployment, LLM integration, agentic tooling (Claude Code, Copilot,
+Codex)
+CERTIFICATIONS
+AWS Certified Data Engineer – Associate
+AWS Certified Cloud Practitioner

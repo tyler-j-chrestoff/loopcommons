@@ -1,0 +1,5 @@
+{
+  "name": "loopcommons",
+  "private": true,
+  "workspaces": ["packages/*"]
+}
