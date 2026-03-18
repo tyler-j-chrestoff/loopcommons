@@ -26,7 +26,7 @@ export function SessionThread({ sessionId }: SessionThreadProps) {
     let cancelled = false;
     setLoading(true);
 
-    fetch(`/api/sessions?thread=${sessionId}`)
+    fetch(`/api/sessions?thread=${sessionId}`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled && data.thread) {
