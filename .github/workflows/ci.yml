@@ -25,10 +25,10 @@ jobs:
       - run: npm install
 
       - name: Typecheck packages/llm
-        run: npx tsc --noEmit --project packages/llm/tsconfig.json
+        run: npx -p typescript tsc --noEmit --project packages/llm/tsconfig.json
 
       - name: Typecheck packages/web
-        run: npx tsc --noEmit --project packages/web/tsconfig.json
+        run: npx -p typescript tsc --noEmit --project packages/web/tsconfig.json
 
   test-llm:
     name: Test packages/llm
