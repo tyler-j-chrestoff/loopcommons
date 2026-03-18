@@ -21,10 +21,12 @@ cat planning/milestones/{active}/stories/{name}.md  # get persona context + task
 | What stories are planned? | `ls planning/milestones/{name}/stories/` |
 | What's in a story? | `cat planning/milestones/{name}/stories/{name}.md` |
 | What's been suggested? | `ls planning/suggestions/` |
+| What sessions are planned/done? | `cat planning/sessions.yaml` |
 
 ## Taxonomy
 
 ```
+sessions.yaml                      Session log + forward plan (1 entry per conversation)
 ROADMAP.md                         Product direction + active milestone pointer
   └─ milestones/{name}/            Deployable increment with a verification gate
       ├─ milestone.md              Summary, status, verification checklist

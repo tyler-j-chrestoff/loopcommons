@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: training_security_reasoning
+    description: "Labeled security reasoning examples for ML training. PII-scrubbed."
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: input
+        data_tests:
+          - not_null
+      - name: reasoning
+        data_tests:
+          - not_null
+      - name: classification_label
+        data_tests:
+          - accepted_values:
+              values: ["true_positive", "false_positive", "false_negative", "true_negative"]
+
+  - name: training_rewrite_pairs
+    description: "Input → rewritten output pairs for fine-tuning rewrite capability."
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: raw_input
+        data_tests:
+          - not_null
+      - name: rewritten_output
+        data_tests:
+          - not_null
+      - name: rewrite_type
+        data_tests:
+          - accepted_values:
+              values: ["adversarial_rewrite", "benign_rewrite", "passthrough"]
+
+  - name: training_threat_calibration
+    description: "Threat score predictions with ground truth for calibration training."
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: predicted_score
+        data_tests:
+          - not_null

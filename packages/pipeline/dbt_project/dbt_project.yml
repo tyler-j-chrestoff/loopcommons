@@ -1,0 +1,25 @@
+name: loopcommons
+version: "0.1.0"
+config-version: 2
+
+profile: loopcommons
+
+vars:
+  warehouse_path: "{{ env_var('LOOPCOMMONS_WAREHOUSE_PATH', '../../../data/warehouse') }}"
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  loopcommons:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: table
+    training:
+      +materialized: table
+    metrics:
+      +materialized: table

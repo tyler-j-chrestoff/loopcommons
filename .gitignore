@@ -6,3 +6,20 @@ node_modules/
 *.key
 *.pem
 .claude/settings.local.json
+
+# Build artifacts
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Generated data (pipeline outputs)
+data/warehouse/
+data/exports/
+packages/data/
+
+# DuckDB
+*.duckdb
+*.duckdb.wal

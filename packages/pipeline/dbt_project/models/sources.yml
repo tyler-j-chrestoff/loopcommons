@@ -1,0 +1,48 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: main
+    description: "Consolidated trace events from the amygdala pipeline, written as Parquet by Dagster."
+    tables:
+      - name: trace_events
+        description: >
+          Flattened trace events from all sessions. One row per event.
+          Produced by the consolidated_events Dagster asset from raw JSONL session files.
+        meta:
+          external_location: "read_parquet('../../../data/warehouse/events/**/*.parquet')"
+        columns:
+          - name: session_id
+            description: "Unique session identifier"
+            data_tests:
+              - not_null
+          - name: event_type
+            description: "Event type discriminator"
+            data_tests:
+              - not_null
+              - accepted_values:
+                  values:
+                    - "session:start"
+                    - "session:complete"
+                    - "rate-limit:status"
+                    - "spend:status"
+                    - "security:input-sanitized"
+                    - "security:input-rejected"
+                    - "amygdala:rewrite"
+                    - "amygdala:classify"
+                    - "amygdala:threat-assess"
+                    - "amygdala:context-delegate"
+                    - "orchestrator:route"
+                    - "orchestrator:context-filter"
+                    - "round:start"
+                    - "round:complete"
+                    - "tool:start"
+                    - "tool:complete"
+                    - "text-delta"
+                    - "trace:complete"
+                    - "error"
+                    - "done"
+          - name: timestamp_ms
+            description: "Event timestamp in milliseconds since epoch"
+            data_tests:
+              - not_null

@@ -1,6 +1,6 @@
 # Milestone: Hardening — Cost Control, Abuse Prevention, Prompt Security
 
-**Status**: planned
+**Status**: done
 
 ## Summary
 
@@ -10,14 +10,17 @@ The agent is live with Tyler's API key behind a public endpoint. There is no rat
 
 All of these must pass before this milestone is complete:
 
-- [ ] Per-IP rate limiter rejects excessive requests (verify with rapid curl loop)
-- [ ] Daily spend cap halts requests after threshold, returns friendly message
-- [ ] Concurrent request limit prevents parallel abuse
-- [ ] System prompt includes injection-resistant instructions
-- [ ] Red-team prompt injection attempts fail (model refuses to break character)
-- [ ] Input content is sanitized (no role spoofing via message array manipulation)
-- [ ] Error responses do not leak implementation details
-- [ ] All defenses work without degrading normal UX
+- [x] Per-IP rate limiter rejects excessive requests (verify with rapid curl loop)
+- [x] Daily spend cap halts requests after threshold, returns friendly message
+- [x] Concurrent request limit prevents parallel abuse
+- [x] System prompt includes injection-resistant instructions
+- [x] Red-team prompt injection attempts fail (model refuses to break character)
+- [x] Input content is sanitized (no role spoofing via message array manipulation)
+- [x] Error responses do not leak implementation details
+- [x] All defenses work without degrading normal UX
+- [x] Rate limit state (remaining requests, active connections) is visible in the UI
+- [x] Spend vs. cap budget gauge is visible and updates in real-time
+- [x] Security events (rejections, sanitizations) are observable in TraceInspector
 
 ## Stories
 

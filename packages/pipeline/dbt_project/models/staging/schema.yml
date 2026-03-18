@@ -1,0 +1,49 @@
+version: 2
+
+models:
+  - name: stg_amygdala_events
+    description: "Cleaned amygdala trace events: rewrites, classifications, threat assessments, context delegations."
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: amygdala_event_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["rewrite", "classify", "threat_assess", "context_delegate"]
+      - name: timestamp_ms
+        data_tests:
+          - not_null
+
+  - name: stg_routing_events
+    description: "Cleaned orchestrator trace events: routing decisions and context filtering."
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: event_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["orchestrator:route", "orchestrator:context-filter"]
+
+  - name: stg_subagent_events
+    description: "Cleaned subagent execution events: rounds, tool calls, trace summaries."
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: event_type
+        data_tests:
+          - not_null
+
+  - name: stg_security_events
+    description: "Cleaned security and operational events: sanitization, rate limits, spend, sessions, errors."
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: event_type
+        data_tests:
+          - not_null

@@ -43,3 +43,29 @@ export function createToolRegistry(tools: ToolDefinition[]): ToolRegistry {
     },
   };
 }
+
+/**
+ * Create a scoped tool registry containing only the tools in the allowlist.
+ *
+ * Used by the orchestrator to enforce least-privilege tool access per subagent.
+ * Tools not in the allowlist are invisible to the subagent — it cannot call them
+ * and does not know they exist.
+ *
+ * An empty allowlist returns an empty registry (no tools).
+ */
+export function createScopedRegistry(
+  fullRegistry: ToolRegistry,
+  allowlist: string[],
+): ToolRegistry {
+  const allowed = new Set(allowlist);
+  const scopedTools: ToolDefinition[] = [];
+
+  for (const name of fullRegistry.list()) {
+    if (allowed.has(name)) {
+      const tool = fullRegistry.get(name);
+      if (tool) scopedTools.push(tool);
+    }
+  }
+
+  return createToolRegistry(scopedTools);
+}

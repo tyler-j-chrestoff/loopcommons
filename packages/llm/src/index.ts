@@ -1,10 +1,35 @@
 export { agent } from './agent';
 export type { AgentParams } from './agent';
-export { defineTool } from './tool';
-export type { ToolDefinition } from './tool';
+export { defineTool, createToolRegistry, createScopedRegistry } from './tool';
+export type { ToolDefinition, ToolRegistry } from './tool';
 export type { Message, ToolCall, ToolResult, TokenUsage, AgentResult } from './types';
 export type { Trace, Round, ToolExecution, TraceEvent, TraceCollector } from './trace';
 export { createTrace } from './trace';
 export type { Provider, ProviderCallParams, ProviderCallResult, StreamEvent } from './provider/base';
 export { LLMError } from './errors';
 export type { LLMErrorCode } from './errors';
+export type {
+  AmygdalaFn,
+  AmygdalaInput,
+  AmygdalaResult,
+  AmygdalaIntent,
+  AmygdalaTraceEvent,
+  ThreatAssessment,
+  ThreatCategory,
+  ContextDelegationPlan,
+  ContextAnnotation,
+} from './amygdala/types';
+export { createAmygdala } from './amygdala';
+export type { AmygdalaConfig } from './amygdala';
+export type { SubagentConfig, SubagentRegistry } from './subagent';
+export { createSubagentRegistry } from './subagent';
+export type {
+  OrchestratorFn,
+  OrchestratorInput,
+  OrchestratorResult,
+  OrchestratorTraceEvent,
+  OrchestratorRouteEvent,
+  OrchestratorContextFilterEvent,
+} from './orchestrator';
+export { createOrchestrator } from './orchestrator';
+export type { OrchestratorConfig } from './orchestrator';

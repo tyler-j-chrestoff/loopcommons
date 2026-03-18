@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: int_amygdala_passes
+    description: >
+      One row per user message: joins all amygdala decisions (rewrite, classify,
+      threat assess, context delegate) with routing outcome and subagent execution.
+      The core analytical table for the pipeline.
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+          - unique
+      - name: original_prompt
+        data_tests:
+          - not_null
+
+  - name: int_attack_outcomes
+    description: >
+      Labeled attack outcomes: for each attack attempt, whether it was blocked,
+      bypassed, or had an unknown outcome.
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: attack_outcome
+        data_tests:
+          - accepted_values:
+              values: ["blocked", "potential_bypass", "unknown"]

@@ -1,0 +1,11 @@
+loopcommons:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "../../../data/warehouse/loopcommons.duckdb"
+      schema: main
+      extensions:
+        - parquet
+      settings:
+        threads: 4

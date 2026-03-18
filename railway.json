@@ -1,0 +1,15 @@
+{
+  "$schema": "https://railway.com/reference/config-as-code",
+  "build": {
+    "builder": "RAILPACK",
+    "buildCommand": "npm install && npm run build --workspace=packages/web",
+    "watchPatterns": ["packages/web/**", "packages/llm/**"]
+  },
+  "deploy": {
+    "startCommand": "npm run start --workspace=packages/web",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 5
+  }
+}

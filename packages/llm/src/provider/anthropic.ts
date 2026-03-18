@@ -2,6 +2,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { generateText, streamText, tool as aiTool } from 'ai';
 import type { Provider, ProviderCallParams, ProviderCallResult, StreamEvent } from './base';
 import type { Message } from '../types';
+import { LLMError } from '../errors';
 
 function convertMessages(messages: Message[]) {
   return messages
@@ -104,54 +105,64 @@ export class AnthropicProvider implements Provider {
   }
 
   async call(params: ProviderCallParams): Promise<ProviderCallResult> {
-    const messages = convertMessages(params.messages);
-    const tools = convertTools(params);
+    try {
+      const messages = convertMessages(params.messages);
+      const tools = convertTools(params);
 
-    const result = await generateText({
-      model: this.client(params.model),
-      system: params.system,
-      messages,
-      tools: Object.keys(tools).length > 0 ? tools : undefined,
-      maxOutputTokens: params.maxTokens,
-    });
+      const result = await generateText({
+        model: this.client(params.model),
+        system: params.system,
+        messages,
+        tools: Object.keys(tools).length > 0 ? tools : undefined,
+        maxOutputTokens: params.maxTokens,
+      });
 
-    return normalizeResult(result as any);
+      return normalizeResult(result as any);
+    } catch (err) {
+      if (err instanceof LLMError) throw err;
+      throw new LLMError('PROVIDER_ERROR', 'The AI service is temporarily unavailable. Please try again.');
+    }
   }
 
   async *streamCall(params: ProviderCallParams): AsyncIterable<StreamEvent> {
-    const messages = convertMessages(params.messages);
-    const tools = convertTools(params);
+    try {
+      const messages = convertMessages(params.messages);
+      const tools = convertTools(params);
 
-    const stream = streamText({
-      model: this.client(params.model),
-      system: params.system,
-      messages,
-      tools: Object.keys(tools).length > 0 ? tools : undefined,
-      maxOutputTokens: params.maxTokens,
-    });
+      const stream = streamText({
+        model: this.client(params.model),
+        system: params.system,
+        messages,
+        tools: Object.keys(tools).length > 0 ? tools : undefined,
+        maxOutputTokens: params.maxTokens,
+      });
 
-    for await (const chunk of stream.textStream) {
-      if (chunk) {
-        yield { type: 'text-delta', delta: chunk };
+      for await (const chunk of stream.textStream) {
+        if (chunk) {
+          yield { type: 'text-delta', delta: chunk };
+        }
       }
+
+      // After textStream completes, get final result
+      const finalUsage = await stream.usage;
+      const finalFinishReason = await stream.finishReason;
+      const finalToolCalls = await stream.toolCalls;
+      const finalText = await stream.text;
+      const finalResponse = await stream.response;
+
+      yield {
+        type: 'finish',
+        result: normalizeResult({
+          text: finalText,
+          toolCalls: finalToolCalls,
+          usage: finalUsage,
+          finishReason: finalFinishReason,
+          response: finalResponse,
+        }),
+      };
+    } catch (err) {
+      if (err instanceof LLMError) throw err;
+      throw new LLMError('PROVIDER_ERROR', 'The AI service is temporarily unavailable. Please try again.');
     }
-
-    // After textStream completes, get final result
-    const finalUsage = await stream.usage;
-    const finalFinishReason = await stream.finishReason;
-    const finalToolCalls = await stream.toolCalls;
-    const finalText = await stream.text;
-    const finalResponse = await stream.response;
-
-    yield {
-      type: 'finish',
-      result: normalizeResult({
-        text: finalText,
-        toolCalls: finalToolCalls,
-        usage: finalUsage,
-        finishReason: finalFinishReason,
-        response: finalResponse,
-      }),
-    };
   }
 }

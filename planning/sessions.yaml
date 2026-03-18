@@ -1,0 +1,440 @@
+# Session log and forward plan.
+# Each session is one Claude Code conversation (~1M token context).
+# Subagents stretch this further via parallel execution.
+
+planned:
+  - id: 11
+    title: "Deploy to Railway"
+    milestone: deploy-ops
+    goal: "Deploy web to Railway. Persistent volume, env vars, domain. Verify full amygdala pipeline in production. Start session linking if time permits."
+    phases:
+      - name: Railway deploy
+        tasks: [ops-01, ops-02, ops-03, ops-04, ops-05, ops-06, ops-07, ops-08]
+        strategy: "Research Nixpacks config, add health check, create Railway project, configure volume + env + auto-deploy, smoke test, domain."
+      - name: Session linking (stretch)
+        tasks: [ops-10, ops-11, ops-12, ops-13, ops-14, ops-15]
+        strategy: "If deploy wraps cleanly, start session linking."
+
+  - id: 12
+    title: "Session Linking + Web Tests"
+    milestone: deploy-ops
+    goal: "Finish session linking if not done in 11. Expand web test coverage to ≥80%."
+    phases:
+      - name: Session linking
+        tasks: [ops-10, ops-11, ops-12, ops-13, ops-14, ops-15]
+        strategy: "Complete any remaining session linking tasks from session 11."
+      - name: Web test expansion
+        tasks: [ops-20, ops-21, ops-22, ops-23, ops-24, ops-25, ops-26, ops-27, ops-28, ops-29]
+        strategy: "Add React Testing Library, route handler tests, lib module tests, component smoke tests."
+
+  - id: 13
+    title: "Context Budget Viz: Token Tracking"
+    milestone: context-budget-viz
+    goal: "Research + build server-side token counting. SSE events for budget data."
+    phases:
+      - name: Research + implementation
+        tasks: [ctx-01, ctx-02, ctx-03, ctx-04, ctx-05, ctx-06]
+        strategy: "Research countTokens API, build accumulator, integrate into route.ts, add SSE events."
+
+  - id: 14
+    title: "Context Budget Viz: UI Component"
+    milestone: context-budget-viz
+    goal: "Build ContextBudgetBar, per-message breakdown, cost overlay. Close milestone."
+    phases:
+      - name: Implementation
+        tasks: [ctx-07, ctx-08, ctx-09, ctx-10, ctx-11, ctx-12]
+        strategy: "Client state, budget bar, token breakdown popover, cost overlay, layout integration."
+
+  - id: 15
+    title: "Eval Hooks: User Feedback + LLM Judge"
+    milestone: eval-hooks
+    goal: "User feedback UI + LLM-as-judge runtime scoring."
+    phases:
+      - name: User feedback
+        tasks: [eval-01, eval-02, eval-03, eval-04, eval-05, eval-06, eval-07]
+        strategy: "Feedback event type, FeedbackButtons component, POST endpoint, persistence, viz, pipeline."
+      - name: LLM-as-judge
+        tasks: [eval-08, eval-09, eval-10, eval-11, eval-12, eval-13, eval-14]
+        strategy: "Research judge prompt, implement judge module, route.ts integration, viz, spend tracking."
+
+  - id: 16
+    title: "Eval Hooks: CI Evals + Auto-Calibration Start"
+    milestone: eval-hooks → auto-calibration
+    goal: "CI eval suite for prompt regression. Begin auto-calibration runner if time permits."
+    phases:
+      - name: CI evals
+        tasks: [eval-15, eval-16, eval-17, eval-18, eval-19, eval-20, eval-21, eval-22]
+        strategy: "Research eval patterns, write eval tests, baseline snapshot, CI job."
+      - name: Auto-calibration start (stretch)
+        tasks: [cal-01, cal-02, cal-03]
+        strategy: "Research, test split, baseline metrics."
+
+completed:
+  - id: 10
+    title: "Planning: Milestones + Research"
+    date: 2026-03-17
+    status: done
+    goal: "Plan upcoming milestones. Research Later/Suggestion items to assess readiness. Write stories + tasks."
+    phases:
+      - name: "Plan milestones ✓"
+        status: done
+      - name: "Research Later items ✓"
+        status: done
+      - name: "Research suggestions ✓"
+        status: done
+    summary: |
+      Planning session. 4 milestones planned with 10 stories and 73 tasks total.
+
+      **Milestones created:**
+      1. deploy-ops: 3 stories, 24 tasks (railway deploy, session linking, web test expansion)
+      2. context-budget-viz: 2 stories, 12 tasks (token tracking, budget visualization)
+      3. eval-hooks: 3 stories, 22 tasks (user feedback, LLM-as-judge, CI evals)
+      4. auto-calibration: 2 stories, 15 tasks (calibration runner, calibration viz)
+
+      **Research conducted (3 parallel agents):**
+      - Context budget viz: confirmed novel. No widely-used open-source tool does real-time
+        context budget visualization in chat UI. Vercel AI Elements Context component is
+        closest (hover card). Anthropic countTokens API + onFinish for accurate tracking.
+      - Later backlog: 7 items assessed. Eval hooks → context engineering → trace comparison
+        is recommended sequence. A/B testing and cost routing need eval hooks first.
+        Unsloth fine-tuning deferred (needs more training data volume).
+      - Auto-calibration: Highly feasible. Karpathy's autoresearch is the right model.
+        DSPy overkill. ~$2-8 per full optimization run. Build ourselves in ~3 sessions.
+
+      **Sessions planned:** 11-16 mapped to milestones with task references.
+      ROADMAP.md updated: deploy-ops active, Next has 3 milestones, Later annotated with readiness.
+      Unblocks: session 11 (deploy to Railway).
+
+completed:
+  - id: 9
+    title: "Sanitize Session API + Deploy Prep"
+    date: 2026-03-17
+    status: done
+    goal: "Fix the CRITICAL rawResponse/system-prompt leak in /api/sessions/[id]. Add web-side tests. Prep for deployment."
+    phases:
+      - name: "Fix session API sanitization ✓"
+        status: done
+      - name: "Web-side tests ✓"
+        status: done
+      - name: "Deploy prep ✓"
+        status: done
+    summary: |
+      3 phases completed. CRITICAL security fix shipped + full test suite + CI + hosting research.
+
+      **Phase 1 — Session API sanitization (CRITICAL fix):**
+      Extracted sanitizeEvent + sanitizeSessionEvent to packages/web/src/lib/sanitize-event.ts.
+      Imported in both route.ts (SSE path) and sessions/[id]/route.ts (API path).
+      /api/sessions/[id] now strips rawResponse headers and system prompts before returning.
+      This was the last known data leak — rawResponse contained Anthropic API headers,
+      trace:complete contained the full system prompt.
+
+      **Phase 2 — Web-side tests (64 tests, 6 files, all pass):**
+      Added vitest to packages/web with path alias config (vitest.config.ts).
+      New test files: sanitize-event.test.ts (11), rate-limit.test.ts (10),
+        spend-tracker.test.ts (7), sanitize.test.ts (12).
+      Pre-existing: file-session-writer.test.ts (8), red-team-sessions.test.ts (16).
+      Total project tests: 64 web + 47 llm = 111 tests.
+
+      **Phase 3 — Deploy prep:**
+      CI: GitHub Actions workflow (.github/workflows/ci.yml) — 4 parallel jobs
+        (typecheck, test-llm, test-web, build-web). Node 22 LTS, npm caching.
+      Hosting research: Railway recommended ($5/mo, persistent volumes for JSONL,
+        SSE without limits, native monorepo support). Vercel ruled out (no persistent
+        filesystem). Fly.io runner-up (~$3/mo, needs Dockerfile).
+      Next.js build verified passing.
+
+      Unblocks: session 10 (deploy + context budget viz).
+
+  - id: 8
+    title: "Data Pipeline: Dagster + dbt"
+    date: 2026-03-18
+    milestone: amygdala
+    status: done
+    goal: "Set up packages/pipeline (amyg-19), build dbt models (amyg-20 through amyg-24), Dagster export job (amyg-25), wire metrics to viz (amyg-26), comparison mode (amyg-16), session red-team (amyg-35). Close the milestone."
+    phases:
+      - name: "Dagster + dbt scaffold ✓"
+        tasks: [amyg-18, amyg-19]
+        status: done
+      - name: "dbt model chain ✓"
+        tasks: [amyg-20, amyg-21, amyg-22, amyg-23, amyg-24]
+        status: done
+      - name: "Export + viz + red-team ✓"
+        tasks: [amyg-25, amyg-26, amyg-16, amyg-35]
+        status: done
+    summary: |
+      11 tasks completed. Full data pipeline operational. Amygdala milestone CLOSED (17/17 verification gates).
+
+      **Phase 1 — Dagster + dbt scaffold:**
+      New package: packages/pipeline (Python 3.13, Dagster 1.12.19, dbt-duckdb 1.10.1, Polars 1.39).
+      amyg-18 already satisfied — FileSessionWriter persists raw unsanitized events to JSONL.
+      Consolidation asset: reads JSONL session files → flattens to wide Parquet table with explicit schema.
+      Tested against 41 real sessions (948 + 1336 events across 2 days).
+
+      **Phase 2 — dbt models (11 models, 31 tests, all pass):**
+      Staging: stg_amygdala_events, stg_routing_events, stg_subagent_events, stg_security_events.
+      Intermediate: int_amygdala_passes (one row per user message, all decisions + outcome joined),
+        int_attack_outcomes (labeled: blocked/potential_bypass).
+      Training: training_security_reasoning, training_rewrite_pairs, training_threat_calibration.
+        PII scrubbed via scrub_pii() macro (strips IPs, emails). no_pii_in_exports test validates.
+      Metrics: metrics_amygdala_accuracy (P=1.0, R=0.96, F1=0.98), metrics_regime_classification
+        (active_defense regime, 58.5% attack rate from heavy red-teaming).
+
+      **Phase 3 — Export + viz + red-team (3 parallel agents):**
+      Export: training_export Dagster asset writes versioned JSONL with SHA256 checksums.
+        Also writes metrics.json for the web API.
+      Metrics API: GET /api/metrics reads metrics.json, returns accuracy + regime data.
+        Removed @duckdb/node-api (native binding broke Next.js build), replaced with static JSON.
+      ComparisonMode: confusion matrix, precision/recall/F1 gauges, threat score calibration,
+        intent distribution, pipeline-vs-baseline comparison table. Wired into Layout sidebar.
+      Red-team (amyg-35): 10 security findings documented as vitest test file.
+        CRITICAL: /api/sessions/[id] returns unsanitized events (known issue, pre-existing).
+        PASS: no IP leakage, session IDs validated, path traversal blocked.
+        MEDIUM: no auth on session APIs, no event count limit.
+
+      **Milestone verified:** 17/17 checkboxes. Amygdala milestone status → done.
+      Build passes (next build), types clean, 46/47 llm tests pass (1 flaky red-team — LLM nondeterminism).
+
+
+  - id: 7
+    title: "Amygdala: Viz + Session API"
+    date: 2026-03-17
+    milestone: amygdala
+    status: done
+    goal: "Build amygdala visualization components (amyg-12 through amyg-15), session API/CLI/UI (amyg-31, amyg-32, amyg-33), and run red-team batteries (amyg-05, amyg-06, amyg-11)."
+    phases:
+      - name: "Parallel implementation (viz + session API) ✓"
+        tasks: [amyg-12, amyg-13, amyg-14, amyg-15, amyg-31, amyg-32, amyg-33]
+        status: done
+      - name: "Verification gate (partial) ✓"
+        tasks: []
+        status: done
+    summary: |
+      10 planned tasks + significant live red-teaming + architectural improvements.
+
+      **Phase 1 — Viz + Session API (5 parallel agents + integration):**
+      New files: AmygdalaPassCard.tsx, RoutingCard.tsx, PipelineTimeline.tsx (viz components),
+        /api/sessions/route.ts, /api/sessions/[id]/route.ts (session API with pagination + validation),
+        scripts/session.ts (CLI: list + read with TTY color coding).
+      Major edits: AmygdalaInspector.tsx (rewired to compose sub-components with stage-click interaction),
+        page.tsx (session ID + Export JSON button in header).
+
+      **Phase 2 — Red-team batteries (3 parallel agents):**
+      New files: red-team-amygdala.test.ts (7 tests), red-team-routing.test.ts (6 tests),
+        red-team-baseline.test.ts (5 tests + comparison table). 47 total tests.
+      Findings: (1) substrate-awareness exploitation confuses intent classification.
+        (2) injection-as-quoted-example bypasses rewrite stripping. (3) Baseline leaks 3/5 vs pipeline 0/5.
+
+      **Phase 3 — Live red-teaming + architectural fixes (with Tyler in browser):**
+      Researched 15 attack vectors from 2025-2026 literature (adversarial poetry, fake XML delimiters,
+        evaluation override, many-shot, crescendo, base64, payload splitting, translation chain, etc.).
+      Live tested against running server. Findings drove 5 architectural changes:
+
+      1. **Subagent budget-consciousness**: Refusal + conversational subagent prompts updated to stay
+         on-topic and not write manga scripts / do homework on our API budget.
+      2. **Game-theoretic tit-for-tat refusal**: Orchestrator now returns a static response for refusal
+         routing — zero LLM call, zero subagent tokens. After first refusal, subsequent adversarial
+         messages get empty response (no chat bubble). User earns cooperation back with genuine messages.
+      3. **Rewrite hallucination fix**: Amygdala system prompt now explicitly forbids fabricating content
+         in rewrites — "only REMOVE things, never ADD things the user did not say."
+      4. **Amygdala cost tracking**: generateObject usage now captured and recorded in spend tracker.
+         Previously amygdala API calls were invisible to spend tracking.
+      5. **Rate limit auto-refresh**: RateLimitIndicator now resets to full capacity after window expires,
+         even when idle. Rate limit reduced from 20 RPM to 5 RPM.
+
+      Verification gate: 11/17 checked. Remaining 6 are pipeline/training data (session 8).
+      Suggestion filed: auto-calibration loop (propose/test/keep/revert for system prompt optimization,
+        inspired by Karpathy's autoresearch). See planning/suggestions/auto-calibration-loop.md.
+      Known issue flagged for later: /api/sessions/[id] returns unsanitized events (rawResponse headers).
+      Unblocks: amyg-16 (comparison mode), amyg-35 (session red-team).
+
+  - id: 6
+    title: "Amygdala: Orchestrator + Route Integration"
+    date: 2026-03-17
+    milestone: amygdala
+    status: done
+    goal: "Build the orchestrator (amyg-09) that wires amygdala → registry → scoped tools → agent() into a callable pipeline. Integrate into route.ts (amyg-10) replacing the direct agent() call. Session persistence in route.ts (amyg-30). End-to-end browser verification."
+    phases:
+      - name: "Build orchestrator ✓"
+        tasks: [amyg-09]
+        status: done
+      - name: "SSE event types + route.ts integration ✓"
+        tasks: [amyg-10, amyg-30]
+        status: done
+      - name: "AmygdalaInspector viz ✓"
+        tasks: []
+        status: done
+      - name: "End-to-end verification ✓"
+        tasks: []
+        status: done
+    summary: |
+      3 core tasks completed (amyg-09, amyg-10, amyg-30) plus AmygdalaInspector visualization.
+      New files: packages/llm/src/orchestrator/index.ts (createOrchestrator factory — deterministic
+        routing: AmygdalaResult → subagent selection → context filtering → scoped tools → agent().
+        Threat override at ≥0.8 forces refusal. Emits orchestrator:route + orchestrator:context-filter
+        trace events.), packages/llm/src/orchestrator/types.ts (OrchestratorTraceEvent types),
+        packages/web/src/components/AmygdalaInspector.tsx (intent badge, threat gauge bar,
+        rewrite diff, routing reasoning, context filtering stats, session ID display).
+      Major edits: route.ts (replaced direct agent() call with amygdala → orchestrator pipeline,
+        hooked FileSessionWriter with create/append/finalize, session ID in X-Session-Id header +
+        session:start SSE event, removed old monolithic SYSTEM_PROMPT), types.ts (added 8 new SSE
+        event types: amygdala:*, orchestrator:*, session:*, plus AmygdalaClassification and
+        RoutingDecision types for ChatMessage), use-chat.ts (captures amygdala + routing data
+        from SSE, attaches to messages, exposes sessionId/liveAmygdala/liveRouting), session-writer.ts
+        (SessionEvent union now includes AmygdalaTraceEvent + OrchestratorTraceEvent).
+      End-to-end verified via curl: greeting → conversational (no tools), resume → resume (get_resume),
+        injection → adversarial (0.95 threat, instruction-override, refusal subagent, zero tools).
+        Session files written to data/sessions/2026-03-17/*.jsonl with full event chains.
+      Build passes (next build), types clean, all 29 llm tests pass.
+      Unblocks: amyg-11 (red-team routing), amyg-12–15 (viz), amyg-31–33 (session CLI/API/UI).
+
+  - id: 5
+    title: "Amygdala: Implementation Phase 1"
+    date: 2026-03-17
+    milestone: amygdala
+    status: done
+    goal: "Implement amygdala module (amyg-04), FileSessionWriter (amyg-29), subagent registry (amyg-07), and tool scoping (amyg-08). All interfaces are defined — this session builds the first working implementations."
+    phases:
+      - name: "Parallel implementation ✓"
+        tasks: [amyg-04, amyg-07, amyg-08, amyg-29]
+        status: done
+      - name: "Integration smoke test ✓"
+        tasks: []
+        status: done
+    summary: |
+      4 tasks completed via parallel implementation agents + integration smoke test.
+      New files: packages/llm/src/amygdala/index.ts (createAmygdala factory, generateObject with Zod schema,
+        substrate-aware system prompt >1024 tokens for prompt caching, 4 trace event types),
+        packages/llm/src/subagent/registry.ts (5 subagent configs: resume, project, security,
+        conversational, refusal — each with tool allowlists, system prompt fragments, context requirements),
+        packages/llm/src/tool/index.ts (createScopedRegistry for least-privilege tool access),
+        packages/web/src/lib/session/file-session-writer.ts (JSONL session persistence with
+        create/append/finalize/read/list, atomic rename on finalize, cursor pagination).
+      Bug found + fixed: Anthropic's structured output API rejects Zod .min()/.max()/.nonnegative()
+        constraints — generates JSON Schema minimum/maximum properties which Anthropic doesn't support.
+        Fix: moved bound descriptions into .describe() strings, added runtime clamping after parse.
+      Integration smoke test (5 tests): greeting → conversational (no tools), resume question → resume
+        (get_resume), project question → project (get_project), DAN jailbreak → adversarial/refusal
+        (zero tools, threat=1.0, instruction-override), FileSessionWriter lifecycle.
+      Latency: 2-4.5s per amygdala pass (uncached). Prompt caching will improve on repeat calls.
+      Exports added to packages/llm/src/index.ts: createAmygdala, createSubagentRegistry, createScopedRegistry.
+      29 tests total (8 agent-loop + 16 registry/scoped-tools + 5 smoke integration).
+      Unblocks: amyg-09 (orchestrator), amyg-10 (route.ts integration), amyg-30 (session in route.ts).
+
+  - id: 4
+    title: "Amygdala: Research + Interface Definitions"
+    date: 2026-03-17
+    milestone: amygdala
+    status: done
+    goal: "Execute core research tasks (amyg-01, amyg-02, amyg-17) and define interfaces (amyg-03, amyg-28). amyg-27 (S3 patterns) is pre-researched from session 3 — just formalize findings."
+    phases:
+      - name: "Parallel research ✓"
+        tasks: [amyg-01, amyg-02, amyg-17, amyg-27]
+        status: done
+      - name: "Define interfaces ✓"
+        tasks: [amyg-03, amyg-28]
+        status: done
+    summary: |
+      6 tasks completed via 3 parallel research agents + 2 interface definitions.
+      Design docs written: substrate-aware-prompting.md, metacognitive-architectures.md,
+        storage-layer-eval.md, s3-session-patterns.md.
+      Key findings: (1) Prompt injection is architecturally unsolvable — defense-in-depth required.
+        (2) Substrate-awareness is novel but unvalidated — treat as one layer, not primary defense.
+        (3) Metacognitive paradox (Spivack 2025): more capable reasoning = more exploitable via logical override.
+        (4) Model choice: Haiku 4.5 with prompt caching for <500ms p95 overhead.
+        (5) Architecture: Vercel AI SDK native routing, no external framework needed.
+        (6) Storage: hybrid JSONL + DuckDB (write JSONL, consolidate to Parquet, query via dbt-duckdb).
+        (7) S3: buffer + PutObject on finalize, S3 prefix listing (no DynamoDB yet).
+      Interfaces defined: AmygdalaFn (packages/llm/src/amygdala/types.ts),
+        SessionWriter (packages/web/src/lib/session-writer.ts).
+      Post-research reframe: threat categories reorganized around manipulation strategy
+        (authority-impersonation, logical-coercion, incremental-escalation, etc.)
+        instead of technical mechanism — prompt injection IS social engineering.
+      CLAUDE.md updated: tech decisions (storage, amygdala model), security notes (Layer 1 done,
+        Layer 2 in progress, social engineering framing), architecture (amygdala types exist).
+      Both type-check clean. Unblocks: amyg-04, amyg-07, amyg-29, amyg-34.
+
+
+  - id: 3
+    title: "Planning: Session Persistence + Amygdala Kickoff"
+    date: 2026-03-17
+    milestone: amygdala
+    status: done
+    goal: "Promote session-persistence suggestion to a story with tasks. Plan amygdala milestone work. Incorporate memory stratification insight."
+    phases:
+      - name: "Incorporate memory stratification ✓"
+        status: done
+      - name: "Promote session-persistence ✓"
+        status: done
+      - name: "Update planning files ✓"
+        status: done
+    summary: |
+      Promoted session-persistence from suggestion to story with 9 JSONL tasks (amyg-27 through amyg-35).
+      Incorporated memory stratification into 4 files: milestone.md (design principles + verification gate),
+        metacognitive-layer.md (acceptance criteria + amyg-03 + amyg-04),
+        subagent-routing.md (acceptance criteria + amyg-07 + amyg-09),
+        amygdala-viz.md (amyg-14).
+      Context delegation is now a first-class amygdala output alongside rewrite/classify/threat-assess.
+      Milestone: 5 stories, 35 tasks. Planned session 4 for research kickoff.
+      S3/DynamoDB research agent ran — results available for amyg-27.
+
+
+  - id: 2
+    title: "Red-Team + Fix + Ship"
+    date: 2026-03-17
+    milestone: hardening
+    status: done
+    goal: "Verify everything works end-to-end, fix what breaks, close the milestone."
+    phases:
+      - name: "Red-team battery ✓"
+        tasks: [harden-04, harden-08, harden-13]
+        status: done
+      - name: "Fix what broke ✓"
+        tasks: []
+        status: done
+      - name: "Verification gate ✓"
+        tasks: []
+        status: done
+      - name: "Close out ✓"
+        tasks: []
+        status: done
+    summary: |
+      3 red-team tasks via parallel subagents. All passed.
+      Bugs found + fixed: (1) trace:complete leaked full system prompt — stripped in sanitizeEvent(),
+        (2) concurrency 429 missing Retry-After header — added.
+      Enhancement: sanitizeInput() now returns stripped char details (codepoint, name, index),
+        agent receives sanitization_notice with exact chars removed.
+      Tyler QA'd in browser: sanitization events, prompt injection, normal chat all verified.
+      11/11 milestone checkboxes passed. Hardening milestone closed.
+      Bonus: memory stratification insight captured for amygdala architecture.
+
+  - id: 1
+    title: "Research + Implementation (all non-red-team tasks)"
+    date: 2026-03-17
+    milestone: hardening
+    status: done
+    goal: "Complete all 13 non-red-team tasks across rate-limiting, spend-cap, and prompt-hardening."
+    phases:
+      - name: "Parallel research ✓"
+        tasks: [harden-05, harden-09, harden-12, harden-04a]
+        status: done
+      - name: "Build backend ✓"
+        tasks: [harden-06, harden-07, harden-10, harden-11, harden-12]
+        status: done
+      - name: "Trace events + UI ✓"
+        tasks: [harden-08a, harden-13a, harden-04b]
+        status: done
+      - name: "Remaining UI + wiring ✓"
+        tasks: [harden-08b, harden-13b]
+        status: done
+    summary: |
+      All 13 non-red-team tasks complete. 4 phases, ~15 subagents.
+      New files: spend-tracker.ts, sanitize.ts, RateLimitIndicator.tsx, SpendGauge.tsx, SecurityEventLog.tsx
+      Major edits: route.ts (spend cap, sanitization, error mapper, rate-limit metadata, security events),
+        anthropic.ts (error wrapping), provider/index.ts (generic error), use-chat.ts (new state),
+        types.ts (5 new SSE event types), page.tsx (wired all components)
+      Key decision: full defense metacontext in system prompt (defensive humility, not overconfidence)
+
+prior:
+  - title: "agent-tools-streaming milestone"
+    date: 2026-03-16
+    notes: "Not session-tracked. Included tool registry, SSE streaming, TraceInspector, CostDashboard, rate-limit backend (harden-01 through 03)."
