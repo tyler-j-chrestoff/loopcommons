@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 
-export const proxy = auth((req) => {
+export default auth((req) => {
   if (!req.auth && req.nextUrl.pathname !== '/login') {
     const loginUrl = new URL('/login', req.nextUrl.origin);
     return Response.redirect(loginUrl);
