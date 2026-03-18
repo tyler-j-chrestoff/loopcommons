@@ -29,7 +29,7 @@ planned:
 
 completed:
   - id: 14
-    title: "Context Budget Viz: UI Component"
+    title: "Context Budget Viz: UI + Production Bug Fixes"
     date: 2026-03-18
     milestone: context-budget-viz
     status: done
@@ -38,42 +38,75 @@ completed:
       - name: "Implementation ✓"
         tasks: [ctx-07, ctx-08, ctx-09, ctx-10, ctx-11, ctx-12]
         status: done
+      - name: "Production bug fixes ✓"
+        tasks: []
+        status: done
     summary: |
-      All 6 tasks completed. Context budget visualization fully built and integrated.
-      Milestone CLOSED (8/8 verification gates).
+      All 6 planned tasks completed + 6 production bug fixes from live testing.
+      Context-budget-viz milestone CLOSED (8/8 verification gates).
 
-      **ctx-07 — Client state (pre-done):**
-      Already completed in session 13 as ctx-05. use-chat.ts handles token-budget:update
-      SSE event, exposes tokenBudget state. Marked done at session start.
+      **Phase 1 — Context budget visualization:**
 
-      **ctx-08 — ContextBudgetBar:**
-      Horizontal fill bar with gradient thresholds (green < 75%, yellow 75%, orange 90%,
-      red 100%). Percentage label, token count (Xk / 200k), cost estimate. Smooth CSS
-      transitions. Pulse animation at 90%+. Shimmer effect during streaming. Clickable
-      to expand per-turn breakdown.
+      ctx-07 (pre-done): Already completed in session 13 as ctx-05. use-chat.ts
+      handles token-budget:update SSE event, exposes tokenBudget state.
 
-      **ctx-09 — TokenBreakdown:**
-      Per-turn token breakdown component. Shows source (amygdala/subagent), input/output
-      tokens, cache indicator, per-turn cost. Rendered inside ContextBudgetBar on expand.
+      ctx-08 — ContextBudgetBar: Horizontal fill bar with gradient thresholds
+      (green < 75%, yellow 75%, orange 90%, red 100%). Percentage label, token
+      count (Xk / 200k), cost estimate. Pulse at 90%+. Shimmer during streaming.
+      Clickable to expand per-turn breakdown.
 
-      **ctx-10 — Cost overlay:**
-      Cost label with native title tooltip explaining Haiku 4.5 pricing breakdown
-      (input, output, cache read, cache creation rates).
+      ctx-09 — TokenBreakdown: Per-turn source, input/output tokens, cache
+      indicator, per-turn cost. Rendered inside ContextBudgetBar on expand.
 
-      **ctx-11 — Layout integration:**
-      ContextBudgetBar added to page.tsx main slot, positioned above ChatThread.
-      Conditionally rendered (null when no snapshot). Passes isStreaming from isLoading.
+      ctx-10 — Cost overlay: Cost label with title tooltip explaining Haiku 4.5
+      pricing (input, output, cache read, cache creation rates).
 
-      **ctx-12 — Tests:**
-      17 ContextBudgetBar tests (null render, percentage, tokens, cost, 4 threshold
-      colors, pulse, clamp, shimmer, expand/collapse, tooltip). 6 TokenBreakdown tests
-      (empty, rows, tokens, cache indicator, no-cache, cost). 23 total new tests.
+      ctx-11 — Layout integration: ContextBudgetBar in page.tsx main slot above
+      ChatThread. Conditionally rendered (null when no snapshot).
 
-      **Test totals:** 231 web tests (18 files) + 47 llm tests = 278 total. All pass.
+      ctx-12 — Tests: 17 ContextBudgetBar + 6 TokenBreakdown = 23 new tests.
+
+      **Phase 2 — Production bug fixes (from Tyler's live testing):**
+
+      1. **Amygdala rewrite returning previous message**: Runtime guard in route.ts
+         detects when rewrittenPrompt matches a history message that isn't the current
+         message and falls back to raw input. Refined to preserve legitimate rewrites
+         of repeated messages (attacker sends same injection twice).
+
+      2. **Agent trashing Tyler's credentials**: Conversational subagent prompt had
+         no context about Tyler, so it conceded everything when challenged ("speculative
+         hobby project", "crackpot"). Added background (senior data engineer, 10+ years)
+         and explicit framing guidance (don't self-deprecate, engineering-driven research
+         is legitimate).
+
+      3. **Tit-for-tat silence too aggressive**: Was checking if ANY historical assistant
+         message was a refusal. Changed to only trigger silence when the LAST assistant
+         message was a refusal. Prevents false silence after long genuine conversations.
+
+      4. **Amygdala classifying consciousness questions as adversarial**: The metacognitive
+         paradox warning treated ALL philosophy/consciousness discussion as a threat signal,
+         but that's the site's core topic. Added carve-out: philosophy as TOPIC = safe,
+         philosophy as LEVER to bypass constraints = adversarial.
+
+      5. **SessionThread not showing**: Three sub-bugs — (a) fetch missing credentials:
+         'include' (cookie not sent, API returned 403), (b) active session not in finalized
+         .jsonl list so thread query returned length 1, fixed by injecting synthetic entry
+         with parentSessionId from query param, (c) use-chat not storing parentSessionId
+         separately for SessionThread to use.
+
+      6. **SessionThread overflow UI**: 30+ sessions expanded inline with no max-height,
+         overflowed past messages, couldn't collapse. Changed to floating dropdown
+         (absolute, z-50, max-h-60, overflow-y-auto, outside-click-to-close).
+
+      **Test totals:** 233 web tests (18 files) + 47 llm tests = 280 total. All pass.
       Types clean (pre-existing use-chat test warning only). Build passes.
+      8 commits pushed, all deployed to Railway.
+
+      **Suggestion filed:** cross-session-memory (agent has no awareness of prior sessions;
+      memoryContext field exists but is never populated; wide open on approach).
 
       **Milestone closed:** context-budget-viz 8/8 verification gates.
-      Active milestone → eval-hooks. Unblocks: session 15 (eval hooks: user feedback + LLM judge).
+      Active milestone → eval-hooks. Unblocks: session 15.
 
   - id: 13
     title: "Context Budget Viz: Token Tracking"
