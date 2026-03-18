@@ -38,6 +38,25 @@ models:
         data_tests:
           - not_null
 
+  - name: stg_feedback_events
+    description: "Cleaned user feedback events: ratings and categories on agent responses."
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+      - name: message_id
+        data_tests:
+          - not_null
+      - name: rating
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["positive", "negative"]
+      - name: category
+        data_tests:
+          - accepted_values:
+              values: ["inaccurate", "not_relevant", "incomplete", "harmful"]
+
   - name: stg_security_events
     description: "Cleaned security and operational events: sanitization, rate limits, spend, sessions, errors."
     columns:

@@ -14,6 +14,7 @@ import { ComparisonMode } from '@/components/ComparisonMode';
 import { SessionThread } from '@/components/SessionThread';
 import { ContextBudgetBar } from '@/components/ContextBudgetBar';
 import { ToolCallInline } from '@/components/ToolCallInline';
+import { JudgeScoreCard } from '@/components/JudgeScoreCard';
 import type { ChatMessage } from '@/lib/types';
 
 function renderToolCalls(message: ChatMessage) {
@@ -35,8 +36,11 @@ export default function Home() {
     messages, trace, liveRounds, isLoading, error,
     rateLimitStatus, spendStatus, securityEvents,
     sessionId, liveAmygdala, liveRouting, tokenBudget,
-    send, stop,
+    send, stop, submitFeedback,
   } = useChat();
+
+  // Get latest assistant message's judge scores for sidebar display
+  const latestAssistant = [...messages].reverse().find(m => m.role === 'assistant');
 
   return (
     <Layout
@@ -68,6 +72,13 @@ export default function Home() {
             messages={messages}
             isLoading={isLoading}
             renderToolCalls={renderToolCalls}
+            onFeedback={(payload) => {
+              submitFeedback(
+                payload.messageId,
+                payload.rating as 'positive' | 'negative',
+                payload.category as 'inaccurate' | 'not_relevant' | 'incomplete' | 'harmful' | undefined,
+              );
+            }}
           />
           {error && (
             <div className="border-t border-error/30 bg-error/10 px-4 py-2 text-sm text-error">
@@ -85,6 +96,9 @@ export default function Home() {
             sessionId={sessionId}
           />
           <TraceInspector trace={trace} liveRounds={liveRounds} />
+          {latestAssistant?.judgeScores && (
+            <JudgeScoreCard scores={latestAssistant.judgeScores} />
+          )}
           <SecurityEventLog events={securityEvents} />
         </>
       }

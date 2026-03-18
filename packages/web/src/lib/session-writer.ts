@@ -10,8 +10,9 @@
  * not through this interface.
  */
 
-import type { TraceEvent, AmygdalaTraceEvent, OrchestratorTraceEvent } from '@loopcommons/llm';
+import type { TraceEvent, AmygdalaTraceEvent, OrchestratorTraceEvent, JudgeScoreEvent } from '@loopcommons/llm';
 import type { BudgetSnapshot } from '@/lib/token-budget';
+import type { FeedbackEvent } from '@/lib/feedback';
 
 // ---------------------------------------------------------------------------
 // Session event: a TraceEvent (from LLM package) plus web-layer events
@@ -25,7 +26,9 @@ export type WebSessionEvent =
   | { type: 'spend:status'; currentSpendUsd: number; dailyCapUsd: number; remainingUsd: number; percentUsed: number; resetAtUtc: string; timestamp: number }
   | { type: 'security:input-sanitized'; reason: string; timestamp: number }
   | { type: 'security:input-rejected'; reason: string; timestamp: number }
-  | ({ type: 'token-budget:update'; timestamp: number } & BudgetSnapshot);
+  | ({ type: 'token-budget:update'; timestamp: number } & BudgetSnapshot)
+  | FeedbackEvent
+  | JudgeScoreEvent;
 
 /** Union of all events that can be persisted in a session.
  *  Includes LLM trace events, amygdala events, orchestrator events, and web events.

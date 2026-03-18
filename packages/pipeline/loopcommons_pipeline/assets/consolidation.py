@@ -136,6 +136,10 @@ def _flatten_events(raw_events: list[dict]) -> pl.DataFrame:
             "session_message_count": evt.get("summary", {}).get("messageCount") if isinstance(evt.get("summary"), dict) else None,
             "session_event_count": evt.get("summary", {}).get("eventCount") if isinstance(evt.get("summary"), dict) else None,
             "session_duration_ms": evt.get("summary", {}).get("durationMs") if isinstance(evt.get("summary"), dict) else None,
+            # Feedback fields
+            "feedback_message_id": evt.get("messageId") if evt.get("type") == "eval:feedback" else None,
+            "feedback_rating": evt.get("rating") if evt.get("type") == "eval:feedback" else None,
+            "feedback_category": evt.get("category") if evt.get("type") == "eval:feedback" else None,
             # Error
             "error_message": evt.get("error") if evt.get("type") == "error" else None,
             # Full event JSON for anything we didn't extract
@@ -212,6 +216,9 @@ _SCHEMA = {
     "session_message_count": pl.Int64,
     "session_event_count": pl.Int64,
     "session_duration_ms": pl.Int64,
+    "feedback_message_id": pl.Utf8,
+    "feedback_rating": pl.Utf8,
+    "feedback_category": pl.Utf8,
     "error_message": pl.Utf8,
     "raw_event_json": pl.Utf8,
 }

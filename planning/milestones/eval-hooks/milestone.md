@@ -37,11 +37,11 @@ CI Evals:
 
 ## Verification Gate
 
-- [ ] User feedback UI: thumbs up/down on every assistant message
-- [ ] Thumbs-down expands to category picker
-- [ ] Feedback events persisted to session JSONL
-- [ ] LLM-as-judge scores every response on ≥3 dimensions
-- [ ] Judge scores visible in trace inspector
+- [x] User feedback UI: thumbs up/down on every assistant message
+- [x] Thumbs-down expands to category picker
+- [x] Feedback events persisted to session JSONL
+- [x] LLM-as-judge scores every response on ≥3 dimensions
+- [x] Judge scores visible in trace inspector
 - [ ] CI eval tests catch prompt regressions
 - [ ] Feedback data flows through pipeline to training export
 - [ ] Evaluation dashboard visualizes feedback + judge score distributions

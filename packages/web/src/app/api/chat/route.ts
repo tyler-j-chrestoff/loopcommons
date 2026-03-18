@@ -1,4 +1,4 @@
-import { createAmygdala, createOrchestrator, createToolRegistry, LLMError } from '@loopcommons/llm';
+import { createAmygdala, createOrchestrator, createToolRegistry, createJudge, LLMError } from '@loopcommons/llm';
 import type { TraceEvent, TraceCollector } from '@loopcommons/llm';
 import { tools } from '@/tools';
 import { checkRateLimit, acquireConnection, releaseConnection, getClientIp, getRateLimitStatus } from '@/lib/rate-limit';
@@ -23,6 +23,7 @@ const amygdala = createAmygdala();
 const orchestrator = createOrchestrator();
 const toolRegistry = createToolRegistry(tools);
 const sessionWriter = new FileSessionWriter();
+const judge = process.env.ENABLE_LLM_JUDGE === 'true' ? createJudge() : null;
 
 /** Generate a short unique session ID (URL-safe, collision-resistant). */
 function generateSessionId(): string {
@@ -322,6 +323,36 @@ export async function POST(request: Request): Promise<Response> {
         ...budgetSnapshot,
         timestamp: Date.now(),
       });
+
+      // =====================================================================
+      // LLM-AS-JUDGE — async quality scoring (eval-11)
+      // =====================================================================
+      // Fire after response completes but before stream closes.
+      // Judge failure must never break the response flow.
+      if (judge && result.agentResult.message) {
+        try {
+          const assistantResponse = result.agentResult.message;
+          // Use a generated message ID for the judge (matches client-side msg ID pattern)
+          const messageId = `msg-${sessionId}-${Date.now()}`;
+          const judgeResult = await judge({
+            userMessage: rawForAmygdala,
+            assistantResponse,
+            messageId,
+            sessionId,
+          });
+          if (judgeResult.event) {
+            sendAndPersist(judgeResult.event as SessionEvent);
+            // Track judge cost in spend tracker
+            const judgeCost =
+              (judgeResult.event.cost.inputTokens * 1.0 +
+                judgeResult.event.cost.outputTokens * 5.0) /
+              1_000_000;
+            recordSpend(judgeCost);
+          }
+        } catch {
+          // Judge failure must never break the response
+        }
+      }
 
       // Record spend after successful completion (amygdala + subagent)
       recordSpend(amygdalaResult.cost + result.agentResult.cost);

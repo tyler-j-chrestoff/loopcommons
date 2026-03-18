@@ -8,9 +8,10 @@ type ChatThreadProps = {
   messages: ChatMessage[];
   isLoading: boolean;
   renderToolCalls?: (message: ChatMessage) => React.ReactNode;
+  onFeedback?: (payload: { messageId: string; sessionId: string; rating: 'positive' | 'negative'; category?: string }) => void;
 };
 
-export function ChatThread({ messages, isLoading, renderToolCalls }: ChatThreadProps) {
+export function ChatThread({ messages, isLoading, renderToolCalls, onFeedback }: ChatThreadProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export function ChatThread({ messages, isLoading, renderToolCalls }: ChatThreadP
     <div className="flex-1 overflow-y-auto p-4">
       <div className="mx-auto max-w-3xl space-y-4">
         {messages.map(msg => (
-          <MessageBubble key={msg.id} message={msg}>
+          <MessageBubble key={msg.id} message={msg} onFeedback={onFeedback}>
             {renderToolCalls?.(msg)}
           </MessageBubble>
         ))}

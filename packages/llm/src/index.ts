@@ -33,3 +33,5 @@ export type {
 } from './orchestrator';
 export { createOrchestrator } from './orchestrator';
 export type { OrchestratorConfig } from './orchestrator';
+export { createJudge } from './eval';
+export type { JudgeConfig, JudgeInput, JudgeResult, JudgeScoreEvent, JudgeScores } from './eval';

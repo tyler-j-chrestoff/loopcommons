@@ -618,4 +618,84 @@ describe('useChat', () => {
     expect(secondCallBody.messages[1]).toEqual({ role: 'assistant', content: 'First response' });
     expect(secondCallBody.messages[2]).toEqual({ role: 'user', content: 'Second message' });
   });
+
+  // 16. submitFeedback sends POST to /api/feedback
+  it('submitFeedback sends feedback to /api/feedback', async () => {
+    // First send a message to establish a session
+    fetchSpy.mockResolvedValue(
+      createSSEResponse([
+        { type: 'session:start', sessionId: 'sess-fb-test', timestamp: Date.now() },
+        { type: 'text-delta', delta: 'Hello', timestamp: Date.now() },
+        { type: 'done' },
+      ]),
+    );
+
+    const { result } = renderHook(() => useChat());
+
+    act(() => {
+      result.current.send('Hi');
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // Mock the feedback POST
+    fetchSpy.mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+
+    const msgId = result.current.messages[1].id;
+    await act(async () => {
+      await result.current.submitFeedback(msgId, 'positive');
+    });
+
+    // Verify fetch was called with the right payload
+    const feedbackCall = fetchSpy.mock.calls.find(
+      (c: unknown[]) => (c[0] as string) === '/api/feedback',
+    );
+    expect(feedbackCall).toBeDefined();
+    const feedbackBody = JSON.parse((feedbackCall![1] as RequestInit).body as string);
+    expect(feedbackBody).toEqual({
+      messageId: msgId,
+      sessionId: 'sess-fb-test',
+      rating: 'positive',
+    });
+
+    // Verify optimistic update: message should have feedback stored
+    const ratedMsg = result.current.messages.find(m => m.id === msgId);
+    expect(ratedMsg?.feedback).toEqual({ rating: 'positive' });
+  });
+
+  // 17. submitFeedback sends category for negative feedback
+  it('submitFeedback includes category for negative feedback', async () => {
+    fetchSpy.mockResolvedValue(
+      createSSEResponse([
+        { type: 'session:start', sessionId: 'sess-fb-neg', timestamp: Date.now() },
+        { type: 'text-delta', delta: 'Response', timestamp: Date.now() },
+        { type: 'done' },
+      ]),
+    );
+
+    const { result } = renderHook(() => useChat());
+
+    act(() => {
+      result.current.send('Hi');
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    fetchSpy.mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+
+    const msgId = result.current.messages[1].id;
+    await act(async () => {
+      await result.current.submitFeedback(msgId, 'negative', 'inaccurate');
+    });
+
+    const feedbackCall = fetchSpy.mock.calls.find(
+      (c: unknown[]) => (c[0] as string) === '/api/feedback',
+    );
+    const feedbackBody = JSON.parse((feedbackCall![1] as RequestInit).body as string);
+    expect(feedbackBody.category).toBe('inaccurate');
+  });
 });

@@ -42,6 +42,7 @@ sources:
                     - "trace:complete"
                     - "error"
                     - "done"
+                    - "eval:feedback"
           - name: timestamp_ms
             description: "Event timestamp in milliseconds since epoch"
             data_tests:

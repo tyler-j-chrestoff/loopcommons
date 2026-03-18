@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import type { Trace, Round } from '@loopcommons/llm';
 import type { ChatMessage, ChatSSEEvent, AmygdalaClassification, RoutingDecision } from './types';
 import type { BudgetSnapshot } from './token-budget';
+import type { FeedbackRating, FeedbackCategory } from './feedback';
 
 type RateLimitStatus = {
   remaining: number;
@@ -45,6 +46,7 @@ type UseChatReturn = {
   tokenBudget: BudgetSnapshot | null;
   send: (content: string) => void;
   stop: () => void;
+  submitFeedback: (messageId: string, rating: FeedbackRating, category?: FeedbackCategory) => Promise<void>;
 };
 
 let msgIdCounter = 0;
@@ -259,6 +261,11 @@ export function useChat(): UseChatReturn {
                 modelContextLimit: event.modelContextLimit,
                 turns: event.turns,
               });
+            } else if (event.type === 'eval:score') {
+              // Store judge scores on the assistant message
+              setMessages(prev => prev.map(m =>
+                m.id === assistantId ? { ...m, judgeScores: event.scores } : m
+              ));
             } else if (event.type === 'error') {
               setError(event.error);
             }
@@ -303,5 +310,20 @@ export function useChat(): UseChatReturn {
     })();
   }, [messages]);
 
-  return { messages, trace, liveRounds, isLoading, error, rateLimitStatus, spendStatus, securityEvents, sessionId, liveAmygdala, liveRouting, tokenBudget, send, stop };
+  const submitFeedback = useCallback(async (messageId: string, rating: FeedbackRating, category?: FeedbackCategory) => {
+    if (!sessionId) return;
+    // Optimistic update — show feedback immediately
+    setMessages(prev => prev.map(m =>
+      m.id === messageId ? { ...m, feedback: { rating, ...(category ? { category } : {}) } } : m
+    ));
+    const body: Record<string, string> = { messageId, sessionId, rating };
+    if (category) body.category = category;
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }, [sessionId]);
+
+  return { messages, trace, liveRounds, isLoading, error, rateLimitStatus, spendStatus, securityEvents, sessionId, liveAmygdala, liveRouting, tokenBudget, send, stop, submitFeedback };
 }

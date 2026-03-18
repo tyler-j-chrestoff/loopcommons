@@ -1,5 +1,6 @@
-import type { Round, Trace, ToolExecution, AmygdalaIntent, ThreatCategory } from '@loopcommons/llm';
+import type { Round, Trace, ToolExecution, AmygdalaIntent, ThreatCategory, JudgeScores } from '@loopcommons/llm';
 import type { BudgetSnapshot } from '@/lib/token-budget';
+import type { FeedbackRating, FeedbackCategory } from '@/lib/feedback';
 
 /** SSE events sent from POST /api/chat to the client */
 export type ChatSSEEvent =
@@ -26,6 +27,9 @@ export type ChatSSEEvent =
   | { type: 'orchestrator:context-filter'; totalMessages: number; delegatedMessages: number; deliveredMessages: number; usedSummary: boolean; annotations: Array<{ key: string; value: string }>; timestamp: number }
   // --- Token budget events ---
   | { type: 'token-budget:update'; timestamp: number } & BudgetSnapshot
+  // --- Eval events ---
+  | { type: 'eval:feedback'; messageId: string; sessionId: string; rating: FeedbackRating; category?: FeedbackCategory; timestamp: number }
+  | { type: 'eval:score'; messageId: string; sessionId: string; scores: JudgeScores; model: string; latencyMs: number; cost: { inputTokens: number; outputTokens: number }; timestamp: number }
   // --- Session events ---
   | { type: 'session:start'; sessionId: string; parentSessionId?: string; timestamp: number }
   | { type: 'session:complete'; sessionId: string; timestamp: number }
@@ -59,6 +63,12 @@ export type RoutingDecision = {
   usedSummary: boolean;
 };
 
+/** User feedback on an assistant message */
+export type MessageFeedback = {
+  rating: FeedbackRating;
+  category?: FeedbackCategory;
+};
+
 /** A chat message in the UI */
 export type ChatMessage = {
   id: string;
@@ -73,4 +83,8 @@ export type ChatMessage = {
   routing?: RoutingDecision;
   /** Session ID for this conversation */
   sessionId?: string;
+  /** User feedback (assistant messages only) */
+  feedback?: MessageFeedback;
+  /** LLM-as-judge scores (assistant messages only) */
+  judgeScores?: JudgeScores;
 };
