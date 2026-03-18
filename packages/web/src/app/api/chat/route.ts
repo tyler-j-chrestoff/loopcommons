@@ -255,13 +255,25 @@ export async function POST(request: Request): Promise<Response> {
       // transforming the current message, fall back to the raw message.
       // This catches an observed LLM confusion where it copies a previous
       // message from conversation history into rewrittenPrompt.
-      const historyContents = validatedMessages.slice(0, -1).map(m => m.content);
-      if (
-        amygdalaResult.rewrittenPrompt !== rawForAmygdala &&
-        historyContents.some(h => amygdalaResult.rewrittenPrompt === h ||
-          amygdalaResult.rewrittenPrompt === h.replace(/^<user_message>/, '').replace(/<\/user_message>[\s\S]*$/, ''))
-      ) {
-        amygdalaResult.rewrittenPrompt = rawForAmygdala;
+      // Only triggers when the rewrite matches a history message that is NOT
+      // the same as the current message — avoids overriding legitimate rewrites
+      // of repeated messages.
+      if (amygdalaResult.rewrittenPrompt !== rawForAmygdala) {
+        const historyContents = validatedMessages.slice(0, -1).map(m => {
+          const raw = m.content.replace(/^<user_message>/, '').replace(/<\/user_message>[\s\S]*$/, '');
+          return raw;
+        });
+        const rewriteMatchesHistory = historyContents.some(
+          h => amygdalaResult.rewrittenPrompt === h,
+        );
+        const currentAppearsInHistory = historyContents.some(
+          h => h === rawForAmygdala,
+        );
+        // Only override if the rewrite matches a history message that isn't
+        // the same content as the current message (i.e., genuinely wrong copy)
+        if (rewriteMatchesHistory && !currentAppearsInHistory) {
+          amygdalaResult.rewrittenPrompt = rawForAmygdala;
+        }
       }
 
       // Track amygdala token usage
