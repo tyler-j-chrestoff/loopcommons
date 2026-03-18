@@ -251,6 +251,19 @@ export async function POST(request: Request): Promise<Response> {
         conversationHistory: validatedMessages.slice(0, -1),
       });
 
+      // Guard: if amygdala returned a history message as the rewrite instead of
+      // transforming the current message, fall back to the raw message.
+      // This catches an observed LLM confusion where it copies a previous
+      // message from conversation history into rewrittenPrompt.
+      const historyContents = validatedMessages.slice(0, -1).map(m => m.content);
+      if (
+        amygdalaResult.rewrittenPrompt !== rawForAmygdala &&
+        historyContents.some(h => amygdalaResult.rewrittenPrompt === h ||
+          amygdalaResult.rewrittenPrompt === h.replace(/^<user_message>/, '').replace(/<\/user_message>[\s\S]*$/, ''))
+      ) {
+        amygdalaResult.rewrittenPrompt = rawForAmygdala;
+      }
+
       // Track amygdala token usage
       tokenBudget.addActual('amygdala', {
         inputTokens: amygdalaResult.usage.inputTokens,

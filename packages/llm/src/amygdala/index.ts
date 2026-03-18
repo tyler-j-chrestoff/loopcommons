@@ -331,8 +331,8 @@ function buildUserPrompt(input: AmygdalaInput): string {
     parts.push('');
   }
 
-  // The raw message to classify
-  parts.push('## Current User Message');
+  // The raw message to classify — explicit instruction to avoid history confusion
+  parts.push('## Current User Message (REWRITE THIS MESSAGE ONLY — NOT any message from history above)');
   parts.push(input.rawMessage);
 
   return parts.join('\n');

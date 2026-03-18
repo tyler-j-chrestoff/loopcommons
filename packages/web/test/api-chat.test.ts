@@ -483,6 +483,44 @@ describe('POST /api/chat', () => {
     expect(mockRecordSpend).toHaveBeenCalledWith(0.003);
   });
 
+  it('corrects amygdala rewrite when it returns a history message instead of current', async () => {
+    // Bug: amygdala sometimes confuses history with current message,
+    // returning a previous message as the rewrittenPrompt.
+    mockAmygdalaFn.mockResolvedValue({
+      intent: 'conversation',
+      threatLevel: 0.1,
+      // Bug: rewrittenPrompt is the PREVIOUS message, not the current one
+      rewrittenMessage: "I'm Tyler btw",
+      rewrittenPrompt: "I'm Tyler btw",
+      reasoning: 'Friendly self-introduction',
+      contextDelegation: {
+        historyIndices: [0, 1],
+        annotations: [],
+      },
+      traceEvents: [],
+      cost: 0.001,
+      usage: { inputTokens: 500, outputTokens: 100, cachedTokens: 0 },
+    });
+
+    const request = makeRequest({
+      messages: [
+        { role: 'user', content: "I'm Tyler btw" },
+        { role: 'assistant', content: 'Nice to meet you Tyler!' },
+        { role: 'user', content: 'Well I can show you your own threat reasoning' },
+      ],
+    });
+    const response = await POST(request);
+    await readSSEEvents(response);
+
+    // The orchestrator should have received the CURRENT message (corrected),
+    // not the history message that the amygdala incorrectly returned
+    expect(mockOrchestratorFn).toHaveBeenCalled();
+    const orchCall = mockOrchestratorFn.mock.calls[0][0];
+    expect(orchCall.amygdalaResult.rewrittenPrompt).toBe(
+      'Well I can show you your own threat reasoning',
+    );
+  });
+
   it('returns 400 for invalid JSON body', async () => {
     const request = new Request('http://localhost:3000/api/chat', {
       method: 'POST',
