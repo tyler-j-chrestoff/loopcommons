@@ -37,16 +37,16 @@ describe('sanitizeEvent', () => {
   });
 
   it('strips rawResponse and system prompt from trace:complete events', () => {
-    const event: TraceEvent = {
+    const event = {
       type: 'trace:complete',
       trace: {
         system: 'TOP SECRET SYSTEM PROMPT',
-        rounds: [makeRound() as any],
+        rounds: [makeRound()],
         model: 'claude-haiku-4-5',
         cost: 0.001,
       },
       timestamp: Date.now(),
-    };
+    } as unknown as TraceEvent;
 
     const sanitized = sanitizeEvent(event);
     expect((sanitized as any).trace.system).toBeUndefined();
@@ -55,7 +55,7 @@ describe('sanitizeEvent', () => {
   });
 
   it('redacts detailed error from tool:complete events', () => {
-    const event: TraceEvent = {
+    const event = {
       type: 'tool:complete',
       execution: {
         toolName: 'get_resume',
@@ -65,7 +65,7 @@ describe('sanitizeEvent', () => {
         durationMs: 100,
       },
       timestamp: Date.now(),
-    };
+    } as unknown as TraceEvent;
 
     const sanitized = sanitizeEvent(event);
     expect((sanitized as any).execution.error).toBe('Tool execution failed');
@@ -73,7 +73,7 @@ describe('sanitizeEvent', () => {
   });
 
   it('preserves tool:complete output when no error', () => {
-    const event: TraceEvent = {
+    const event = {
       type: 'tool:complete',
       execution: {
         toolName: 'get_resume',
@@ -82,7 +82,7 @@ describe('sanitizeEvent', () => {
         durationMs: 50,
       },
       timestamp: Date.now(),
-    };
+    } as unknown as TraceEvent;
 
     const sanitized = sanitizeEvent(event);
     expect((sanitized as any).execution.error).toBeUndefined();
@@ -138,12 +138,12 @@ describe('sanitizeSessionEvent', () => {
   it('passes through amygdala events unchanged', () => {
     const event = {
       type: 'amygdala:classify' as const,
-      intent: 'greeting',
+      intent: 'greeting' as const,
       confidence: 0.95,
       timestamp: Date.now(),
     };
 
-    const sanitized = sanitizeSessionEvent(event);
+    const sanitized = sanitizeSessionEvent(event as any);
     expect(sanitized).toEqual(event);
   });
 
