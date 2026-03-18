@@ -6,7 +6,7 @@
     "watchPatterns": ["packages/web/**", "packages/llm/**"]
   },
   "deploy": {
-    "startCommand": "npm run start --workspace=packages/web",
+    "startCommand": "cp -r packages/web/.next/static packages/web/.next/standalone/packages/web/.next/static && node packages/web/.next/standalone/packages/web/server.js",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
