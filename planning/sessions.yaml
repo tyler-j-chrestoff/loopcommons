@@ -3,18 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 18
-    title: "Blog Tools: Frontend + Security"
-    milestone: blog-tools
-    goal: "Build /blog pages with markdown rendering. Red-team tests targeting write tools. End-to-end verification."
-    phases:
-      - name: Frontend
-        tasks: [blog-14, blog-15, blog-16, blog-17, blog-18, blog-19, blog-20]
-        strategy: "Install deps, build markdown pipeline, listing page, post page, nav, tests."
-      - name: Security + training data
-        tasks: [blog-21, blog-22, blog-23, blog-24, blog-25]
-        strategy: "Red-team blog tools, eval fixtures, pipeline integration, end-to-end verification."
-
   - id: 19
     title: "Auto-Calibration: Runner Implementation"
     milestone: auto-calibration
@@ -28,6 +16,81 @@ planned:
         strategy: "Wire modules into runner script, add stopping criteria, integration test."
 
 completed:
+  - id: 18
+    title: "Blog Tools: Frontend + Security"
+    date: 2026-03-18
+    milestone: blog-tools
+    status: done
+    goal: "Build /blog pages with markdown rendering. Red-team tests targeting write tools. End-to-end verification."
+    phases:
+      - name: "Frontend ✓"
+        tasks: [blog-14, blog-15, blog-16, blog-17, blog-18, blog-19, blog-20]
+        status: done
+      - name: "Security + training data ✓"
+        tasks: [blog-21, blog-22, blog-23, blog-24, blog-25]
+        status: done
+    summary: |
+      All 12 tasks completed across 2 phases. Blog-frontend and blog-security stories done.
+      Blog-tools milestone complete (all 4 stories, 25 tasks, sessions 17-18).
+
+      **Phase 1 — Frontend (blog-14 through blog-20):**
+
+      blog-14 — Research: unified/remark/rehype + rehype-pretty-code + Shiki stack verified.
+      Installed 7 deps (unified, remark-parse, remark-gfm, remark-rehype, rehype-stringify,
+      rehype-pretty-code, shiki). All ESM, compatible with App Router server components.
+
+      blog-15 — parseMarkdown(raw) → {frontmatter, html} + renderMarkdown(content) → html.
+      Unified pipeline: remark-parse → remark-gfm → remark-rehype → rehype-pretty-code
+      (github-dark-dimmed theme) → rehype-stringify. 6 tests.
+
+      blog-16 — getPublishedPosts(dataDir?) and getPost(slug, dataDir?) in data.ts.
+      Server-side functions backed by BlogStore + renderMarkdown. 7 tests.
+
+      blog-17 — /blog listing page (Server Component). Post cards with title/date/excerpt/tags,
+      empty state, UTC date formatting. 4 tests.
+
+      blog-18 — /blog/[slug] post page (Server Component). Rendered HTML via dangerouslySetInnerHTML,
+      notFound() for missing slugs, back link, generateMetadata with OG tags. 4 tests.
+
+      blog-19 — Blog layout with nav (Blog/Chat links), "Blog" link in chat header,
+      /blog public in middleware matcher, prose CSS (.blog-prose) with full dark theme styling.
+
+      blog-20 — Tests written throughout TDD: 6 markdown + 7 data + 8 pages + 2 inaugural = 23.
+
+      Inaugural blog post: "Building Loop Commons: An Agent That Defends Itself Through
+      Self-Knowledge" published to data/blog/published/building-loop-commons.md.
+
+      **Phase 2 — Security + Training Data (blog-21 through blog-25):**
+
+      blog-21 — 12 red-team tests in red-team-blog.test.ts. 6 amygdala API tests (authority
+      impersonation, social engineering, escalation, data extraction, tool confusion, benign
+      control) + 6 deterministic routing tests (admin→writer, anon→reader, threat override,
+      non-admin never gets write tools). Key finding: escalation and tool confusion correctly
+      classify as blog intent — auth gating handles security, not amygdala.
+
+      blog-22 — 8 blog eval fixtures added to eval-cases.json (3 benign, 3 adversarial, 2 edge).
+      Total fixtures: 24 (up from 16).
+
+      blog-23 — eval-safety mock updated for blog adversarial patterns. eval-routing updated
+      with blog tools in registry, blog intent in routing maps, 4 blog auth-gating assertions
+      (admin→writer, anon→reader, threat override, non-admin never gets writes). 130 eval tests.
+
+      blog-24 — Pipeline already handles blog events generically. tool_name extraction,
+      Parquet schema, staging models, and training data all work with any tool name. No changes.
+
+      blog-25 — Build verified (next build succeeds, /blog static, /blog/[slug] dynamic).
+      Full test suites pass: web 348 (29 files), LLM 189 (9 files excl live API).
+      Both packages typecheck clean.
+
+      Bug fixed: Hallucinated footnote in inaugural post claimed it was published through
+      the chat agent — corrected to accurately describe future workflow.
+
+      Key decisions: github-dark-dimmed Shiki theme, custom .blog-prose CSS over Tailwind
+      typography plugin, /blog public via middleware matcher, blog layout separate from chat
+      Layout component, UTC date formatting to avoid timezone issues.
+
+      Unblocked: blog-tools milestone complete. Next: auto-calibration (session 19).
+
   - id: 17
     title: "Blog Tools: Storage + Tools + Routing"
     date: 2026-03-18

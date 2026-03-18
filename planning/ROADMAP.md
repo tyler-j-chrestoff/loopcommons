@@ -2,19 +2,19 @@
 
 Loop Commons is a live research platform and open-source training data pipeline. A substrate-aware conversational agent that defends itself through self-knowledge, with every decision traced, visualized, and exported as labeled training data for open-source language models.
 
-**Active milestone**: [blog-tools](milestones/blog-tools/) — Agent-as-CMS blog with auth-gated write tools. The first real security boundary.
+**Active milestone**: [auto-calibration](milestones/auto-calibration/) — Automated amygdala prompt optimization (propose/test/keep/revert). Runs against blog tools for real-stakes training data.
 
 ## Now
 
-- **[blog-tools](milestones/blog-tools/)** — Blog where Tyler publishes through the same chat agent every visitor uses. Real write tools defended by amygdala + auth gating. Generates dual-labeled training data (amygdala reasoning + deterministic auth). 4 stories, 25 tasks.
+- **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Runs against blog tools for real-stakes training data. ~$1.30 per full run. 2 stories, 15 tasks (3 done).
 
 ## Next
 
-- **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Runs against blog tools for real-stakes training data. ~$1.30 per full run. 2 stories, 15 tasks (3 done).
 - **eval-hooks completion** — Remaining eval-hooks gates: feedback data flows through pipeline to training export, evaluation dashboard. 2 open gates.
 
 ## Done
 
+- **[blog-tools](milestones/blog-tools/)** — Agent-as-CMS blog with auth-gated write tools. The first real security boundary. 4 stories (25 tasks), 2 sessions. Completed 2026-03-18.
 - **[eval-hooks](milestones/eval-hooks/)** — User feedback, LLM-as-judge, CI eval regression testing. 3 stories (22 tasks), 2 sessions. Core complete 2026-03-18 (6/8 gates; 2 remaining gates moved to backlog).
 - **[context-budget-viz](milestones/context-budget-viz/)** — Novel real-time context window budget visualization. 2 stories, 12 tasks, 2 sessions. Completed 2026-03-18.
 - **[deploy-ops](milestones/deploy-ops/)** — Deploy to Railway, session linking, web test expansion. 3 stories, 24 tasks, 2 sessions. Completed 2026-03-18.
