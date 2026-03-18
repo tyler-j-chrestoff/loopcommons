@@ -346,7 +346,7 @@ describe('SessionThread', () => {
     const { SessionThread } = await import('@/components/SessionThread');
     render(<SessionThread sessionId="abc-123" />);
 
-    const toggle = await screen.findByText(/Thread \(2 sessions\)/);
+    const toggle = await screen.findByText(/Thread \(2\)/);
     expect(toggle).toBeInTheDocument();
   });
 });

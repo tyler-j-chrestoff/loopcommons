@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type ThreadSession = {
   id: string;
@@ -19,6 +19,19 @@ export function SessionThread({ sessionId }: SessionThreadProps) {
   const [thread, setThread] = useState<ThreadSession[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!expanded) return;
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [expanded]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -26,8 +39,6 @@ export function SessionThread({ sessionId }: SessionThreadProps) {
     let cancelled = false;
     setLoading(true);
 
-    // Include parentSessionId so the API can build the thread even if
-    // the current session isn't finalized to disk yet
     let parentId: string | null = null;
     try {
       parentId = localStorage.getItem('parentSessionId');
@@ -44,9 +55,7 @@ export function SessionThread({ sessionId }: SessionThreadProps) {
           setThread(data.thread);
         }
       })
-      .catch(() => {
-        // Thread fetch is non-critical — silently ignore
-      })
+      .catch(() => {})
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
@@ -56,47 +65,38 @@ export function SessionThread({ sessionId }: SessionThreadProps) {
     };
   }, [sessionId]);
 
-  // Only show if there's a thread with more than one session
   if (!sessionId || thread.length <= 1) return null;
 
   return (
-    <div className="text-xs">
+    <div className="relative text-xs" ref={containerRef}>
       <button
         onClick={() => setExpanded(!expanded)}
         className="flex items-center gap-1 text-text-secondary hover:text-text transition-colors"
       >
         <span>{expanded ? '\u25BC' : '\u25B6'}</span>
-        <span>Thread ({thread.length} sessions)</span>
+        <span>Thread ({thread.length})</span>
         {loading && <span className="text-text-muted">...</span>}
       </button>
 
       {expanded && (
-        <div className="mt-1 ml-3 flex flex-col gap-0.5">
-          {thread.map((s, i) => {
+        <div className="absolute top-full left-0 z-50 mt-1 w-64 max-h-60 overflow-y-auto rounded-lg border border-border bg-bg-surface shadow-lg">
+          {thread.map((s) => {
             const isCurrent = s.id === sessionId;
             return (
               <div
                 key={s.id}
-                className={`flex items-center gap-2 rounded px-1.5 py-0.5 ${
+                className={`flex items-center gap-2 px-3 py-1.5 ${
                   isCurrent
                     ? 'bg-accent/10 text-text'
-                    : 'text-text-muted hover:text-text-secondary'
+                    : 'text-text-muted hover:bg-bg-hover hover:text-text-secondary cursor-pointer'
                 }`}
+                onClick={!isCurrent ? () => window.open(`/api/sessions/${s.id}`, '_blank') : undefined}
               >
-                <span className="font-mono">{s.id.slice(0, 8)}</span>
-                <span className="text-text-muted">{s.date}</span>
-                <span className="text-text-muted">{s.messageCount}m</span>
+                <span className="font-mono shrink-0">{s.id.slice(0, 8)}</span>
+                <span className="shrink-0">{s.date}</span>
+                <span className="shrink-0">{s.messageCount}m</span>
                 {isCurrent && (
-                  <span className="text-accent text-[10px]">current</span>
-                )}
-                {!isCurrent && (
-                  <button
-                    onClick={() => window.open(`/api/sessions/${s.id}`, '_blank')}
-                    className="text-text-muted hover:text-text-secondary"
-                    title="View session JSON"
-                  >
-                    JSON
-                  </button>
+                  <span className="text-accent text-[10px] ml-auto">current</span>
                 )}
               </div>
             );
