@@ -8,13 +8,16 @@
 
 export const runtime = 'nodejs';
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { checkApiKey } from '@/lib/api-auth';
 
 const METRICS_PATH = resolve(process.cwd(), '../../data/warehouse/metrics.json');
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authError = checkApiKey(request);
+  if (authError) return authError;
   if (!existsSync(METRICS_PATH)) {
     return NextResponse.json(
       { accuracy: null, regime: null },

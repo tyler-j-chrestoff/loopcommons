@@ -13,12 +13,16 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { FileSessionWriter } from '@/lib/session/file-session-writer';
+import { checkApiKey } from '@/lib/api-auth';
 
 const writer = new FileSessionWriter();
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function GET(request: NextRequest) {
+  const authError = checkApiKey(request);
+  if (authError) return authError;
+
   const params = request.nextUrl.searchParams;
 
   // --- date validation ---

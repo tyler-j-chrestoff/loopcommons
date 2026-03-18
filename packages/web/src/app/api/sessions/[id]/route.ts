@@ -15,6 +15,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { FileSessionWriter } from '@/lib/session/file-session-writer';
 import { sanitizeSessionEvent } from '@/lib/sanitize-event';
+import { checkApiKey } from '@/lib/api-auth';
 import type { SessionEvent } from '@/lib/session-writer';
 
 const writer = new FileSessionWriter();
@@ -22,9 +23,12 @@ const writer = new FileSessionWriter();
 const SESSION_ID_RE = /^[a-zA-Z0-9-]+$/;
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authError = checkApiKey(request);
+  if (authError) return authError;
+
   const { id } = await params;
 
   // --- validate session ID format (path traversal prevention) ---
