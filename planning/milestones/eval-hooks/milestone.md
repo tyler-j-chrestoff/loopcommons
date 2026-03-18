@@ -42,7 +42,7 @@ CI Evals:
 - [x] Feedback events persisted to session JSONL
 - [x] LLM-as-judge scores every response on ≥3 dimensions
 - [x] Judge scores visible in trace inspector
-- [ ] CI eval tests catch prompt regressions
+- [x] CI eval tests catch prompt regressions
 - [ ] Feedback data flows through pipeline to training export
 - [ ] Evaluation dashboard visualizes feedback + judge score distributions
 

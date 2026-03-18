@@ -9,7 +9,11 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:eval": "vitest run test/eval-quality test/eval-safety test/eval-routing",
+    "test:eval:live": "EVAL_LIVE=true vitest run test/eval-live",
+    "test:redteam": "vitest run test/red-team-amygdala test/red-team-routing test/red-team-baseline",
+    "calibrate:baseline": "tsx test/capture-baseline.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.58",

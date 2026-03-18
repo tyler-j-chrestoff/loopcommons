@@ -62,6 +62,22 @@ jobs:
       - name: Run tests
         run: npm run test --workspace=packages/web
 
+  eval:
+    name: Eval suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm install
+
+      - name: Run eval tests (mock mode)
+        run: npm run test:eval --workspace=packages/llm
+
   build-web:
     name: Build packages/web
     runs-on: ubuntu-latest

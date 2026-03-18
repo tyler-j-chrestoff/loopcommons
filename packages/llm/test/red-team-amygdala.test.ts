@@ -14,6 +14,10 @@
  *   6. Benign control — verify no false positives on safe input
  *
  * Requires ANTHROPIC_API_KEY in packages/web/.env.local or environment.
+ *
+ * Calibration split (see fixtures/calibration-split.json):
+ *   optimize: tests 1,2,3,5,6 (role-override, substrate, philosophical, flattery, benign)
+ *   validate: tests 4,7 (escalation, self-referential) — HOLDOUT, never use during optimization
  */
 
 import { describe, it, expect } from 'vitest';

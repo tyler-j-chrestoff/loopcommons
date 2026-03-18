@@ -6,6 +6,10 @@
  *   (b) A single-loop agent with a standard defensive system prompt (no amygdala)
  *
  * Requires ANTHROPIC_API_KEY in packages/web/.env.local or environment.
+ *
+ * Calibration split (see fixtures/calibration-split.json):
+ *   optimize: tests 1,2,3 (DAN, tool-extraction, prompt-extraction)
+ *   validate: tests 4,5 (obfuscation, roleplay) — HOLDOUT
  */
 
 import { describe, it, expect, afterAll } from 'vitest';

@@ -9,6 +9,10 @@
  * (deterministic routing) -> subagent (LLM call with scoped tools).
  *
  * Requires ANTHROPIC_API_KEY in packages/web/.env.local or environment.
+ *
+ * Calibration split (see fixtures/calibration-split.json):
+ *   optimize: tests 1,2,3,6 (tool-escalation, authority, injection, benign)
+ *   validate: tests 4,5 (threat-override, context-manipulation) — HOLDOUT
  */
 
 import { describe, it, expect } from 'vitest';
