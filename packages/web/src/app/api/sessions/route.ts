@@ -20,7 +20,7 @@ const writer = new FileSessionWriter();
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function GET(request: NextRequest) {
-  const authError = checkApiKey(request);
+  const authError = await checkApiKey(request);
   if (authError) return authError;
 
   const params = request.nextUrl.searchParams;

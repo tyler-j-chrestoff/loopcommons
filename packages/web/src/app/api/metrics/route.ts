@@ -16,7 +16,7 @@ import { checkApiKey } from '@/lib/api-auth';
 const METRICS_PATH = resolve(process.cwd(), '../../data/warehouse/metrics.json');
 
 export async function GET(request: NextRequest) {
-  const authError = checkApiKey(request);
+  const authError = await checkApiKey(request);
   if (authError) return authError;
   if (!existsSync(METRICS_PATH)) {
     return NextResponse.json(

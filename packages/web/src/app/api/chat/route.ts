@@ -6,6 +6,7 @@ import { sanitizeInput, containsRoleSpoofing } from '@/lib/sanitize';
 import { canSpend, recordSpend, getSpendStatus } from '@/lib/spend-tracker';
 import { sanitizeEvent } from '@/lib/sanitize-event';
 import { FileSessionWriter } from '@/lib/session/file-session-writer';
+import { auth } from '@/auth';
 import type { SessionEvent } from '@/lib/session-writer';
 
 export const runtime = 'nodejs';
@@ -33,6 +34,12 @@ function generateSessionId(): string {
 // The orchestrator builds per-subagent system prompts from the registry configs.
 
 export async function POST(request: Request): Promise<Response> {
+  // --- Auth check ---
+  const session = await auth();
+  if (!session) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   // --- Rate limiting & concurrency guard ---
   const ip = getClientIp(request);
 
