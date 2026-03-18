@@ -11,6 +11,8 @@ import { RateLimitIndicator } from '@/components/RateLimitIndicator';
 import { SpendGauge } from '@/components/SpendGauge';
 import { SecurityEventLog } from '@/components/SecurityEventLog';
 import { ComparisonMode } from '@/components/ComparisonMode';
+import { SessionThread } from '@/components/SessionThread';
+import { ContextBudgetBar } from '@/components/ContextBudgetBar';
 import { ToolCallInline } from '@/components/ToolCallInline';
 import type { ChatMessage } from '@/lib/types';
 
@@ -32,7 +34,7 @@ export default function Home() {
   const {
     messages, trace, liveRounds, isLoading, error,
     rateLimitStatus, spendStatus, securityEvents,
-    sessionId, liveAmygdala, liveRouting,
+    sessionId, liveAmygdala, liveRouting, tokenBudget,
     send, stop,
   } = useChat();
 
@@ -45,6 +47,7 @@ export default function Home() {
           <CostDashboard messages={messages} />
           {sessionId && (
             <div className="ml-auto flex items-center gap-2 text-xs text-text-muted">
+              <SessionThread sessionId={sessionId} />
               <span className="font-mono">{sessionId}</span>
               <button
                 onClick={() => {
@@ -60,6 +63,7 @@ export default function Home() {
       }
       main={
         <>
+          <ContextBudgetBar snapshot={tokenBudget} isStreaming={isLoading} />
           <ChatThread
             messages={messages}
             isLoading={isLoading}

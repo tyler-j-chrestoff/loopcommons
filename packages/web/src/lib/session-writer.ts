@@ -11,6 +11,7 @@
  */
 
 import type { TraceEvent, AmygdalaTraceEvent, OrchestratorTraceEvent } from '@loopcommons/llm';
+import type { BudgetSnapshot } from '@/lib/token-budget';
 
 // ---------------------------------------------------------------------------
 // Session event: a TraceEvent (from LLM package) plus web-layer events
@@ -18,12 +19,13 @@ import type { TraceEvent, AmygdalaTraceEvent, OrchestratorTraceEvent } from '@lo
 
 /** Events the web layer adds on top of LLM trace events. */
 export type WebSessionEvent =
-  | { type: 'session:start'; sessionId: string; timestamp: number }
+  | { type: 'session:start'; sessionId: string; parentSessionId?: string; timestamp: number }
   | { type: 'session:complete'; sessionId: string; summary: SessionSummary; timestamp: number }
   | { type: 'rate-limit:status'; remaining: number; limit: number; activeConnections: number; concurrencyLimit: number; resetMs: number; timestamp: number }
   | { type: 'spend:status'; currentSpendUsd: number; dailyCapUsd: number; remainingUsd: number; percentUsed: number; resetAtUtc: string; timestamp: number }
   | { type: 'security:input-sanitized'; reason: string; timestamp: number }
-  | { type: 'security:input-rejected'; reason: string; timestamp: number };
+  | { type: 'security:input-rejected'; reason: string; timestamp: number }
+  | ({ type: 'token-budget:update'; timestamp: number } & BudgetSnapshot);
 
 /** Union of all events that can be persisted in a session.
  *  Includes LLM trace events, amygdala events, orchestrator events, and web events.
@@ -44,6 +46,8 @@ export type SessionSummary = {
   eventCount: number;
   /** Wall-clock duration from first to last event, in ms */
   durationMs: number;
+  /** ID of the parent session (for multi-turn conversation threads) */
+  parentSessionId?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -74,7 +78,7 @@ export interface SessionWriter {
    * Initialize a new session. Must be called before append().
    * Creates any necessary storage structures (directories, temp files, etc.).
    */
-  create(sessionId: string): Promise<void>;
+  create(sessionId: string, options?: { parentSessionId?: string }): Promise<void>;
 
   /**
    * Append a single event to the session.

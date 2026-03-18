@@ -6,6 +6,7 @@ import { sanitizeInput, containsRoleSpoofing } from '@/lib/sanitize';
 import { canSpend, recordSpend, getSpendStatus } from '@/lib/spend-tracker';
 import { sanitizeEvent } from '@/lib/sanitize-event';
 import { FileSessionWriter } from '@/lib/session/file-session-writer';
+import { TokenBudgetAccumulator } from '@/lib/token-budget';
 import { auth } from '@/auth';
 import type { SessionEvent } from '@/lib/session-writer';
 
@@ -151,6 +152,10 @@ export async function POST(request: Request): Promise<Response> {
 
   // --- Session setup ---
   const sessionId = generateSessionId();
+  const parentSessionId = request.headers.get('X-Parent-Session-Id') || undefined;
+
+  // --- Token budget tracking ---
+  const tokenBudget = new TokenBudgetAccumulator();
 
   const stream = new TransformStream();
   const writer = stream.writable.getWriter();
@@ -195,12 +200,13 @@ export async function POST(request: Request): Promise<Response> {
   (async () => {
     try {
       // Initialize session persistence
-      await sessionWriter.create(sessionId);
+      await sessionWriter.create(sessionId, { parentSessionId });
 
       // Emit session:start as the very first event
       sendAndPersist({
         type: 'session:start',
         sessionId,
+        ...(parentSessionId ? { parentSessionId } : {}),
         timestamp: Date.now(),
       });
 
@@ -245,6 +251,13 @@ export async function POST(request: Request): Promise<Response> {
         conversationHistory: validatedMessages.slice(0, -1),
       });
 
+      // Track amygdala token usage
+      tokenBudget.addActual('amygdala', {
+        inputTokens: amygdalaResult.usage.inputTokens,
+        outputTokens: amygdalaResult.usage.outputTokens,
+        cacheReadTokens: amygdalaResult.usage.cachedTokens ?? 0,
+      });
+
       // Emit amygdala trace events — these are educational, show every decision
       for (const event of amygdalaResult.traceEvents) {
         sendAndPersist(event as SessionEvent);
@@ -268,6 +281,22 @@ export async function POST(request: Request): Promise<Response> {
       // Persist orchestrator trace events (already sent via collector for
       // the agent events, but orchestrator:route and orchestrator:context-filter
       // were emitted directly to the collector by the orchestrator)
+
+      // Track subagent token usage
+      const subagentUsage = result.agentResult.usage;
+      tokenBudget.addActual('subagent', {
+        inputTokens: subagentUsage.inputTokens,
+        outputTokens: subagentUsage.outputTokens,
+        cacheReadTokens: subagentUsage.cachedTokens ?? 0,
+      });
+
+      // Emit token budget update
+      const budgetSnapshot = tokenBudget.getSnapshot();
+      sendAndPersist({
+        type: 'token-budget:update' as const,
+        ...budgetSnapshot,
+        timestamp: Date.now(),
+      });
 
       // Record spend after successful completion (amygdala + subagent)
       recordSpend(amygdalaResult.cost + result.agentResult.cost);

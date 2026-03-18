@@ -29,6 +29,7 @@ import type {
 
 type ActiveSession = {
   sessionId: string;
+  parentSessionId?: string;
   date: string; // YYYY-MM-DD
   tmpPath: string;
   finalPath: string;
@@ -78,7 +79,7 @@ export class FileSessionWriter implements SessionWriter {
   // create
   // -----------------------------------------------------------------------
 
-  async create(sessionId: string): Promise<void> {
+  async create(sessionId: string, options?: { parentSessionId?: string }): Promise<void> {
     const now = Date.now();
     const date = toDateString(now);
     const dir = path.join(this.basePath, date);
@@ -93,6 +94,7 @@ export class FileSessionWriter implements SessionWriter {
 
     this.sessions.set(sessionId, {
       sessionId,
+      parentSessionId: options?.parentSessionId,
       date,
       tmpPath,
       finalPath,
@@ -140,6 +142,7 @@ export class FileSessionWriter implements SessionWriter {
       messageCount: session.messageCount,
       eventCount: session.eventCount + 1, // +1 for the session:complete event we're about to write
       durationMs,
+      ...(session.parentSessionId ? { parentSessionId: session.parentSessionId } : {}),
     };
 
     // Append the final session:complete event

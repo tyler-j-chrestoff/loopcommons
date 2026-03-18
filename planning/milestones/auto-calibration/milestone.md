@@ -6,7 +6,7 @@
 
 Implement an automated propose → test → evaluate → keep/revert loop for optimizing the amygdala system prompt. Inspired by Karpathy's autoresearch pattern: an agent modifies a single file (the system prompt), runs a fixed evaluation battery, and keeps improvements or reverts. ~$2-8 per full optimization run.
 
-This closes the feedback loop: session data → pipeline → metrics → calibration → better prompt → better session data.
+This closes the feedback loop: session data → pipeline → metrics → calibration → better prompt → better session data. The calibrator maintains typed memories (observations, learnings, reflections) across runs, so it develops judgment about which edits work and which prompt regions are fragile — inspired by mmogit's StructuredMemory protocol.
 
 ## Research Findings
 

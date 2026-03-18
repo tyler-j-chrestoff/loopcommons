@@ -1,6 +1,6 @@
 # Milestone: Context Window Budget Visualization
 
-**Status**: planned
+**Status**: done
 
 ## Summary
 
@@ -38,14 +38,14 @@ Viz component:
 
 ## Verification Gate
 
-- [ ] Research: token counting approaches verified against live API
-- [ ] Server tracks cumulative token usage across conversation turns
-- [ ] Token budget data sent to client via SSE events
-- [ ] ContextBudgetBar component shows real-time fill level in chat UI
-- [ ] Per-message token breakdown accessible (hover or click)
-- [ ] Cost overlay (estimated $ spent on this conversation)
-- [ ] Visualization handles edge cases: tool calls, amygdala overhead, cached tokens
-- [ ] Component tested (unit + visual verification)
+- [x] Research: token counting approaches verified against live API
+- [x] Server tracks cumulative token usage across conversation turns
+- [x] Token budget data sent to client via SSE events
+- [x] ContextBudgetBar component shows real-time fill level in chat UI
+- [x] Per-message token breakdown accessible (hover or click)
+- [x] Cost overlay (estimated $ spent on this conversation)
+- [x] Visualization handles edge cases: tool calls, amygdala overhead, cached tokens
+- [x] Component tested (unit + visual verification)
 
 ## Stories
 

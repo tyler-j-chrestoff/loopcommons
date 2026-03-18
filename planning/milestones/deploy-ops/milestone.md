@@ -1,6 +1,6 @@
 # Milestone: Deploy + Ops
 
-**Status**: planned
+**Status**: done
 
 ## Summary
 
@@ -29,14 +29,14 @@ Session A (initial visit)
 
 ## Verification Gate
 
-- [ ] App accessible at public URL
-- [ ] Persistent volume survives container restarts (session JSONL files persist)
-- [ ] Amygdala pipeline works in production (amygdala → orchestrator → subagent)
-- [ ] Rate limiting and spend cap functional in production
-- [ ] Session linking: new sessions can reference a parent session ID
-- [ ] Session thread visible in UI (linked conversation chain)
-- [ ] Web test coverage ≥80% of routes and lib modules
-- [ ] CI passes on all PRs (typecheck + test-llm + test-web + build-web)
+- [x] App accessible at public URL (session 11)
+- [x] Persistent volume survives container restarts (session 11)
+- [x] Amygdala pipeline works in production (session 11)
+- [x] Rate limiting and spend cap functional in production (session 11)
+- [x] Session linking: new sessions can reference a parent session ID (session 12)
+- [x] Session thread visible in UI (linked conversation chain) (session 12)
+- [x] Web test coverage ≥80% of routes and lib modules (session 12: 86.7% lines, 91.4% lib stmts)
+- [x] CI passes on all PRs (session 11)
 
 ## Stories
 

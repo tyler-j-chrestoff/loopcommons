@@ -1,4 +1,5 @@
 import type { Round, Trace, ToolExecution, AmygdalaIntent, ThreatCategory } from '@loopcommons/llm';
+import type { BudgetSnapshot } from '@/lib/token-budget';
 
 /** SSE events sent from POST /api/chat to the client */
 export type ChatSSEEvent =
@@ -23,8 +24,10 @@ export type ChatSSEEvent =
   // --- Orchestrator events (routing + context filtering) ---
   | { type: 'orchestrator:route'; subagentId: string; subagentName: string; intent: AmygdalaIntent; threatOverride: boolean; threatScore: number; allowedTools: string[]; reasoning: string; timestamp: number }
   | { type: 'orchestrator:context-filter'; totalMessages: number; delegatedMessages: number; deliveredMessages: number; usedSummary: boolean; annotations: Array<{ key: string; value: string }>; timestamp: number }
+  // --- Token budget events ---
+  | { type: 'token-budget:update'; timestamp: number } & BudgetSnapshot
   // --- Session events ---
-  | { type: 'session:start'; sessionId: string; timestamp: number }
+  | { type: 'session:start'; sessionId: string; parentSessionId?: string; timestamp: number }
   | { type: 'session:complete'; sessionId: string; timestamp: number }
   // --- Terminal ---
   | { type: 'done' };

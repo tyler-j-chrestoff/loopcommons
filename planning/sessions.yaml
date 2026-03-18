@@ -3,36 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 12
-    title: "Session Linking + Web Tests"
-    milestone: deploy-ops
-    goal: "Finish session linking if not done in 11. Expand web test coverage to ≥80%."
-    phases:
-      - name: Session linking
-        tasks: [ops-10, ops-11, ops-12, ops-13, ops-14, ops-15]
-        strategy: "Complete any remaining session linking tasks from session 11."
-      - name: Web test expansion
-        tasks: [ops-20, ops-21, ops-22, ops-23, ops-24, ops-25, ops-26, ops-27, ops-28, ops-29]
-        strategy: "Add React Testing Library, route handler tests, lib module tests, component smoke tests."
-
-  - id: 13
-    title: "Context Budget Viz: Token Tracking"
-    milestone: context-budget-viz
-    goal: "Research + build server-side token counting. SSE events for budget data."
-    phases:
-      - name: Research + implementation
-        tasks: [ctx-01, ctx-02, ctx-03, ctx-04, ctx-05, ctx-06]
-        strategy: "Research countTokens API, build accumulator, integrate into route.ts, add SSE events."
-
-  - id: 14
-    title: "Context Budget Viz: UI Component"
-    milestone: context-budget-viz
-    goal: "Build ContextBudgetBar, per-message breakdown, cost overlay. Close milestone."
-    phases:
-      - name: Implementation
-        tasks: [ctx-07, ctx-08, ctx-09, ctx-10, ctx-11, ctx-12]
-        strategy: "Client state, budget bar, token breakdown popover, cost overlay, layout integration."
-
   - id: 15
     title: "Eval Hooks: User Feedback + LLM Judge"
     milestone: eval-hooks
@@ -58,6 +28,175 @@ planned:
         strategy: "Research, test split, baseline metrics."
 
 completed:
+  - id: 14
+    title: "Context Budget Viz: UI Component"
+    date: 2026-03-18
+    milestone: context-budget-viz
+    status: done
+    goal: "Build ContextBudgetBar, per-message breakdown, cost overlay. Close milestone."
+    phases:
+      - name: "Implementation ✓"
+        tasks: [ctx-07, ctx-08, ctx-09, ctx-10, ctx-11, ctx-12]
+        status: done
+    summary: |
+      All 6 tasks completed. Context budget visualization fully built and integrated.
+      Milestone CLOSED (8/8 verification gates).
+
+      **ctx-07 — Client state (pre-done):**
+      Already completed in session 13 as ctx-05. use-chat.ts handles token-budget:update
+      SSE event, exposes tokenBudget state. Marked done at session start.
+
+      **ctx-08 — ContextBudgetBar:**
+      Horizontal fill bar with gradient thresholds (green < 75%, yellow 75%, orange 90%,
+      red 100%). Percentage label, token count (Xk / 200k), cost estimate. Smooth CSS
+      transitions. Pulse animation at 90%+. Shimmer effect during streaming. Clickable
+      to expand per-turn breakdown.
+
+      **ctx-09 — TokenBreakdown:**
+      Per-turn token breakdown component. Shows source (amygdala/subagent), input/output
+      tokens, cache indicator, per-turn cost. Rendered inside ContextBudgetBar on expand.
+
+      **ctx-10 — Cost overlay:**
+      Cost label with native title tooltip explaining Haiku 4.5 pricing breakdown
+      (input, output, cache read, cache creation rates).
+
+      **ctx-11 — Layout integration:**
+      ContextBudgetBar added to page.tsx main slot, positioned above ChatThread.
+      Conditionally rendered (null when no snapshot). Passes isStreaming from isLoading.
+
+      **ctx-12 — Tests:**
+      17 ContextBudgetBar tests (null render, percentage, tokens, cost, 4 threshold
+      colors, pulse, clamp, shimmer, expand/collapse, tooltip). 6 TokenBreakdown tests
+      (empty, rows, tokens, cache indicator, no-cache, cost). 23 total new tests.
+
+      **Test totals:** 231 web tests (18 files) + 47 llm tests = 278 total. All pass.
+      Types clean (pre-existing use-chat test warning only). Build passes.
+
+      **Milestone closed:** context-budget-viz 8/8 verification gates.
+      Active milestone → eval-hooks. Unblocks: session 15 (eval hooks: user feedback + LLM judge).
+
+  - id: 13
+    title: "Context Budget Viz: Token Tracking"
+    date: 2026-03-18
+    milestone: context-budget-viz
+    status: done
+    goal: "Research + build server-side token counting. SSE events for budget data."
+    phases:
+      - name: "Research + implementation ✓"
+        tasks: [ctx-01, ctx-02, ctx-03, ctx-04, ctx-05, ctx-06]
+        status: done
+    summary: |
+      All 6 tasks completed. Server-side token tracking infrastructure built and wired end-to-end.
+
+      **ctx-01 — Research:**
+      Anthropic countTokens API is free, counts system+tools+history, but requires
+      @anthropic-ai/sdk directly (Vercel AI SDK doesn't wrap it). onFinish usage reports
+      inputTokens (uncached only), outputTokens, plus providerMetadata.anthropic for
+      cacheReadInputTokens/cacheCreationInputTokens. Cache reads = 0.1x base input.
+
+      **ctx-02 + ctx-06 — TokenBudgetAccumulator (TDD):**
+      New class in packages/web/src/lib/token-budget.ts. Tracks per-turn and cumulative
+      token usage across sources (amygdala/orchestrator/subagent). Budget percent based on
+      cumulative input tokens vs 200K context limit. Cost estimation with Haiku 4.5 pricing
+      including cache read discount (0.1x) and cache creation (1.25x). 19 unit tests.
+
+      **ctx-03 — route.ts integration:**
+      TokenBudgetAccumulator created per request. Fed amygdala usage after generateObject,
+      subagent usage from AgentResult. Existing api-chat tests updated with usage mocks.
+
+      **ctx-04 — SSE events:**
+      token-budget:update event emitted with full BudgetSnapshot (cumulative tokens, budget
+      percent, cost estimate, model context limit, per-turn breakdown). Added to ChatSSEEvent
+      union and WebSessionEvent for session persistence.
+
+      **ctx-05 — Client integration:**
+      use-chat.ts handles token-budget:update SSE event, exposes tokenBudget state in return
+      value. Ready for ContextBudgetBar component in session 14.
+
+      **Design decision:** Skipped countTokens pre-request API for v1. Using only onFinish
+      actual usage — simpler, no extra API call latency, no new SDK dependency. Can add
+      pre-request estimates later if needed.
+
+      **Test totals:** 208 web tests (16 files) + 47 llm tests = 255 total. All pass.
+      Types clean (pre-existing use-chat test warning only). Build passes.
+
+      Unblocks: session 14 (context budget viz: UI component).
+
+  - id: 12
+    title: "Session Linking + Web Tests"
+    date: 2026-03-18
+    milestone: deploy-ops
+    status: done
+    goal: "Complete session linking for multi-turn conversations. Expand web test coverage to ≥80%."
+    phases:
+      - name: "Session linking ✓"
+        tasks: [ops-10, ops-11, ops-12, ops-13, ops-14, ops-15]
+        status: done
+      - name: "Web test expansion ✓"
+        tasks: [ops-20, ops-21, ops-22, ops-23, ops-24, ops-25, ops-26, ops-27, ops-28, ops-29]
+        status: done
+    summary: |
+      All 16 tasks completed. Deploy-ops milestone CLOSED (8/8 verification gates).
+
+      **Phase 1 — Session linking (ops-10 through ops-15):**
+      ops-10: Added parentSessionId to WebSessionEvent (session:start), SessionSummary,
+        SessionWriter interface, and FileSessionWriter. create() accepts optional
+        { parentSessionId } param, finalize() includes it in summary.
+      ops-11: route.ts reads X-Parent-Session-Id header from request, passes to
+        sessionWriter.create() and includes in session:start SSE event.
+      ops-12: use-chat.ts stores sessionId to localStorage on session:start event,
+        reads localStorage on next chat request and sends as X-Parent-Session-Id header.
+      ops-13: Thread query API: GET /api/sessions?thread=<id> walks parentSessionId
+        links forward and backward to build full thread. Returns chronological array.
+      ops-14: SessionThread UI component — compact collapsible panel in chat header
+        showing linked sessions (ID snippet, date, message count, current indicator).
+        Fetches thread data when sessionId available, only shows if >1 session in thread.
+      ops-15: 4 session linking tests — parentSessionId in session:start event,
+        in summary on finalize, absent when not provided, appears in list results.
+
+      **Phase 2 — Web test expansion (ops-20 through ops-29):**
+      ops-20: React testing infra — @testing-library/react, @testing-library/jest-dom,
+        @testing-library/user-event, happy-dom. vitest.config.ts updated with
+        environment: 'happy-dom' and setup file for jest-dom matchers.
+      ops-21: API sessions tests (14 tests) — list pagination, date/limit params,
+        validation (400 for invalid date/limit/cursor), thread query, session detail,
+        404 for unknown, path traversal rejection.
+      ops-22: API metrics tests (4 tests) — returns JSON when file exists,
+        null when missing, 500 on error, 500 on invalid JSON.
+      ops-23: POST /api/chat tests (18 tests) — auth 401, rate limit 429,
+        concurrency 429, spend cap 503, validation 400s, SSE streaming,
+        session ID headers, parent session linking, connection release, finalize.
+      ops-24: format.ts tests (16 tests) — formatCost, formatTokens, formatLatency
+        with edge cases (NaN, Infinity, negative, boundary values).
+      ops-25: use-chat.ts hook tests (18 tests) — initial state, send/stop,
+        SSE parsing (text-delta, session:start, rate-limit, spend, error,
+        amygdala:*, orchestrator:*), localStorage session persistence,
+        X-Parent-Session-Id header, empty response handling (adversarial silence).
+      ops-26: Chat component smoke tests (13 tests) — Layout, ChatInput,
+        ChatThread, MessageBubble, ToolCallInline.
+      ops-27: Observability component smoke tests (17 tests) — TraceTimeline,
+        TraceInspector, CostDashboard, SpendGauge, SecurityEventLog, RateLimitIndicator.
+      ops-28: Amygdala component smoke tests (21 tests) — AmygdalaInspector,
+        AmygdalaPassCard, PipelineTimeline, RoutingCard, ComparisonMode, SessionThread.
+      ops-29: Coverage verification — 86.7% lines, 84.8% stmts, 91.4% lib stmts.
+        @vitest/coverage-v8 added.
+
+      **Test totals:** 189 web tests (15 files) + 47 llm tests = 236 total.
+      Up from 64 web tests / 6 files at session start.
+      Types clean. All tests pass.
+
+      **Key decisions:**
+      - happy-dom over jsdom for vitest (lighter, faster).
+      - Thread API walks all sessions in memory (no DB index needed at current scale).
+      - SessionThread component fetches on sessionId change, only renders if >1 in thread.
+      - CLAUDE.md #2 Rule: Red-Green TDD for all code going forward (Tyler's directive).
+
+      **Milestone closed:** deploy-ops 8/8 verification gates. Active milestone → context-budget-viz.
+      **xAI Grok UI/UX research:** Dark-first design, structured thinking steps with
+        distinct icons, DeepSearch source cards, memory attribution (shows referenced
+        past chats), mode toggles above input. Filed for reference, no immediate action.
+      Unblocks: session 13 (context budget viz: token tracking).
+
   - id: 11
     title: "Deploy to Railway"
     date: 2026-03-18

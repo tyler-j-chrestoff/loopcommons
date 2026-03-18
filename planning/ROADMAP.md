@@ -2,20 +2,20 @@
 
 Loop Commons is a live research platform and open-source training data pipeline. A substrate-aware conversational agent that defends itself through self-knowledge, with every decision traced, visualized, and exported as labeled training data for open-source language models.
 
-**Active milestone**: [deploy-ops](milestones/deploy-ops/) — Deploy to Railway, session linking, web test expansion.
+**Active milestone**: [eval-hooks](milestones/eval-hooks/) — User feedback collection, LLM-as-judge scoring, CI eval regression testing.
 
 ## Now
 
-- **[deploy-ops](milestones/deploy-ops/)** — Get live. Deploy to Railway ($5/mo), session linking for multi-turn conversations, web test expansion. 3 stories, 24 tasks.
+- **[eval-hooks](milestones/eval-hooks/)** — User feedback collection, LLM-as-judge scoring, CI eval regression testing. Foundation for A/B testing and cost routing. 3 stories, 22 tasks.
 
 ## Next
 
-- **[context-budget-viz](milestones/context-budget-viz/)** — Novel real-time context window budget visualization. No widely-used tool does this. 2 stories, 12 tasks.
-- **[eval-hooks](milestones/eval-hooks/)** — User feedback collection, LLM-as-judge scoring, CI eval regression testing. Foundation for A/B testing and cost routing. 3 stories, 22 tasks.
 - **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Inspired by Karpathy's autoresearch. ~$2-8 per run. 2 stories, 15 tasks.
 
 ## Done
 
+- **[context-budget-viz](milestones/context-budget-viz/)** — Novel real-time context window budget visualization. 2 stories, 12 tasks, 2 sessions. Completed 2026-03-18.
+- **[deploy-ops](milestones/deploy-ops/)** — Deploy to Railway, session linking, web test expansion. 3 stories, 24 tasks, 2 sessions. Completed 2026-03-18.
 - **[amygdala](milestones/amygdala/)** — Metacognitive security architecture + open-source training data pipeline. Substrate-aware amygdala layer rewrites/routes to least-privilege subagents. Session persistence. Dagster+dbt pipeline exports labeled training data. Full pipeline visualization. 5 stories, 35 tasks, 5 sessions. Completed 2026-03-18.
 - **[hardening](milestones/hardening/)** — Rate limiting, daily spend cap, prompt injection defense. 3 stories, 16 tasks, 2 sessions. Completed 2026-03-17.
 - **[agent-tools-streaming](milestones/agent-tools-streaming/)** — Real tools, token streaming, security fixes. Completed 2026-03-16.

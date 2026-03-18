@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import type { Trace, Round } from '@loopcommons/llm';
 import type { ChatMessage, ChatSSEEvent, AmygdalaClassification, RoutingDecision } from './types';
+import type { BudgetSnapshot } from './token-budget';
 
 type RateLimitStatus = {
   remaining: number;
@@ -40,6 +41,8 @@ type UseChatReturn = {
   liveAmygdala: AmygdalaClassification | null;
   /** Routing decision for the current in-flight message */
   liveRouting: RoutingDecision | null;
+  /** Token budget snapshot for the current conversation */
+  tokenBudget: BudgetSnapshot | null;
   send: (content: string) => void;
   stop: () => void;
 };
@@ -61,6 +64,7 @@ export function useChat(): UseChatReturn {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [liveAmygdala, setLiveAmygdala] = useState<AmygdalaClassification | null>(null);
   const [liveRouting, setLiveRouting] = useState<RoutingDecision | null>(null);
+  const [tokenBudget, setTokenBudget] = useState<BudgetSnapshot | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const stop = useCallback(() => {
@@ -94,9 +98,21 @@ export function useChat(): UseChatReturn {
 
     (async () => {
       try {
+        // Send the last known session ID as parent for thread linking
+        const parentSessionId = typeof window !== 'undefined'
+          ? localStorage.getItem('lastSessionId')
+          : null;
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (parentSessionId) {
+          headers['X-Parent-Session-Id'] = parentSessionId;
+        }
+
         const res = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ messages: apiMessages }),
           signal: controller.signal,
         });
@@ -187,6 +203,10 @@ export function useChat(): UseChatReturn {
               setSecurityEvents(prev => [...prev, { type: event.type, reason: event.reason, timestamp: event.timestamp }]);
             } else if (event.type === 'session:start') {
               setSessionId(event.sessionId);
+              // Persist to localStorage for thread linking on next visit
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('lastSessionId', event.sessionId);
+              }
             } else if (event.type === 'amygdala:rewrite') {
               amygdalaData = {
                 ...amygdalaData,
@@ -229,6 +249,14 @@ export function useChat(): UseChatReturn {
                 usedSummary: event.usedSummary,
               };
               setLiveRouting(routingData as RoutingDecision);
+            } else if (event.type === 'token-budget:update') {
+              setTokenBudget({
+                cumulative: event.cumulative,
+                budgetPercent: event.budgetPercent,
+                costEstimate: event.costEstimate,
+                modelContextLimit: event.modelContextLimit,
+                turns: event.turns,
+              });
             } else if (event.type === 'error') {
               setError(event.error);
             }
@@ -273,5 +301,5 @@ export function useChat(): UseChatReturn {
     })();
   }, [messages]);
 
-  return { messages, trace, liveRounds, isLoading, error, rateLimitStatus, spendStatus, securityEvents, sessionId, liveAmygdala, liveRouting, send, stop };
+  return { messages, trace, liveRounds, isLoading, error, rateLimitStatus, spendStatus, securityEvents, sessionId, liveAmygdala, liveRouting, tokenBudget, send, stop };
 }
