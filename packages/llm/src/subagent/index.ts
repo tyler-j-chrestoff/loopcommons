@@ -1,2 +1,2 @@
-export type { SubagentConfig, SubagentRegistry } from './registry';
+export type { SubagentConfig, SubagentRegistry, RoutingContext } from './registry';
 export { createSubagentRegistry } from './registry';

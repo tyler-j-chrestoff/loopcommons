@@ -43,11 +43,11 @@ Rendering:
 
 ## Verification Gate
 
-- [ ] Blog storage: create, read, update, delete markdown files with frontmatter
-- [ ] 8 blog tools implemented with input validation and path traversal prevention
-- [ ] `blog` intent in amygdala classification
-- [ ] blog-reader subagent (public) and blog-writer subagent (admin-only)
-- [ ] Auth-gated routing: orchestrator checks isAdmin before granting write tools
+- [x] Blog storage: create, read, update, delete markdown files with frontmatter
+- [x] 8 blog tools implemented with input validation and path traversal prevention
+- [x] `blog` intent in amygdala classification
+- [x] blog-reader subagent (public) and blog-writer subagent (admin-only)
+- [x] Auth-gated routing: orchestrator checks isAdmin before granting write tools
 - [ ] /blog listing page with published posts
 - [ ] /blog/[slug] renders markdown with syntax highlighting
 - [ ] Tyler can publish a post via chat (end-to-end)

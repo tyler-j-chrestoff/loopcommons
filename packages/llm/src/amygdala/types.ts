@@ -32,6 +32,7 @@ import type { TraceEvent } from '../trace/events';
 export type AmygdalaIntent =
   | 'resume'          // Asking about Tyler's background, skills, experience
   | 'project'         // Asking about Loop Commons, its tech, architecture
+  | 'blog'            // Asking to read, write, publish, or manage blog posts
   | 'conversation'    // General friendly chat, greetings, small talk
   | 'security'        // Asking about the site's security, defenses, architecture
   | 'meta'            // Asking about the agent itself, how it works

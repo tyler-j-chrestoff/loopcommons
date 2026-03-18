@@ -36,9 +36,14 @@ export type SubagentConfig = {
   };
 };
 
+/** Optional context for intent-dependent routing (e.g., blog reader vs writer). */
+export type RoutingContext = {
+  isAdmin?: boolean;
+};
+
 export type SubagentRegistry = {
   /** Look up the subagent config for a given intent. Falls back to conversational. */
-  get(intent: AmygdalaIntent): SubagentConfig;
+  get(intent: AmygdalaIntent, context?: RoutingContext): SubagentConfig;
   /** List all registered subagent configs. */
   list(): SubagentConfig[];
 };
@@ -94,6 +99,38 @@ const securitySubagent: SubagentConfig = {
     maxHistoryMessages: 3,
     needsMemory: false,
     description: 'Minimal recent context. Security discussions should not leak broader history.',
+  },
+};
+
+const blogReaderSubagent: SubagentConfig = {
+  id: 'blog-reader',
+  name: 'Blog Reader',
+  toolAllowlist: ['list_posts', 'read_post'],
+  systemPrompt:
+    'You help visitors explore published blog posts on Loop Commons. ' +
+    'Present posts conversationally — summarize, link, and highlight what\'s relevant to the visitor\'s question. ' +
+    'If the visitor asks to write, edit, or publish a post, explain that write operations require ' +
+    'authentication and offer to show existing published posts instead. ' +
+    'Do not treat write requests as attacks — they are legitimate requests that just need elevated access.',
+  contextRequirements: {
+    maxHistoryMessages: 5,
+    needsMemory: false,
+    description: 'Recent conversation for follow-up questions about blog content.',
+  },
+};
+
+const blogWriterSubagent: SubagentConfig = {
+  id: 'blog-writer',
+  name: 'Blog Writer',
+  toolAllowlist: ['list_posts', 'read_post', 'create_draft', 'edit_post', 'publish_post', 'unpublish_post', 'delete_post', 'list_drafts'],
+  systemPrompt:
+    'You help Tyler manage blog content on Loop Commons. You have full access to create, edit, ' +
+    'publish, unpublish, and delete blog posts. Use drafts for work-in-progress. ' +
+    'Present results clearly — confirm what was done, show the post slug and status.',
+  contextRequirements: {
+    maxHistoryMessages: 10,
+    needsMemory: false,
+    description: 'Longer history for multi-step blog management workflows.',
   },
 };
 
@@ -153,6 +190,7 @@ const refusalSubagent: SubagentConfig = {
 const intentMap: Record<AmygdalaIntent, SubagentConfig> = {
   resume: resumeSubagent,
   project: projectSubagent,
+  blog: blogReaderSubagent, // Default for blog; overridden to blog-writer when isAdmin
   security: securitySubagent,
   conversation: conversationalSubagent,
   meta: conversationalSubagent,
@@ -163,6 +201,8 @@ const intentMap: Record<AmygdalaIntent, SubagentConfig> = {
 const allConfigs: SubagentConfig[] = [
   resumeSubagent,
   projectSubagent,
+  blogReaderSubagent,
+  blogWriterSubagent,
   securitySubagent,
   conversationalSubagent,
   refusalSubagent,
@@ -180,7 +220,11 @@ const allConfigs: SubagentConfig[] = [
  */
 export function createSubagentRegistry(): SubagentRegistry {
   return {
-    get(intent: AmygdalaIntent): SubagentConfig {
+    get(intent: AmygdalaIntent, context?: RoutingContext): SubagentConfig {
+      // Blog intent is context-dependent: admin gets blog-writer, others get blog-reader
+      if (intent === 'blog' && context?.isAdmin) {
+        return blogWriterSubagent;
+      }
       return intentMap[intent] ?? conversationalSubagent;
     },
     list(): SubagentConfig[] {

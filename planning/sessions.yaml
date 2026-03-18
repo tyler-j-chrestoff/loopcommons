@@ -3,21 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 17
-    title: "Blog Tools: Storage + Tools + Routing"
-    milestone: blog-tools
-    goal: "Build blog storage module, 8 tools, blog intent, auth-gated subagent routing. The foundation."
-    phases:
-      - name: Research + types
-        tasks: [blog-01, blog-02, blog-08]
-        strategy: "Research storage patterns, define types, add blog intent to amygdala. Parallel."
-      - name: Storage + tools
-        tasks: [blog-03, blog-04, blog-05, blog-06, blog-07]
-        strategy: "TDD: tests first for BlogStore, then implement, then tools on top."
-      - name: Routing + auth
-        tasks: [blog-09, blog-10, blog-11, blog-12, blog-13]
-        strategy: "Subagent configs, orchestrator auth gating, route.ts wiring, routing tests."
-
   - id: 18
     title: "Blog Tools: Frontend + Security"
     milestone: blog-tools
@@ -43,6 +28,36 @@ planned:
         strategy: "Wire modules into runner script, add stopping criteria, integration test."
 
 completed:
+  - id: 17
+    title: "Blog Tools: Storage + Tools + Routing"
+    date: 2026-03-18
+    milestone: blog-tools
+    status: done
+    goal: "Build blog storage module, 8 tools, blog intent, auth-gated subagent routing. The foundation."
+    phases:
+      - name: "Research + types ✓"
+        tasks: [blog-01, blog-02, blog-08]
+        status: done
+      - name: "Storage + tools ✓"
+        tasks: [blog-03, blog-04, blog-05, blog-06, blog-07]
+        status: done
+      - name: "Routing + auth ✓"
+        tasks: [blog-09, blog-10, blog-11, blog-12, blog-13]
+        status: done
+    summary: |
+      All 13 tasks completed across 3 phases. Both blog-storage and blog-routing stories done.
+      Built: BlogStore (file-based CRUD with gray-matter), 8 blog tools via factory pattern,
+      blog intent in amygdala, blog-reader/blog-writer subagent split with auth-gated routing,
+      RoutingContext on registry.get(), isAdmin on OrchestratorInput, authGated on route events,
+      route.ts wiring with createBlogTools + session.user.name check.
+      Design doc: planning/milestones/blog-tools/designs/storage-design.md.
+      New tests: 63 (9 blog-types, 25 blog-store, 19 blog-tools, 10 blog-routing).
+      Totals: LLM 170 tests (13 files), web 325 tests (25 files). Both typecheck clean.
+      Key decisions: blog tools in packages/web/src/tools/blog.ts (factory), types in
+      packages/llm/src/blog/types.ts (shared), gray-matter for frontmatter parsing,
+      RoutingContext pattern for auth-dependent subagent selection.
+      Unblocked: session 18 (frontend pages + red-team security tests).
+
   - id: 16
     title: "Eval Hooks: CI Evals + Auto-Calibration Start"
     date: 2026-03-18

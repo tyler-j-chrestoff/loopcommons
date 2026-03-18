@@ -35,3 +35,5 @@ export { createOrchestrator } from './orchestrator';
 export type { OrchestratorConfig } from './orchestrator';
 export { createJudge } from './eval';
 export type { JudgeConfig, JudgeInput, JudgeResult, JudgeScoreEvent, JudgeScores } from './eval';
+export { SLUG_REGEX, BlogFrontmatterSchema } from './blog/types';
+export type { BlogPost, BlogPostSummary, BlogFrontmatter } from './blog/types';

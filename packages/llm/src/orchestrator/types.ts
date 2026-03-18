@@ -34,6 +34,8 @@ export type OrchestratorRouteEvent = {
   threatScore: number;
   /** Tools available to the selected subagent. */
   allowedTools: string[];
+  /** Whether auth gating affected the routing decision (e.g., blog-reader vs blog-writer). */
+  authGated: boolean;
   /** Brief explanation of why this subagent was chosen. */
   reasoning: string;
   timestamp: number;
@@ -81,6 +83,8 @@ export type OrchestratorInput = {
   maxRounds?: number;
   /** Enable streaming. Default: true. */
   stream?: boolean;
+  /** Whether the current user is an authenticated admin. Affects blog routing. */
+  isAdmin?: boolean;
 };
 
 export type OrchestratorResult = {

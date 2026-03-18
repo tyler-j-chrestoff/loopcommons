@@ -4,6 +4,30 @@ import { createToolRegistry, createScopedRegistry } from '../src/tool';
 import { defineTool } from '../src/tool';
 import { z } from 'zod';
 import type { AmygdalaIntent } from '../src/amygdala/types';
+import { getIntentSchema, getSystemPrompt } from '../src/amygdala/index';
+
+// ---------------------------------------------------------------------------
+// Blog intent type-level test
+// ---------------------------------------------------------------------------
+
+describe('AmygdalaIntent — blog', () => {
+  it('"blog" is a valid AmygdalaIntent value', () => {
+    const blogIntent: AmygdalaIntent = 'blog';
+    expect(blogIntent).toBe('blog');
+  });
+
+  it('blog is included in the intent Zod schema', () => {
+    const schema = getIntentSchema();
+    const result = schema.safeParse('blog');
+    expect(result.success).toBe(true);
+  });
+
+  it('system prompt mentions blog intent', () => {
+    const prompt = getSystemPrompt();
+    expect(prompt).toContain('"blog"');
+    expect(prompt).toMatch(/blog.*post/i);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Subagent Registry
@@ -14,7 +38,7 @@ describe('SubagentRegistry', () => {
 
   it('maps each intent to a subagent', () => {
     const intents: AmygdalaIntent[] = [
-      'resume', 'project', 'conversation', 'security', 'meta', 'unclear', 'adversarial',
+      'resume', 'project', 'conversation', 'security', 'meta', 'unclear', 'adversarial', 'blog',
     ];
     for (const intent of intents) {
       const config = registry.get(intent);
@@ -42,6 +66,13 @@ describe('SubagentRegistry', () => {
     expect(config.contextRequirements.maxHistoryMessages).toBe(1);
   });
 
+  it('routes blog intent to blog-reader by default', () => {
+    const config = registry.get('blog');
+    expect(config.id).toBe('blog-reader');
+    expect(config.toolAllowlist).toContain('list_posts');
+    expect(config.toolAllowlist).toContain('read_post');
+  });
+
   it('routes conversation, meta, unclear to conversational fallback', () => {
     const conv = registry.get('conversation');
     const meta = registry.get('meta');
@@ -62,6 +93,8 @@ describe('SubagentRegistry', () => {
     expect(new Set(ids).size).toBe(ids.length); // no duplicates
     expect(ids).toContain('resume');
     expect(ids).toContain('project');
+    expect(ids).toContain('blog-reader');
+    expect(ids).toContain('blog-writer');
     expect(ids).toContain('security');
     expect(ids).toContain('conversational');
     expect(ids).toContain('refusal');

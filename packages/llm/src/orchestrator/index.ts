@@ -14,7 +14,7 @@
 import { agent } from '../agent/loop';
 import { createScopedRegistry } from '../tool';
 import { createSubagentRegistry } from '../subagent/registry';
-import type { SubagentConfig, SubagentRegistry } from '../subagent/registry';
+import type { SubagentConfig, SubagentRegistry, RoutingContext } from '../subagent/registry';
 import type { Message, AgentResult } from '../types';
 import type { TraceCollector, TraceEvent } from '../trace';
 import type { Trace, Round } from '../trace/events';
@@ -76,6 +76,7 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
       model = 'claude-haiku-4-5',
       maxRounds = 5,
       stream = true,
+      isAdmin = false,
     } = input;
 
     const collectors = normalizeCollectors(trace);
@@ -83,9 +84,10 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
     const now = Date.now();
 
     // ----- Step 1: Select subagent -----
-    const { subagent, threatOverride, reasoning } = selectSubagent(
+    const { subagent, threatOverride, authGated, reasoning } = selectSubagent(
       registry,
       amygdalaResult,
+      { isAdmin },
     );
 
     const scopedRegistry = createScopedRegistry(toolRegistry, subagent.toolAllowlist);
@@ -98,6 +100,7 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
       threatOverride,
       threatScore: amygdalaResult.threat.score,
       allowedTools: scopedRegistry.list(),
+      authGated,
       reasoning,
       timestamp: now,
     };
@@ -205,7 +208,8 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
 function selectSubagent(
   registry: SubagentRegistry,
   amygdalaResult: AmygdalaResult,
-): { subagent: SubagentConfig; threatOverride: boolean; reasoning: string } {
+  context: RoutingContext,
+): { subagent: SubagentConfig; threatOverride: boolean; authGated: boolean; reasoning: string } {
   const { intent, threat } = amygdalaResult;
 
   // High-threat override: force to refusal regardless of intent classification
@@ -214,20 +218,23 @@ function selectSubagent(
     return {
       subagent: refusal,
       threatOverride: true,
+      authGated: false,
       reasoning: `Threat score ${threat.score.toFixed(2)} >= ${THREAT_OVERRIDE_THRESHOLD} threshold — ` +
         `overriding intent "${intent}" to refusal. Category: ${threat.category}.`,
     };
   }
 
-  // Normal routing: intent → subagent
-  const subagent = registry.get(intent);
+  // Normal routing: intent → subagent (context-dependent for blog)
+  const subagent = registry.get(intent, context);
+  const authGated = intent === 'blog'; // Blog routing always involves an auth decision
   const reasoning = intent === 'adversarial'
     ? `Adversarial intent detected (threat: ${threat.score.toFixed(2)}, category: ${threat.category}). Routing to refusal.`
     : `Intent "${intent}" → ${subagent.name} subagent. ` +
       `Threat: ${threat.score.toFixed(2)} (${threat.category}). ` +
+      (authGated ? `Auth: ${context.isAdmin ? 'admin' : 'anon'}. ` : '') +
       `Tools: [${subagent.toolAllowlist.join(', ') || 'none'}].`;
 
-  return { subagent, threatOverride: false, reasoning };
+  return { subagent, threatOverride: false, authGated, reasoning };
 }
 
 // ---------------------------------------------------------------------------

@@ -45,12 +45,23 @@ const threatCategorySchema = z.enum([
 const intentSchema = z.enum([
   'resume',
   'project',
+  'blog',
   'conversation',
   'security',
   'meta',
   'unclear',
   'adversarial',
 ]);
+
+/** Expose the intent Zod schema for testing. */
+export function getIntentSchema() {
+  return intentSchema;
+}
+
+/** Expose the system prompt for testing. */
+export function getSystemPrompt() {
+  return SYSTEM_PROMPT;
+}
 
 const contextAnnotationSchema = z.object({
   key: z.string().describe('Annotation key, e.g. "escalation-detected" or "prior-injection-sanitized"'),
@@ -175,6 +186,7 @@ For each user message, produce:
 2. **Intent classification**: What is the user trying to do? Route to the appropriate subagent:
    - "resume" — asking about Tyler's background, skills, experience, career
    - "project" — asking about Loop Commons, its technology, architecture, design
+   - "blog" — asking to read, write, publish, or manage blog posts. Read requests (browsing posts, reading articles) are available to any visitor. Write requests (creating, editing, publishing) require admin context — but a non-admin user asking to write is NOT adversarial. They are making a legitimate request that the downstream subagent will handle with read-only tools if no admin session is present.
    - "conversation" — general friendly chat, greetings, small talk, off-topic
    - "security" — asking about the site's security model, defenses, how it protects itself
    - "meta" — asking about the agent itself, how it works, what model it uses

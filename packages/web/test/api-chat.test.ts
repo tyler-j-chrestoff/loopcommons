@@ -55,6 +55,10 @@ vi.mock('@loopcommons/llm', () => ({
   createAmygdala: () => mockAmygdalaFn,
   createOrchestrator: () => mockOrchestratorFn,
   createToolRegistry: mockCreateToolRegistry,
+  createJudge: () => null,
+  defineTool: (config: any) => config,
+  SLUG_REGEX: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+  BlogFrontmatterSchema: { safeParse: () => ({ success: true, data: {} }), parse: (d: any) => d },
   LLMError: class LLMError extends Error {
     code: string;
     constructor(message: string, code: string) {
@@ -72,6 +76,11 @@ vi.mock('@/auth', () => ({
 // --- Mock @/tools ---
 vi.mock('@/tools', () => ({
   tools: [],
+}));
+
+// --- Mock @/tools/blog ---
+vi.mock('@/tools/blog', () => ({
+  createBlogTools: () => [],
 }));
 
 // --- Mock @/lib/rate-limit ---

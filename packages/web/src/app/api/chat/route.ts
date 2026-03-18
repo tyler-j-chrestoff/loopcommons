@@ -1,6 +1,7 @@
 import { createAmygdala, createOrchestrator, createToolRegistry, createJudge, LLMError } from '@loopcommons/llm';
 import type { TraceEvent, TraceCollector } from '@loopcommons/llm';
 import { tools } from '@/tools';
+import { createBlogTools } from '@/tools/blog';
 import { checkRateLimit, acquireConnection, releaseConnection, getClientIp, getRateLimitStatus } from '@/lib/rate-limit';
 import { sanitizeInput, containsRoleSpoofing } from '@/lib/sanitize';
 import { canSpend, recordSpend, getSpendStatus } from '@/lib/spend-tracker';
@@ -21,7 +22,9 @@ const MAX_MESSAGES = 50;
 
 const amygdala = createAmygdala();
 const orchestrator = createOrchestrator();
-const toolRegistry = createToolRegistry(tools);
+const blogDataDir = process.env.BLOG_DATA_DIR ?? 'data/blog';
+const blogTools = createBlogTools({ dataDir: blogDataDir });
+const toolRegistry = createToolRegistry([...tools, ...blogTools]);
 const sessionWriter = new FileSessionWriter();
 const judge = process.env.ENABLE_LLM_JUDGE === 'true' ? createJudge() : null;
 
@@ -294,6 +297,9 @@ export async function POST(request: Request): Promise<Response> {
       // =====================================================================
       // The orchestrator selects a subagent, filters context, scopes tools,
       // and invokes agent(). It emits its own trace events (route + filter).
+      // Determine admin status from NextAuth session
+      const isAdmin = session.user?.name === 'Admin';
+
       const result = await orchestrator({
         amygdalaResult,
         conversationHistory: validatedMessages.slice(0, -1),
@@ -302,6 +308,7 @@ export async function POST(request: Request): Promise<Response> {
         model: 'claude-haiku-4-5',
         maxRounds: 5,
         stream: true,
+        isAdmin,
       });
 
       // Persist orchestrator trace events (already sent via collector for
