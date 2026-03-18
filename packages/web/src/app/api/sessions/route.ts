@@ -26,7 +26,10 @@ const SESSION_ID_RE = /^[a-zA-Z0-9-]+$/;
  * Build a thread of linked sessions by walking parentSessionId links.
  * Returns sessions in chronological order (oldest first).
  */
-async function buildThread(threadSessionId: string): Promise<SessionSummary[]> {
+async function buildThread(
+  threadSessionId: string,
+  parentSessionId?: string,
+): Promise<SessionSummary[]> {
   // Load all sessions (no pagination — walk the full list in memory)
   const all: SessionSummary[] = [];
   let cursor: string | undefined;
@@ -35,6 +38,19 @@ async function buildThread(threadSessionId: string): Promise<SessionSummary[]> {
     all.push(...page.sessions);
     cursor = page.nextCursor;
   } while (cursor);
+
+  // If the queried session isn't in the list (still active/unfinalized),
+  // inject a synthetic entry so the thread can be built
+  if (!all.some(s => s.id === threadSessionId)) {
+    all.push({
+      id: threadSessionId,
+      date: new Date().toISOString().slice(0, 10),
+      messageCount: 0,
+      eventCount: 0,
+      durationMs: 0,
+      ...(parentSessionId ? { parentSessionId } : {}),
+    });
+  }
 
   // Build a lookup by ID and a child map
   const byId = new Map<string, SessionSummary>();
@@ -92,8 +108,9 @@ export async function GET(request: NextRequest) {
         { status: 400 },
       );
     }
+    const parentId = params.get('parent') ?? undefined;
     try {
-      const thread = await buildThread(threadId);
+      const thread = await buildThread(threadId, parentId);
       return NextResponse.json({ thread });
     } catch (err) {
       console.error('[GET /api/sessions?thread] Error building thread:', err);

@@ -108,6 +108,8 @@ export function useChat(): UseChatReturn {
         };
         if (parentSessionId) {
           headers['X-Parent-Session-Id'] = parentSessionId;
+          // Store for SessionThread component to use in thread query
+          localStorage.setItem('parentSessionId', parentSessionId);
         }
 
         const res = await fetch('/api/chat', {

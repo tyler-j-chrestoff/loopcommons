@@ -26,7 +26,18 @@ export function SessionThread({ sessionId }: SessionThreadProps) {
     let cancelled = false;
     setLoading(true);
 
-    fetch(`/api/sessions?thread=${sessionId}`, { credentials: 'include' })
+    // Include parentSessionId so the API can build the thread even if
+    // the current session isn't finalized to disk yet
+    let parentId: string | null = null;
+    try {
+      parentId = localStorage.getItem('parentSessionId');
+    } catch {
+      // localStorage may not be available in some environments
+    }
+    const params = new URLSearchParams({ thread: sessionId });
+    if (parentId) params.set('parent', parentId);
+
+    fetch(`/api/sessions?${params}`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled && data.thread) {
@@ -47,8 +58,6 @@ export function SessionThread({ sessionId }: SessionThreadProps) {
 
   // Only show if there's a thread with more than one session
   if (!sessionId || thread.length <= 1) return null;
-
-  const currentIndex = thread.findIndex((s) => s.id === sessionId);
 
   return (
     <div className="text-xs">
@@ -80,7 +89,7 @@ export function SessionThread({ sessionId }: SessionThreadProps) {
                 {isCurrent && (
                   <span className="text-accent text-[10px]">current</span>
                 )}
-                {i === 0 && !isCurrent && (
+                {!isCurrent && (
                   <button
                     onClick={() => window.open(`/api/sessions/${s.id}`, '_blank')}
                     className="text-text-muted hover:text-text-secondary"
