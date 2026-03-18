@@ -122,9 +122,11 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
     // already got the redirect, repeating it is noise.
     if (subagent.id === 'refusal') {
       const REFUSAL_MESSAGE = "This site is about Tyler's work and research. Feel free to ask about that.";
-      const alreadyRefused = conversationHistory.some(
-        m => m.role === 'assistant' && m.content === REFUSAL_MESSAGE,
-      );
+      // Tit-for-tat silence: only suppress if the LAST assistant message was
+      // already a refusal. This prevents silence after a long genuine
+      // conversation where one earlier message happened to trigger refusal.
+      const lastAssistant = [...conversationHistory].reverse().find(m => m.role === 'assistant');
+      const alreadyRefused = lastAssistant?.content === REFUSAL_MESSAGE;
       const staticResponse = alreadyRefused ? '' : REFUSAL_MESSAGE;
       const staticTrace = buildStaticTrace(model, staticResponse, now);
 
