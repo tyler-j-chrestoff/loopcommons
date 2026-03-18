@@ -3,18 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 11
-    title: "Deploy to Railway"
-    milestone: deploy-ops
-    goal: "Deploy web to Railway. Persistent volume, env vars, domain. Verify full amygdala pipeline in production. Start session linking if time permits."
-    phases:
-      - name: Railway deploy
-        tasks: [ops-01, ops-02, ops-03, ops-04, ops-05, ops-06, ops-07, ops-08]
-        strategy: "Research Nixpacks config, add health check, create Railway project, configure volume + env + auto-deploy, smoke test, domain."
-      - name: Session linking (stretch)
-        tasks: [ops-10, ops-11, ops-12, ops-13, ops-14, ops-15]
-        strategy: "If deploy wraps cleanly, start session linking."
-
   - id: 12
     title: "Session Linking + Web Tests"
     milestone: deploy-ops
@@ -70,6 +58,59 @@ planned:
         strategy: "Research, test split, baseline metrics."
 
 completed:
+  - id: 11
+    title: "Deploy to Railway"
+    date: 2026-03-18
+    milestone: deploy-ops
+    status: done
+    goal: "Deploy web to Railway. Persistent volume, env vars, domain. Verify full amygdala pipeline in production."
+    phases:
+      - name: "Railway deploy ✓"
+        tasks: [ops-01, ops-02, ops-03, ops-04, ops-05, ops-06, ops-07, ops-08]
+        status: done
+      - name: "Auth (unplanned) ✓"
+        tasks: []
+        status: done
+    summary: |
+      All 8 deploy tasks completed + unplanned auth feature. Site is live and secured.
+
+      **Phase 1 — Railway deploy (ops-01 through ops-08):**
+      ops-01: Research found Railpack replaced Nixpacks (March 2026). Don't set root directory
+        for shared monorepos. Volumes mount at runtime only.
+      ops-02: Health check endpoint at /api/health (GET → {status: ok, timestamp}).
+      ops-03: Railway project created from GitHub repo (auto-detected monorepo, deleted
+        @loopcommons/llm service — it's a library, not deployable).
+      ops-04: Persistent volume mounted at /app/data for session JSONL.
+      ops-05: Env vars configured (ANTHROPIC_API_KEY, RATE_LIMIT_RPM, DAILY_SPEND_CAP_USD,
+        RATE_LIMIT_CONCURRENT, SESSION_DATA_DIR, NODE_ENV).
+      ops-06: Auto-deploy from main branch, health check at /api/health.
+      ops-07: Smoke test passed — health, chat, SSE streaming, amygdala pipeline, session
+        persistence all verified in production.
+      ops-08: Railway URL live at loopcommonsweb-production.up.railway.app.
+
+      **Phase 2 — Auth (unplanned, Tyler-requested):**
+      NextAuth.js v5 beta with credentials provider (ADMIN_USERNAME/ADMIN_PASSWORD env vars).
+      JWT sessions, middleware redirect to /login for unauthenticated users.
+      Chat API returns 401 without session. Sessions/metrics APIs accept session or X-API-Key.
+      Login page with dark theme. Health endpoint remains public.
+
+      **Bugs fixed during deploy:**
+      1. CI: npx tsc resolved to wrong package (tsc@2.0.4) — fixed with npx -p typescript tsc.
+      2. CI: Type errors in sanitize-event.test.ts — test objects had wrong field names.
+      3. Deploy: output: standalone broke next start — removed standalone (not needed).
+      4. Deploy: NextAuth UntrustedHost behind Railway proxy — added trustHost: true.
+      5. Deploy: proxy.ts (Next.js 16 convention) not working — renamed to middleware.ts.
+
+      **Key decisions:**
+      - Railpack (not Nixpacks) as builder, railway.json for config-as-code.
+      - Removed output: standalone — next start works fine without it on Railway.
+      - NextAuth middleware.ts (not proxy.ts) — Next.js 16.1 still uses the old convention.
+      - FileSessionWriter reads SESSION_DATA_DIR env var for production volume path.
+
+      **GitHub repo created:** github.com/tyler-j-chrestoff/loopcommons (was local-only before).
+      **Production URL:** https://loopcommonsweb-production.up.railway.app/
+      Unblocks: session 12 (session linking + web tests).
+
   - id: 10
     title: "Planning: Milestones + Research"
     date: 2026-03-17
