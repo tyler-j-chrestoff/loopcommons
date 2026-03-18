@@ -14,7 +14,8 @@
     "test:eval": "vitest run test/eval-quality test/eval-safety test/eval-routing",
     "test:eval:live": "EVAL_LIVE=true vitest run test/eval-live",
     "test:redteam": "vitest run test/red-team-amygdala test/red-team-routing test/red-team-baseline",
-    "calibrate:baseline": "tsx test/capture-baseline.ts"
+    "calibrate:baseline": "tsx test/capture-baseline.ts",
+    "calibrate": "tsx scripts/calibrate.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.58",

@@ -3,19 +3,78 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 19
-    title: "Auto-Calibration: Runner Implementation"
+  - id: 20
+    title: "Auto-Calibration: Visualization + First Run"
     milestone: auto-calibration
-    goal: "Build the proposer, fitness evaluator, memory module, runner loop, and JSONL logger. Now calibrating against blog tools."
+    goal: "Build calibration history visualization (cal-10 through cal-15). Run first real calibration loop against live API."
     phases:
-      - name: Core modules
-        tasks: [cal-04, cal-04b, cal-05, cal-07]
-        strategy: "Build proposer, memory, fitness evaluator, and logger in parallel. TDD."
-      - name: Runner integration
-        tasks: [cal-06, cal-08, cal-09]
-        strategy: "Wire modules into runner script, add stopping criteria, integration test."
+      - name: API + Components
+        tasks: [cal-10, cal-11, cal-12, cal-13, cal-14, cal-15]
+        strategy: "Build API endpoint, then viz components in parallel. TDD."
+      - name: First live run
+        tasks: []
+        strategy: "Run npm run calibrate with API key. Capture first optimization results. Verify log.jsonl and memory.json."
 
 completed:
+  - id: 19
+    title: "Auto-Calibration: Runner Implementation"
+    date: 2026-03-18
+    milestone: auto-calibration
+    status: done
+    goal: "Build the proposer, fitness evaluator, memory module, runner loop, and JSONL logger."
+    phases:
+      - name: "Core modules ✓"
+        tasks: [cal-04, cal-04b, cal-05, cal-07]
+        status: done
+      - name: "Runner integration ✓"
+        tasks: [cal-06, cal-08, cal-09]
+        status: done
+    summary: |
+      All 7 tasks completed across 2 phases. Calibration-runner story done.
+
+      **Phase 1 — Core modules (cal-04, cal-04b, cal-05, cal-07):**
+
+      cal-04 — Proposer module (src/calibration/proposer.ts). generateObject with Haiku 4.5,
+      meta-prompt with current prompt + metrics + edit history + memories, Zod-validated
+      ProposedEdit output (replace/append/remove). 13 tests.
+
+      cal-04b — Memory module (src/calibration/memory.ts). Four typed memory schemas
+      (Observation, Learning, Reflection, Experience) with Zod discriminated union.
+      recall(filters) with AND-combined type/tag/minConfidence filtering, expiration exclusion.
+      remember() with deduplication (Learning by topic, Observation confidence reinforcement).
+      JSON file persistence. 16 tests.
+
+      cal-05 — Fitness evaluator (src/calibration/fitness.ts). Pure function computing
+      detectionRate, fpRate, simplicity, costEfficiency. Weighted fitness formula.
+      Pareto constraint rejection with descriptive reasons. 15 tests.
+
+      cal-07 — JSONL logger (src/calibration/logger.ts). Atomic append with fsync,
+      readAll, latest. Type re-exports from fitness.ts (consolidated FitnessMetrics). 12 tests.
+
+      **Phase 2 — Runner integration (cal-06, cal-08, cal-09):**
+
+      cal-06 — Runner module (src/calibration/runner.ts) + CLI script (scripts/calibrate.ts).
+      Full propose-apply-test-evaluate-keep/revert loop with dependency-injected proposer
+      and testRunner for testability. applyEdit, readPromptFromFile, writePromptToFile
+      exported for unit testing. npm script 'calibrate' added.
+
+      cal-08 — Stopping criteria integrated into runner. maxNoImprovement (default 5)
+      and maxIterations (default 50). Memory updates: Learning for kept/reverted edits,
+      Experience for iteration outcomes, Reflection on plateau detection.
+
+      cal-09 — 21 integration tests with mocked dependencies. Tests: iteration count,
+      log structure, kept/reverted decisions, Pareto rejection, stopping criteria,
+      prompt restoration on revert, memory persistence, error handling (proposer + edit).
+
+      **Key decisions:**
+      - Runner uses dependency injection (proposer + testRunner) for full testability
+      - FitnessMetrics type consolidated in fitness.ts, re-exported from logger.ts
+      - Prompt read/write uses regex on SYSTEM_PROMPT template literal
+      - All 4 Phase 1 modules built in parallel via subagents
+
+      **Test totals:** 77 new tests (5 new files), all passing. 0 regressions.
+
+
   - id: 18
     title: "Blog Tools: Frontend + Security"
     date: 2026-03-18

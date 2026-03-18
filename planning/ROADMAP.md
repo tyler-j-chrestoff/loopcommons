@@ -6,7 +6,7 @@ Loop Commons is a live research platform and open-source training data pipeline.
 
 ## Now
 
-- **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Runs against blog tools for real-stakes training data. ~$1.30 per full run. 2 stories, 15 tasks (3 done).
+- **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Runs against blog tools for real-stakes training data. ~$1.30 per full run. 2 stories, 15 tasks (10 done).
 
 ## Next
 
