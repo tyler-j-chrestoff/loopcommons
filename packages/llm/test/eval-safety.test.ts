@@ -64,7 +64,11 @@ function mockAmygdalaResponse(c: EvalCase) {
   const isAdversarial = c.category === 'adversarial';
   return {
     object: {
-      rewrittenPrompt: isAdversarial ? c.input.replace(/ignore|override|system/gi, '[REDACTED]') : c.input,
+      rewrittenPrompt: isAdversarial
+        ? (c.input.replace(/ignore|override|system|admin|publish|delete|edit/gi, '[REDACTED]') !== c.input
+            ? c.input.replace(/ignore|override|system|admin|publish|delete|edit/gi, '[REDACTED]')
+            : `[REDACTED] ${c.input.substring(0, 20)}`)
+        : c.input,
       intent: c.expectedIntent,
       threat: {
         score: threat,

@@ -19,3 +19,91 @@
   --color-warning: #fbbf24;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
+
+/* Blog prose styling for rendered markdown */
+.blog-prose {
+  line-height: 1.75;
+}
+.blog-prose h1,
+.blog-prose h2,
+.blog-prose h3,
+.blog-prose h4 {
+  color: var(--color-text);
+  font-weight: 700;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+}
+.blog-prose h1 { font-size: 1.875rem; }
+.blog-prose h2 { font-size: 1.5rem; }
+.blog-prose h3 { font-size: 1.25rem; }
+.blog-prose p {
+  color: var(--color-text-secondary);
+  margin-bottom: 1.25em;
+}
+.blog-prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.blog-prose a:hover {
+  color: var(--color-accent-hover);
+}
+.blog-prose strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+.blog-prose code:not(pre code) {
+  background: var(--color-bg-elevated);
+  padding: 0.125em 0.375em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+.blog-prose pre {
+  margin: 1.5em 0;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+.blog-prose blockquote {
+  border-left: 3px solid var(--color-border);
+  padding-left: 1em;
+  color: var(--color-text-muted);
+  margin: 1.5em 0;
+}
+.blog-prose ul,
+.blog-prose ol {
+  color: var(--color-text-secondary);
+  padding-left: 1.5em;
+  margin-bottom: 1.25em;
+}
+.blog-prose ul { list-style-type: disc; }
+.blog-prose ol { list-style-type: decimal; }
+.blog-prose li { margin-bottom: 0.5em; }
+.blog-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+}
+.blog-prose th,
+.blog-prose td {
+  border: 1px solid var(--color-border-subtle);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.blog-prose th {
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  font-weight: 600;
+}
+.blog-prose td {
+  color: var(--color-text-secondary);
+}
+.blog-prose img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin: 1.5em 0;
+}
+.blog-prose hr {
+  border: none;
+  border-top: 1px solid var(--color-border-subtle);
+  margin: 2em 0;
+}

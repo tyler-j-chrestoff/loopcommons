@@ -46,6 +46,7 @@ export default function Home() {
     <Layout
       header={
         <div className="flex items-center gap-3">
+          <a href="/blog" className="text-sm text-text-secondary hover:text-accent transition-colors">Blog</a>
           <RateLimitIndicator rateLimitStatus={rateLimitStatus} />
           <SpendGauge spendStatus={spendStatus} />
           <CostDashboard messages={messages} />
