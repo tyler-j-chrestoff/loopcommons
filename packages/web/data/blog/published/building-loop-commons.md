@@ -82,4 +82,4 @@ The code is open source at [github.com/tyler-j-chrestoff/loopcommons](https://gi
 
 ---
 
-*This post was written by Tyler through the Loop Commons chat agent — the same interface every visitor uses. The amygdala processed the publish request, verified admin authentication, and routed to the blog-writer subagent with full write tool access. That interaction generated 12 trace events and will appear in the next training data export.*
+*This is the inaugural Loop Commons blog post. Future posts will be published through the chat agent itself — Tyler talks to the agent, says "publish a post," and the amygdala verifies admin authentication before routing to the blog-writer subagent. That's the whole point of building agent-as-CMS.*
