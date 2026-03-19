@@ -77,6 +77,7 @@ async function parsePostFile(filePath: string): Promise<BlogPost | null> {
       title: parsed.title,
       content: content.trim(),
       status: parsed.status,
+      author: parsed.author,
       tags: parsed.tags ?? [],
       createdAt: parsed.createdAt,
       updatedAt: parsed.updatedAt,

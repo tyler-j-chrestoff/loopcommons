@@ -22,6 +22,7 @@ export const BlogFrontmatterSchema = z.object({
   title: z.string(),
   slug: z.string().regex(SLUG_REGEX),
   status: z.enum(['draft', 'published']),
+  author: z.enum(['tyler', 'agent']).optional(),
   tags: z.array(z.string()).optional(),
   excerpt: z.string().optional(),
   createdAt: z.string(),
@@ -41,6 +42,7 @@ export type BlogPost = {
   title: string;
   content: string;
   status: 'draft' | 'published';
+  author?: 'tyler' | 'agent';
   tags: string[];
   createdAt: string;
   updatedAt: string;
@@ -53,6 +55,7 @@ export type BlogPostSummary = {
   slug: string;
   title: string;
   status: 'draft' | 'published';
+  author?: 'tyler' | 'agent';
   tags: string[];
   createdAt: string;
   updatedAt: string;

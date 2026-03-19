@@ -57,6 +57,10 @@ export default async function PostPage({ params }: Props) {
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-text">{frontmatter.title}</h1>
           <div className="mt-2 text-sm text-text-muted">
+            {frontmatter.author === 'agent'
+              ? 'Written by the Loop Commons agent'
+              : 'Written by Tyler Chrestoff'}
+            {' · '}
             {formatDate(frontmatter.publishedAt ?? frontmatter.updatedAt)}
           </div>
           {frontmatter.tags && frontmatter.tags.length > 0 && (

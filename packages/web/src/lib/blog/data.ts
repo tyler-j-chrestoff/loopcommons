@@ -35,6 +35,7 @@ export async function getPost(
     title: post.title,
     slug: post.slug,
     status: post.status,
+    author: post.author,
     tags: post.tags,
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,

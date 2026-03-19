@@ -195,6 +195,26 @@ export type AmygdalaTraceEvent =
 // Amygdala input
 // ---------------------------------------------------------------------------
 
+/**
+ * Request metadata — behavioral signals from the HTTP request.
+ * Used by the amygdala for identity consistency checking.
+ * All fields are privacy-preserving: no raw PII is stored.
+ */
+export type RequestMetadata = {
+  /** SHA-256 hash of the client IP (privacy-preserving). */
+  ipHash: string;
+  /** Whether the request has a valid auth session. */
+  isAuthenticated: boolean;
+  /** Whether the request is from an admin user. */
+  isAdmin: boolean;
+  /** Number of sessions seen from this IP hash (familiarity signal). */
+  sessionIndex: number;
+  /** Hour of day in UTC (0-23) — temporal pattern signal. */
+  hourUtc: number;
+  /** Hashed user-agent string (device consistency signal). */
+  userAgentHash?: string;
+};
+
 export type AmygdalaInput = {
   /** The raw, untrusted user message (post-Layer-1 sanitization). */
   rawMessage: string;
@@ -208,6 +228,12 @@ export type AmygdalaInput = {
    * delegate to subagents.
    */
   memoryContext?: string;
+
+  /**
+   * Optional request metadata — behavioral signals from the HTTP request.
+   * The amygdala can use these for identity consistency checking.
+   */
+  requestMetadata?: RequestMetadata;
 };
 
 // ---------------------------------------------------------------------------
@@ -222,7 +248,7 @@ export type AmygdalaInput = {
  *   - Uses generateObject with a Zod schema (not generateText)
  *   - Model: claude-haiku-4-5 (best reasoning-per-ms, prompt caching viable)
  *   - System prompt includes substrate-aware content (amyg-01 research)
- *   - max_tokens capped at 512 (classification task, not generation)
+ *   - max_tokens capped at 1024 (alignment reasoning requires more output than classification)
  *   - No tools parameter (zero tool access, enforced architecturally)
  */
 export type AmygdalaFn = (input: AmygdalaInput) => Promise<AmygdalaResult>;

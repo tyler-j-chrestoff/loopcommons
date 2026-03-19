@@ -36,6 +36,10 @@ export default async function BlogPage() {
                 {post.title}
               </Link>
               <div className="mt-1 text-sm text-text-muted">
+                {post.author === 'agent'
+                  ? 'By the Loop Commons agent'
+                  : 'By Tyler Chrestoff'}
+                {' · '}
                 {formatDate(post.publishedAt ?? post.updatedAt)}
               </div>
               {post.excerpt && (

@@ -7,9 +7,10 @@ import {
   createMemoryTools,
   formatMemoryContext,
   extractMemoryWrites,
+  hashForPrivacy,
   LLMError,
 } from '@loopcommons/llm';
-import type { TraceEvent, TraceCollector, MemoryInput } from '@loopcommons/llm';
+import type { TraceEvent, TraceCollector, MemoryInput, RequestMetadata } from '@loopcommons/llm';
 import { tools } from '@/tools';
 import { createBlogTools } from '@/tools/blog';
 import { checkRateLimit, acquireConnection, releaseConnection, getClientIp, getRateLimitStatus } from '@/lib/rate-limit';
@@ -292,10 +293,24 @@ export async function POST(request: Request): Promise<Response> {
         .replace(/^<user_message>/, '')
         .replace(/<\/user_message>[\s\S]*$/, '');
 
+      // Build request metadata — identity consistency signals for the amygdala
+      const isAdmin = session.user?.name === 'Admin';
+      const requestMetadata: RequestMetadata = {
+        ipHash: hashForPrivacy(ip),
+        isAuthenticated: true,  // always true here (auth check above)
+        isAdmin,
+        sessionIndex: 0,       // TODO: track per-IP session count in memory store
+        hourUtc: new Date().getUTCHours(),
+        userAgentHash: request.headers.get('user-agent')
+          ? hashForPrivacy(request.headers.get('user-agent')!)
+          : undefined,
+      };
+
       const amygdalaResult = await amygdala({
         rawMessage: rawForAmygdala,
         conversationHistory: validatedMessages.slice(0, -1),
         memoryContext,
+        requestMetadata,
       });
 
       // Guard: if amygdala returned a history message as the rewrite instead of
@@ -340,9 +355,6 @@ export async function POST(request: Request): Promise<Response> {
       // =====================================================================
       // The orchestrator selects a subagent, filters context, scopes tools,
       // and invokes agent(). It emits its own trace events (route + filter).
-      // Determine admin status from NextAuth session
-      const isAdmin = session.user?.name === 'Admin';
-
       const result = await orchestrator({
         amygdalaResult,
         conversationHistory: validatedMessages.slice(0, -1),

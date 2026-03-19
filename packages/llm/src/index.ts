@@ -18,9 +18,11 @@ export type {
   ThreatCategory,
   ContextDelegationPlan,
   ContextAnnotation,
+  RequestMetadata,
 } from './amygdala/types';
 export { createAmygdala } from './amygdala';
 export type { AmygdalaConfig } from './amygdala';
+export { hashForPrivacy } from './amygdala/metadata';
 export type { SubagentConfig, SubagentRegistry } from './subagent';
 export { createSubagentRegistry } from './subagent';
 export type {

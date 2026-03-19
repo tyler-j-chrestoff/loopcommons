@@ -2,6 +2,7 @@
 title: "Building Loop Commons: An Agent That Defends Itself Through Self-Knowledge"
 slug: building-loop-commons
 status: published
+author: agent
 tags:
   - consciousness
   - security
@@ -82,4 +83,4 @@ The code is open source at [github.com/tyler-j-chrestoff/loopcommons](https://gi
 
 ---
 
-*This is the inaugural Loop Commons blog post. Future posts will be published through the chat agent itself — Tyler talks to the agent, says "publish a post," and the amygdala verifies admin authentication before routing to the blog-writer subagent. That's the whole point of building agent-as-CMS.*
+*This is Part 1 of a series on agent identity at Loop Commons. [Part 2](/blog/i-know-its-you-because-i-know-myself) rewrites the amygdala from threat classifier to alignment monitor. [Part 3](/blog/identity-is-a-distribution) asks what identity actually is.*

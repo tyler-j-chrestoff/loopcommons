@@ -64,6 +64,7 @@ vi.mock('@loopcommons/llm', () => ({
   createMemoryTools: () => [],
   formatMemoryContext: () => '',
   extractMemoryWrites: () => [],
+  hashForPrivacy: (input: string) => 'mock-hash-' + input.slice(0, 8),
   defineTool: (config: any) => config,
   SLUG_REGEX: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
   BlogFrontmatterSchema: { safeParse: () => ({ success: true, data: {} }), parse: (d: any) => d },
