@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SeasonPicker } from '@/components/SeasonPicker';
 
 export default function BlogLayout({
   children,
@@ -6,7 +7,7 @@ export default function BlogLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg font-[family-name:var(--font-prose)]">
       <nav className="border-b border-border bg-bg-surface">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <Link
@@ -28,6 +29,7 @@ export default function BlogLayout({
             >
               Chat
             </Link>
+            <SeasonPicker />
           </div>
         </div>
       </nav>

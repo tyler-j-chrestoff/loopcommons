@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { Trace, Round } from '@loopcommons/llm';
-import type { ChatMessage, ChatSSEEvent, AmygdalaClassification, RoutingDecision } from './types';
+import type { ChatMessage, ChatSSEEvent, AmygdalaClassification, RoutingDecision, MessageSegment } from './types';
 import type { BudgetSnapshot } from './token-budget';
 import type { FeedbackRating, FeedbackCategory } from './feedback';
 
@@ -136,6 +136,8 @@ export function useChat(): UseChatReturn {
         let assistantContent = '';
         let completedRounds: Round[] = [];
         let finalTrace: Trace | null = null;
+        // Ordered segments for inline rendering
+        let segments: MessageSegment[] = [];
         // Accumulate amygdala classification from multiple events
         let amygdalaData: Partial<AmygdalaClassification> = {};
         let routingData: Partial<RoutingDecision> = {};
@@ -163,18 +165,33 @@ export function useChat(): UseChatReturn {
 
             if (event.type === 'text-delta') {
               assistantContent += event.delta;
+              // Append to current text segment or create a new one
+              const lastSeg = segments[segments.length - 1];
+              if (lastSeg && lastSeg.type === 'text') {
+                lastSeg.content += event.delta;
+              } else {
+                segments.push({ type: 'text', content: event.delta });
+              }
               // Update the assistant message in real-time
               setMessages(prev => {
+                const msg: ChatMessage = { id: assistantId, role: 'assistant' as const, content: assistantContent, segments: [...segments] };
                 const existing = prev.find(m => m.id === assistantId);
                 if (existing) {
-                  return prev.map(m =>
-                    m.id === assistantId ? { ...m, content: assistantContent } : m
-                  );
+                  return prev.map(m => m.id === assistantId ? { ...m, content: assistantContent, segments: [...segments] } : m);
                 }
-                return [...prev, { id: assistantId, role: 'assistant' as const, content: assistantContent }];
+                return [...prev, msg];
               });
             } else if (event.type === 'round:complete') {
               const round = event.round;
+              // Add tool call segment inline
+              const toolExecs = round.toolExecutions;
+              if (toolExecs.length > 0) {
+                segments.push({ type: 'tool-call', executions: toolExecs });
+                // Update message with new segments immediately
+                setMessages(prev => prev.map(m =>
+                  m.id === assistantId ? { ...m, segments: [...segments] } : m
+                ));
+              }
               completedRounds = [...completedRounds, round];
               // Only overwrite if round has content and we haven't streamed text
               if (round.response.content && !assistantContent) {
@@ -284,6 +301,7 @@ export function useChat(): UseChatReturn {
             id: assistantId,
             role: 'assistant',
             content: assistantContent,
+            segments: segments.length > 0 ? segments : undefined,
             trace: finalTrace ?? undefined,
             rounds: completedRounds,
             cost: finalTrace?.totalCost,

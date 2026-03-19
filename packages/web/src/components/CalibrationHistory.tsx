@@ -72,7 +72,7 @@ function ConvergenceChart({ data }: { data: CalibrationIteration[] }) {
             cy={y(d.fitnessScore)}
             r={4}
             fill={isReverted ? 'transparent' : 'var(--color-accent)'}
-            stroke={isReverted ? '#ef4444' : 'var(--color-accent)'}
+            stroke={isReverted ? 'var(--color-error)' : 'var(--color-accent)'}
             strokeWidth={isReverted ? 1.5 : 0}
           >
             <title>{`#${d.iteration}: ${d.fitnessScore.toFixed(3)} (${d.decision})`}</title>
@@ -162,10 +162,10 @@ function IterationRow({ item }: { item: CalibrationIteration }) {
 
   const badgeColor =
     item.decision === 'baseline'
-      ? 'bg-blue-900/40 text-blue-300'
+      ? 'bg-accent/20 text-accent'
       : item.decision === 'kept'
-        ? 'bg-green-900/40 text-green-300'
-        : 'bg-red-900/40 text-red-300';
+        ? 'bg-success/20 text-success'
+        : 'bg-error/20 text-error';
 
   return (
     <div className="border-b border-border px-3 py-2">
@@ -206,7 +206,7 @@ export function CalibrationHistory() {
   }, []);
 
   if (error) {
-    return <div className="p-4 text-sm text-red-400">Failed to load calibration data.</div>;
+    return <div className="p-4 text-sm text-error">Failed to load calibration data.</div>;
   }
 
   if (data === null) {
@@ -251,8 +251,8 @@ export function CalibrationHistory() {
 
           {/* Iteration Timeline */}
           <div className="border border-border rounded overflow-hidden max-h-64 overflow-y-auto">
-            {data.map(item => (
-              <IterationRow key={item.iteration} item={item} />
+            {data.map((item, i) => (
+              <IterationRow key={`${item.iteration}-${i}`} item={item} />
             ))}
           </div>
         </div>

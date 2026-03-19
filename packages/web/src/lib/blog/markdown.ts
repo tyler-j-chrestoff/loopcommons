@@ -24,7 +24,7 @@ const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
   .use(remarkRehype)
-  .use(rehypePrettyCode, { theme: 'github-dark-dimmed' })
+  .use(rehypePrettyCode, { theme: 'everforest-light' })
   .use(rehypeStringify);
 
 export async function parseMarkdown(raw: string): Promise<ParsedMarkdown> {

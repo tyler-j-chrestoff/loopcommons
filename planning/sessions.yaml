@@ -2,23 +2,73 @@
 # Each session is one Claude Code conversation (~1M token context).
 # Subagents stretch this further via parallel execution.
 
-planned:
-  - id: 20
-    title: "Spring Theme: CVNP Palette"
-    milestone: seasonal-theme
-    goal: "Replace generic dark theme with spring Cuyahoga Valley National Park palette. Light mode, typography split, season infrastructure."
-    phases:
-      - name: Research + infrastructure
-        tasks: [theme-01, theme-02, theme-03]
-        strategy: "Font research first (informs typography), then theme infra + palette in parallel. TDD where applicable."
-      - name: Typography + blog + audit
-        tasks: [theme-04, theme-05, theme-06]
-        strategy: "Typography split, blog prose restyle, component contrast audit. Parallel where independent."
-      - name: Season picker + verification
-        tasks: [theme-07, theme-08]
-        strategy: "Wire season selector, run full test suite, visual spot-check all pages."
+planned: []
 
 completed:
+  - id: 22
+    title: "Spring Theme: CVNP Palette"
+    date: 2026-03-18
+    milestone: seasonal-theme
+    status: done
+    goal: "Replace generic dark theme with spring Cuyahoga Valley National Park palette. Light mode, typography split, season infrastructure."
+    phases:
+      - name: "Research + infrastructure ✓"
+        tasks: [theme-01, theme-02, theme-03]
+        status: done
+      - name: "Typography + blog + audit ✓"
+        tasks: [theme-04, theme-05, theme-06]
+        status: done
+      - name: "Season picker + verification ✓"
+        tasks: [theme-07, theme-08]
+        status: done
+    summary: |
+      All 8 tasks complete. Seasonal-theme milestone done.
+
+      **Font research (theme-01):** Evaluated 4 candidates (National Park, Literata, Lora, Bitter).
+      Selected Literata (Google Fonts serif, optical sizes, purpose-built for digital reading).
+      Shiki theme: everforest-light (nature-inspired, warm cream base).
+
+      **Theme infrastructure (theme-02, theme-03):** Refactored @theme to html[data-season='spring']
+      scoping. 18 color tokens defined with CVNP-inspired names (morning fog backgrounds, sandstone
+      surfaces, bark/soil text, Virginia bluebell accent, moss green secondary). Added accent-secondary
+      token for moss green. Tailwind v4 utilities resolve through CSS custom properties.
+
+      **Typography + blog (theme-04, theme-05):** Literata via next/font on blog layout + .blog-prose.
+      JetBrains Mono stays on chat/observability. Blog prose restyled: larger base size (1.0625rem),
+      tighter heading line-height, blockquotes with moss green border + surface background,
+      code blocks with border, link underlines with subtle decoration color.
+      Shiki theme switched to everforest-light.
+
+      **Component audit (theme-06):** Audited all 23+ components. Fixed hardcoded Tailwind colors in
+      ComparisonMode (zinc/emerald/amber/red → theme tokens), CalibrationHistory (badge colors,
+      reverted circle stroke, error text), FeedbackButtons (green/red/zinc → success/error/text-muted).
+      Categorical data viz colors (intent distribution bars, gauge bars, metric chart lines)
+      intentionally kept as distinct identifiers.
+
+      **Season picker (theme-07):** SeasonPicker component in blog nav. Dropdown with spring active,
+      summer/fall/winter disabled with "Coming soon". Persists to localStorage. SeasonInitializer
+      component in root layout restores stored season on client hydration.
+
+      **Bonus: Inline tool calls + markdown rendering:**
+      - Refactored message model to use ordered segments (text + tool-call interleaved).
+        Tool calls now render inline where they occurred, not appended at bottom.
+        Fixes text-smashing bug where pre-tool and post-tool text concatenated.
+      - Added react-markdown for chat bubble rendering. Assistant messages render
+        bold, italic, code, lists, headings, blockquotes. User messages stay plain text.
+        New .chat-prose CSS class with tuned spacing hierarchy.
+      - Fixed CalibrationHistory duplicate React key warning (iteration 0 collision).
+      - Removed renderToolCalls prop from ChatThread (tool calls now segment-based).
+
+      **Verification (theme-08):** 363 web tests pass, build succeeds. Fixed 2 test assertions
+      in feedback-buttons.test.tsx (text-green → text-success, text-red → text-error).
+      WCAG contrast needs visual spot-check.
+
+      **Key decisions:**
+      - Literata over National Park for body (readability at sustained reading > thematic punch)
+      - everforest-light Shiki theme (nature-inspired, matches warm palette)
+      - data-season attribute on <html> for pure-CSS seasonal swaps
+      - Categorical data viz colors stay hardcoded (they're identifiers, not theme colors)
+
   - id: 21
     title: "Auto-Calibration: Visualization + First Run"
     date: 2026-03-18

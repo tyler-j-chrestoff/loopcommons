@@ -81,11 +81,18 @@ export type CalibrationIteration = {
   decision: 'baseline' | 'kept' | 'reverted';
 };
 
+/** A segment of an assistant message — text or tool calls, in stream order */
+export type MessageSegment =
+  | { type: 'text'; content: string }
+  | { type: 'tool-call'; executions: ToolExecution[] };
+
 /** A chat message in the UI */
 export type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  /** Ordered segments for inline rendering (text + tool calls interleaved) */
+  segments?: MessageSegment[];
   trace?: Trace;
   rounds?: Round[];
   cost?: number;

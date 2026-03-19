@@ -71,7 +71,7 @@ describe('FeedbackButtons', () => {
     await userEvent.click(screen.getByRole('button', { name: /thumbs up/i }));
 
     const btn = screen.getByRole('button', { name: /thumbs up/i });
-    expect(btn.className).toContain('text-green');
+    expect(btn.className).toContain('text-success');
   });
 
   it('highlights thumbs down after negative submission', async () => {
@@ -82,7 +82,7 @@ describe('FeedbackButtons', () => {
     await userEvent.click(screen.getByText('Harmful'));
 
     const btn = screen.getByRole('button', { name: /thumbs down/i });
-    expect(btn.className).toContain('text-red');
+    expect(btn.className).toContain('text-error');
   });
 
   it('disables both buttons after submission', async () => {

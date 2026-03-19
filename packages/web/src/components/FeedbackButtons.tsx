@@ -51,8 +51,8 @@ export function FeedbackButtons({ messageId, sessionId, onSubmit }: FeedbackButt
           onClick={handleThumbsUp}
           className={`rounded p-1 text-sm transition-colors ${
             submitted === 'positive'
-              ? 'text-green-400'
-              : 'text-zinc-500 hover:text-zinc-100'
+              ? 'text-success'
+              : 'text-text-muted hover:text-text'
           } disabled:cursor-not-allowed`}
         >
           <svg
@@ -71,8 +71,8 @@ export function FeedbackButtons({ messageId, sessionId, onSubmit }: FeedbackButt
           onClick={handleThumbsDown}
           className={`rounded p-1 text-sm transition-colors ${
             submitted === 'negative'
-              ? 'text-red-400'
-              : 'text-zinc-500 hover:text-zinc-100'
+              ? 'text-error'
+              : 'text-text-muted hover:text-text'
           } disabled:cursor-not-allowed`}
         >
           <svg
@@ -92,7 +92,7 @@ export function FeedbackButtons({ messageId, sessionId, onSubmit }: FeedbackButt
               key={cat.value}
               type="button"
               onClick={() => handleCategory(cat.value)}
-              className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-zinc-100"
+              className="rounded bg-bg-elevated px-2 py-0.5 text-xs text-text-secondary transition-colors hover:bg-bg-hover hover:text-text"
             >
               {cat.label}
             </button>

@@ -13,24 +13,8 @@ import { SecurityEventLog } from '@/components/SecurityEventLog';
 import { ComparisonMode } from '@/components/ComparisonMode';
 import { SessionThread } from '@/components/SessionThread';
 import { ContextBudgetBar } from '@/components/ContextBudgetBar';
-import { ToolCallInline } from '@/components/ToolCallInline';
 import { JudgeScoreCard } from '@/components/JudgeScoreCard';
 import { CalibrationHistory } from '@/components/CalibrationHistory';
-import type { ChatMessage } from '@/lib/types';
-
-function renderToolCalls(message: ChatMessage) {
-  if (!message.rounds || message.role !== 'assistant') return null;
-  const toolExecutions = message.rounds.flatMap(r => r.toolExecutions);
-  if (toolExecutions.length === 0) return null;
-
-  return (
-    <div className="mt-2">
-      {toolExecutions.map(te => (
-        <ToolCallInline key={te.toolCallId} execution={te} />
-      ))}
-    </div>
-  );
-}
 
 export default function Home() {
   const {
@@ -73,7 +57,6 @@ export default function Home() {
           <ChatThread
             messages={messages}
             isLoading={isLoading}
-            renderToolCalls={renderToolCalls}
             onFeedback={(payload) => {
               submitFeedback(
                 payload.messageId,
