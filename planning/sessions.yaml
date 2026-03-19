@@ -2,7 +2,36 @@
 # Each session is one Claude Code conversation (~1M token context).
 # Subagents stretch this further via parallel execution.
 
-planned: []
+planned:
+  - id: 26
+    title: "Agent Identity — Soul + Blog"
+    milestone: agent-identity
+    goal: "Rewrite amygdala from security classifier to identity/alignment system. SOUL.md document, metadata enrichment, blog post capturing the theory."
+    phases:
+      - name: "Research + soul document"
+        tasks: [soul-01, soul-02]
+        strategy: "Survey agent identity architectures + behavioral biometrics. Tyler co-authors SOUL.md — the agent's identity document."
+      - name: "Amygdala rewrite + metadata"
+        tasks: [soul-03, soul-04]
+        strategy: "TDD. Rewrite prompt to be soul-grounded. Add request metadata to AmygdalaInput. Verify red-team pass rates preserved."
+      - name: "Blog post"
+        tasks: [soul-05]
+        strategy: "Write and publish via the agent's own blog tools. The system writing about itself."
+
+  - id: 27
+    title: "Alive Memory — Subagent Writes + Consolidation"
+    milestone: agent-identity
+    goal: "Subagents decide what to remember (Option C). Hippocampal consolidation synthesizes observations into reflections. ACC conflict detection."
+    phases:
+      - name: "Research + subagent-driven memory"
+        tasks: [alive-01, alive-02]
+        strategy: "Research consolidation approaches. Give subagents memory_remember with tool-level threat gating. Remove extractMemoryWrites."
+      - name: "Consolidation + conflict detection"
+        tasks: [alive-03, alive-04]
+        strategy: "Hippocampal pass after session end. ACC flags contradictions. Both guided by soul document."
+      - name: "Red-team"
+        tasks: [alive-05]
+        strategy: "Verify Option C doesn't open poisoning vectors. Test consolidation doesn't amplify bad data."
 
 completed:
   - id: 25
