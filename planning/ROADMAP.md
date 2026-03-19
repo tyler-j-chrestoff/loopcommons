@@ -2,10 +2,11 @@
 
 Loop Commons is a live research platform and open-source training data pipeline. A substrate-aware conversational agent that defends itself through self-knowledge, with every decision traced, visualized, and exported as labeled training data for open-source language models.
 
-**Active milestone**: None — planning next milestone.
+**Active milestone**: [memory-packages](milestones/memory-packages/) — Composable memory as the pilot for tool packages. ToolPackage interface, keyword strategy (A), embedding strategy (B), admin API. 2 stories (10 tasks), 2 sessions.
 
 ## Now
 
+- **[memory-packages](milestones/memory-packages/)** — Extract memory into a composable tool package. Keyword recall (Package A) + embedding recall (Package B) behind a shared ToolPackage interface. Proves the tools-as-ontology pattern.
 - **eval-hooks completion** — Remaining eval-hooks gates: feedback data flows through pipeline to training export, evaluation dashboard. 2 open gates.
 
 ## Next
@@ -26,9 +27,9 @@ Loop Commons is a live research platform and open-source training data pipeline.
 
 ## Next (Tools-as-Ontology Trajectory)
 
-Phases 2-5 of the trajectory defined in `milestones/agent-memory/designs/tools-as-ontology.md`. Each phase is independently useful and enables the next.
+Phases 2-5 of the trajectory defined in `milestones/agent-memory/designs/tools-as-ontology.md`. Each phase is independently useful and enables the next. Memory-packages is the Phase 2 pilot — prove the pattern with the most complex tool, then generalize.
 
-- **Tools as Packages** — Extract tools from packages/web into standalone packages. Enrich tool metadata (intent, cost, boundary constraints). Prerequisite for derived prompts and multi-interface.
+- **Tools as Packages (generalize)** — Extract blog, resume, project tools using the pattern proven by memory-packages. Enrich tool metadata (intent, cost, boundary constraints). Prerequisite for derived prompts and multi-interface.
 - **Derived System Prompts** — Generate system prompts from tool composition + authored domain knowledge. Subagent configs use derived prompts. Prerequisite for arena.
 - **Multi-Interface Identity** — Agent operates on web + Reddit/HN/CLI with shared persistent state and tool set. Each interface is a thin adapter.
 - **Evolutionary Agent Arena** — Spawn agents with random tool compositions, let them learn/teach/compete, select for fitness. See `suggestions/evolutionary-agent-arena.md`.

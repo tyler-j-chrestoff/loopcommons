@@ -2,6 +2,7 @@
 
 **Source**: user conversation (session 23 planning), 2026-03-18
 **Relates to**: evolutionary-agent-arena, agent-memory, auto-calibration, subagent registry
+**Status**: Partially promoted — ToolPackage interface in [memory-packages](../milestones/memory-packages/) milestone. Derived system prompts remain Phase 3.
 
 ## Core Insight
 

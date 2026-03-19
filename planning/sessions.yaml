@@ -2,9 +2,68 @@
 # Each session is one Claude Code conversation (~1M token context).
 # Subagents stretch this further via parallel execution.
 
-planned: []
+planned:
+  - id: 29
+    title: "Memory Packages — Interface + Extraction"
+    milestone: memory-packages
+    goal: "Define ToolPackage interface, extract packages/memory, wire route.ts through package contract."
+    phases:
+      - name: "Research + interface design"
+        tasks: [pkg-01, pkg-02]
+        status: planned
+      - name: "Extract + Package A"
+        tasks: [pkg-03, pkg-04]
+        status: planned
+      - name: "Wire route.ts"
+        tasks: [pkg-05]
+        status: planned
+    strategy: "pkg-01 research is mostly done (session 28 embedding research). Start with interface TDD, then extract. Keep all 93 memory tests green throughout."
+
+  - id: 30
+    title: "Memory Packages — Embeddings + Admin API"
+    milestone: memory-packages
+    goal: "Semantic recall via embeddings (Package B), admin memory inspection, swappability proof."
+    phases:
+      - name: "Embedding strategy"
+        tasks: [emb-01, emb-02, emb-03]
+        status: planned
+      - name: "Admin API + red-team"
+        tasks: [emb-04, emb-05]
+        status: planned
+    strategy: "Needs OPENAI_API_KEY for embedding model. Mock in tests, live in eval. Blend scoring (0.6 semantic + 0.4 keyword) — tune weights with real queries."
 
 completed:
+  - id: 28
+    title: "Planning — Memory Packages Milestone"
+    date: 2026-03-19
+    milestone: memory-packages
+    status: done
+    goal: "Plan memory-packages milestone. Fix live recall bug. Research frontier memory retrieval approaches."
+    phases:
+      - name: "Bug diagnosis + fix ✓"
+        tasks: []
+        status: done
+      - name: "Research frontier approaches ✓"
+        tasks: []
+        status: done
+      - name: "Milestone planning ✓"
+        tasks: []
+        status: done
+    summary: |
+      Planning session. Found and fixed live bug in memory recall: matchesQuery did full-string
+      substring matching, so multi-word queries almost never matched. Fixed with tokenized word
+      matching (AND semantics). 6 new tests (22 total in memory-tools.test.ts, 93 across all memory tests).
+
+      Researched frontier memory retrieval: Anthropic's own memory tool API is file-based CRUD
+      (very similar to our approach). Mem0 uses vector embeddings (26% better recall). Vercel AI SDK
+      has built-in embed() + cosineSimilarity(). OpenAI text-embedding-3-small at 512 dims is the
+      right embedding model for our scale.
+
+      Planned memory-packages milestone: 2 stories, 10 tasks, 2 sessions. Memory as the pilot for
+      composable tool packages (tools-as-ontology Phase 2). Package A = keyword, Package B = embeddings,
+      shared ToolPackage interface. Tyler's key insight: if tools define identity, then memory
+      packages are interchangeable — different memory = different agent.
+
   - id: 27
     title: "Alive Memory — Subagent Writes + Consolidation"
     date: 2026-03-19

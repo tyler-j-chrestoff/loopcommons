@@ -16,21 +16,24 @@ import type { PersistentState, MemoryInput, Memory } from './index';
 // Query-time content matching
 // ---------------------------------------------------------------------------
 
-function matchesQuery(memory: Memory, query: string): boolean {
-  const q = query.toLowerCase();
+function getSearchableText(memory: Memory): string {
   switch (memory.type) {
     case 'observation':
-      return memory.subject.toLowerCase().includes(q) ||
-        memory.content.toLowerCase().includes(q);
+      return `${memory.subject} ${memory.content}`.toLowerCase();
     case 'learning':
-      return memory.topic.toLowerCase().includes(q) ||
-        memory.insight.toLowerCase().includes(q);
+      return `${memory.topic} ${memory.insight}`.toLowerCase();
     case 'relationship':
-      return memory.entity.toLowerCase().includes(q) ||
-        memory.context.toLowerCase().includes(q);
+      return `${memory.entity} ${memory.context}`.toLowerCase();
     case 'reflection':
-      return memory.insight.toLowerCase().includes(q);
+      return memory.insight.toLowerCase();
   }
+}
+
+function matchesQuery(memory: Memory, query: string): boolean {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return true;
+  const text = getSearchableText(memory);
+  return words.every((word) => text.includes(word));
 }
 
 // ---------------------------------------------------------------------------

@@ -223,5 +223,45 @@ describe('createMemoryTools', () => {
       const result = JSON.parse(await recallTool.execute({ query: 'nonexistent xyz' }));
       expect(result.memories.length).toBe(0);
     });
+
+    // -----------------------------------------------------------------------
+    // Multi-word query matching (bug fix: full-string substring → tokenized)
+    // -----------------------------------------------------------------------
+    it('matches multi-word query when words appear across fields', async () => {
+      // "Tyler data engineer" — each word appears in subject or content
+      const result = JSON.parse(await recallTool.execute({ query: 'Tyler data engineer' }));
+      expect(result.memories.length).toBe(1);
+      expect(result.memories[0].subject).toBe('Tyler');
+    });
+
+    it('matches query words in any order', async () => {
+      const result = JSON.parse(await recallTool.execute({ query: 'engineer data Tyler' }));
+      expect(result.memories.length).toBe(1);
+      expect(result.memories[0].subject).toBe('Tyler');
+    });
+
+    it('matches partial words within tokens', async () => {
+      // "concise" appears in insight "prefers concise"
+      const result = JSON.parse(await recallTool.execute({ query: 'response concise style' }));
+      expect(result.memories.length).toBe(1);
+      expect(result.memories[0].type).toBe('learning');
+    });
+
+    it('requires all query words to match (AND semantics)', async () => {
+      // "Tyler" matches observation but "quantum" does not
+      const result = JSON.parse(await recallTool.execute({ query: 'Tyler quantum' }));
+      expect(result.memories.length).toBe(0);
+    });
+
+    it('single-word query still works as before', async () => {
+      const result = JSON.parse(await recallTool.execute({ query: 'Tyler' }));
+      expect(result.memories.length).toBe(1);
+      expect(result.memories[0].subject).toBe('Tyler');
+    });
+
+    it('is case-insensitive for multi-word queries', async () => {
+      const result = JSON.parse(await recallTool.execute({ query: 'TYLER DATA ENGINEER' }));
+      expect(result.memories.length).toBe(1);
+    });
   });
 });
