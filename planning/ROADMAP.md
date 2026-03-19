@@ -2,10 +2,11 @@
 
 Loop Commons is a live research platform and open-source training data pipeline. A substrate-aware conversational agent that defends itself through self-knowledge, with every decision traced, visualized, and exported as labeled training data for open-source language models.
 
-**Active milestone**: none — planning next milestone.
+**Active milestone**: [agent-memory](milestones/agent-memory/) — persistent world model with amygdala-mediated memory.
 
 ## Now
 
+- **[agent-memory](milestones/agent-memory/)** — Persistent agent world model. Amygdala-mediated memory (recall + write through the security bottleneck). Interface-agnostic design for future multi-platform identity. 2 stories (12 tasks), 2 sessions.
 - **eval-hooks completion** — Remaining eval-hooks gates: feedback data flows through pipeline to training export, evaluation dashboard. 2 open gates.
 
 ## Next
@@ -22,17 +23,26 @@ Loop Commons is a live research platform and open-source training data pipeline.
 - **[hardening](milestones/hardening/)** — Rate limiting, daily spend cap, prompt injection defense. 3 stories, 16 tasks, 2 sessions. Completed 2026-03-17.
 - **[agent-tools-streaming](milestones/agent-tools-streaming/)** — Real tools, token streaming, security fixes. Completed 2026-03-16.
 
+## Next (Tools-as-Ontology Trajectory)
+
+Phases 2-5 of the trajectory defined in `milestones/agent-memory/designs/tools-as-ontology.md`. Each phase is independently useful and enables the next.
+
+- **Tools as Packages** — Extract tools from packages/web into standalone packages. Enrich tool metadata (intent, cost, boundary constraints). Prerequisite for derived prompts and multi-interface.
+- **Derived System Prompts** — Generate system prompts from tool composition + authored domain knowledge. Subagent configs use derived prompts. Prerequisite for arena.
+- **Multi-Interface Identity** — Agent operates on web + Reddit/HN/CLI with shared persistent state and tool set. Each interface is a thin adapter.
+- **Evolutionary Agent Arena** — Spawn agents with random tool compositions, let them learn/teach/compete, select for fitness. See `suggestions/evolutionary-agent-arena.md`.
+
 ## Later
 
-Items assessed in session 10 (2026-03-17). Readiness notes from research:
+Items assessed in session 10 (2026-03-17). These remain valid but are independent of the tools-as-ontology trajectory.
 
-- **Context engineering** (pruning, sliding window, summarization) — Ready to plan. No AI SDK built-in support. Start simple: sliding window → summarization buffer → relevance scoring. Low-medium complexity.
-- **Trace comparison and replay** — Ready to plan. Custom JSONL diff viewer (no new infra) preferred over Langfuse integration. Medium complexity.
-- **A/B testing infrastructure** — Needs eval-hooks first (can't measure which variant "won" without scoring). No purpose-built OSS framework exists. Medium complexity.
-- **Multi-provider routing** — Basic (provider-per-subagent) is a config change in AI SDK v6. Cost-based dynamic routing needs eval hooks. Low → medium complexity.
+- **Context engineering** (pruning, sliding window, summarization) — Ready to plan. May interact with memory recall (memory is context). Low-medium complexity.
+- **Trace comparison and replay** — Ready to plan. Custom JSONL diff viewer. Medium complexity.
+- **A/B testing infrastructure** — Needs eval-hooks completion. Medium complexity.
+- **Multi-provider routing** — Basic is a config change in AI SDK v6. Low → medium complexity.
 - **Query API and data governance** — Not yet researched.
 - **Agent tool access to this planning system** — Not yet researched.
-- **Unsloth Studio fine-tuning** — Needs more training data volume (~40 sessions currently). Deferred. See `planning/suggestions/unsloth-studio-finetuning.md`.
+- **Unsloth Studio fine-tuning** — Needs more training data volume. Deferred. See `suggestions/unsloth-studio-finetuning.md`.
 
 ## Suggestions
 

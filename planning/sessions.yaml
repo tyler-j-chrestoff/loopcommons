@@ -2,9 +2,84 @@
 # Each session is one Claude Code conversation (~1M token context).
 # Subagents stretch this further via parallel execution.
 
-planned: []
+planned:
+  - id: 24
+    title: "Memory Research + Design"
+    milestone: agent-memory
+    goal: "Survey agent memory architectures, design the type system (capsule-shaped), amygdala-as-ℒ=ℬ-gate integration, persistence layer, and attack surface defenses. Output: design doc grounded in SDI spec."
+    phases:
+      - name: "Prior art survey"
+        tasks: [mem-01]
+        strategy: "Web search for MemGPT/Letta, Generative Agents, mmogit, LangMem. Compare architectures, evaluate SDI capsule compatibility."
+      - name: "Type system + amygdala protocol"
+        tasks: [mem-02, mem-03]
+        strategy: "Design capsule-shaped memory types grounded in SDI modality (§3.9). Design PersistentState interface + createMemoryTools factory. Amygdala as ℒ=ℬ gate."
+      - name: "Persistence + security"
+        tasks: [mem-04, mem-05]
+        strategy: "Amygdala integration as Option B with ℒ=ℬ framing. Security as SDI pre-merge gate sequence. Visibility classes from day one."
+
+  - id: 25
+    title: "Core Memory + Integration"
+    milestone: agent-memory
+    goal: "Build PersistentState + memory tools + orchestrator integration + viz + red-team. Capsule-shaped entries, JSON storage."
+    phases:
+      - name: "Memory module + amygdala extension"
+        tasks: [mem-06, mem-07]
+        strategy: "TDD. PersistentState interface with JsonFilePersistentState. createMemoryTools factory."
+      - name: "Route integration + trace events"
+        tasks: [mem-08]
+        strategy: "Wire memory tools into registry, orchestrator mediates recall/write. Trace events for viz pipeline."
+      - name: "Viz + red-team + continuity test"
+        tasks: [mem-09, mem-10, mem-11]
+        strategy: "MemoryInspector component. Red-team poisoning tests. Cross-session continuity integration test."
 
 completed:
+  - id: 23
+    title: "Agent Memory Planning"
+    date: 2026-03-19
+    milestone: agent-memory
+    status: done
+    goal: "Plan the agent-memory milestone: theory, stories, tasks, SDI alignment."
+    phases:
+      - name: "Planning + brainstorming ✓"
+        tasks: []
+        status: done
+    summary: |
+      Planning-only session. No code changes. Created the agent-memory milestone
+      with comprehensive theory and planning artifacts.
+
+      **Theory doc (designs/tools-as-ontology.md):**
+      - Tools define identity (OOO): agent IS its tool composition, not its prompt
+      - Persistent state as polymorphic tool interface (not bespoke subsystem)
+      - Recursive composition: skills all the way down, VAE bottleneck at every scale
+      - Derived system prompts: identity emerges from capabilities
+      - 5-phase trajectory: memory → tools-as-packages → derived prompts → multi-interface → arena
+      - SDI mapping: every concept maps to formal SDI primitives (capsules, ℒ=ℬ gates,
+        metabolism, visibility classes, UCAN capabilities, autonomy suite)
+
+      **Key decisions:**
+      - Memory is tools, not infrastructure. createMemoryTools({ state }) same pattern as createBlogTools.
+      - Amygdala integration = Option B (orchestrator mediates). Amygdala IS an ℒ=ℬ gate.
+      - Entries capsule-shaped from day one (id, provenance, modality, uncertainty, visibility).
+        JSON storage v1, SDI capsule backend later = field addition, not migration.
+      - Evolutionary agent arena filed as long-term vision (suggestions/evolutionary-agent-arena.md).
+      - System prompts should be derived from tool composition, not hand-written (suggestions/tools-define-identity.md).
+
+      **Artifacts created:**
+      - planning/milestones/agent-memory/ (milestone.md, 2 stories, 12 tasks, designs/)
+      - planning/specs/sdi-spec-v0.2.0.md (SDI protocol spec, stored as reference)
+      - planning/specs/loop-commons-spec-v0.1.0.md (founding LC spec, stored as reference)
+      - planning/suggestions/evolutionary-agent-arena.md
+      - planning/suggestions/tools-define-identity.md
+      - Cleaned up stale auto-calibration-loop.md suggestion
+
+      **mmogit deep dive:** Explored full repo — 8 StructuredMemory types, post/remember duality,
+      thermal tracking protocol, sovereignty constitution, agent handoff protocol, cryptographic
+      invariants. All documented in memory/reference_mmogit_protocols.md.
+
+      **Unblocked:** Sessions 24-25 (research + implementation). All required reading, specs,
+      and theory docs are in place.
+
   - id: 22
     title: "Spring Theme: CVNP Palette"
     date: 2026-03-18
