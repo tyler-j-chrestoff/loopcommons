@@ -1,4 +1,4 @@
-import type { Round, Trace, ToolExecution, AmygdalaIntent, ThreatCategory, JudgeScores } from '@loopcommons/llm';
+import type { Round, Trace, ToolExecution, AmygdalaIntent, ThreatCategory, JudgeScores, Memory } from '@loopcommons/llm';
 import type { BudgetSnapshot } from '@/lib/token-budget';
 import type { FeedbackRating, FeedbackCategory } from '@/lib/feedback';
 
@@ -30,6 +30,9 @@ export type ChatSSEEvent =
   // --- Eval events ---
   | { type: 'eval:feedback'; messageId: string; sessionId: string; rating: FeedbackRating; category?: FeedbackCategory; timestamp: number }
   | { type: 'eval:score'; messageId: string; sessionId: string; scores: JudgeScores; model: string; latencyMs: number; cost: { inputTokens: number; outputTokens: number }; timestamp: number }
+  // --- Memory events ---
+  | { type: 'memory:recall'; memoriesRetrieved: number; memoryTypes: Record<string, number>; timestamp: number }
+  | { type: 'memory:write'; memory: Memory; gatedBy: number; deduplication: 'new' | 'reinforced' | 'updated'; timestamp: number }
   // --- Session events ---
   | { type: 'session:start'; sessionId: string; parentSessionId?: string; timestamp: number }
   | { type: 'session:complete'; sessionId: string; timestamp: number }
@@ -69,6 +72,22 @@ export type MessageFeedback = {
   category?: FeedbackCategory;
 };
 
+/** Memory activity for a single interaction */
+export type MemoryActivity = {
+  /** Number of memories recalled before amygdala pass */
+  memoriesRetrieved: number;
+  /** Count by type */
+  memoryTypes: Record<string, number>;
+  /** Memories written after interaction */
+  memoriesWritten: MemoryWriteInfo[];
+};
+
+export type MemoryWriteInfo = {
+  memory: Memory;
+  gatedBy: number;
+  deduplication: 'new' | 'reinforced' | 'updated';
+};
+
 /** A single calibration iteration from the auto-calibration JSONL log */
 export type CalibrationIteration = {
   iteration: number;
@@ -106,4 +125,6 @@ export type ChatMessage = {
   feedback?: MessageFeedback;
   /** LLM-as-judge scores (assistant messages only) */
   judgeScores?: JudgeScores;
+  /** Memory activity for this interaction */
+  memory?: MemoryActivity;
 };

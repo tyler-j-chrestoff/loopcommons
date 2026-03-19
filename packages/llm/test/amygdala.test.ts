@@ -50,13 +50,13 @@ describe('SubagentRegistry', () => {
   it('routes resume intent to resume subagent with get_resume tool', () => {
     const config = registry.get('resume');
     expect(config.id).toBe('resume');
-    expect(config.toolAllowlist).toEqual(['get_resume']);
+    expect(config.toolAllowlist).toEqual(['get_resume', 'memory_recall']);
   });
 
   it('routes project intent to project subagent with get_project tool', () => {
     const config = registry.get('project');
     expect(config.id).toBe('project');
-    expect(config.toolAllowlist).toEqual(['get_project']);
+    expect(config.toolAllowlist).toEqual(['get_project', 'memory_recall']);
   });
 
   it('routes adversarial intent to refusal subagent with no tools', () => {

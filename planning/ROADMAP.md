@@ -6,13 +6,13 @@ Loop Commons is a live research platform and open-source training data pipeline.
 
 ## Now
 
-- **[agent-memory](milestones/agent-memory/)** — Persistent agent world model. Amygdala-mediated memory (recall + write through the security bottleneck). Interface-agnostic design for future multi-platform identity. 2 stories (12 tasks), 2 sessions.
 - **eval-hooks completion** — Remaining eval-hooks gates: feedback data flows through pipeline to training export, evaluation dashboard. 2 open gates.
 
 ## Next
 
 ## Done
 
+- **[agent-memory](milestones/agent-memory/)** — Persistent agent world model. Capsule-shaped entries (observation/learning/relationship/reflection) with SDI-compatible envelope. Amygdala-mediated memory write gating. MemoryInspector viz. 2 stories (12 tasks), 2 sessions. Completed 2026-03-19.
 - **[seasonal-theme](milestones/seasonal-theme/)** — CVNP-inspired seasonal palette system. Spring theme: Literata serif for blog, everforest-light code blocks, warm light mode. Season picker with localStorage persistence. 1 story (8 tasks), 1 session. Completed 2026-03-18.
 - **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Bayesian Pareto constraints, calibration history viz, thinking tag filter. 2 stories (15 tasks), 2 sessions. Completed 2026-03-18.
 - **[blog-tools](milestones/blog-tools/)** — Agent-as-CMS blog with auth-gated write tools. The first real security boundary. 4 stories (25 tasks), 2 sessions. Completed 2026-03-18.

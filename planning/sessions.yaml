@@ -2,38 +2,128 @@
 # Each session is one Claude Code conversation (~1M token context).
 # Subagents stretch this further via parallel execution.
 
-planned:
-  - id: 24
-    title: "Memory Research + Design"
-    milestone: agent-memory
-    goal: "Survey agent memory architectures, design the type system (capsule-shaped), amygdala-as-ℒ=ℬ-gate integration, persistence layer, and attack surface defenses. Output: design doc grounded in SDI spec."
-    phases:
-      - name: "Prior art survey"
-        tasks: [mem-01]
-        strategy: "Web search for MemGPT/Letta, Generative Agents, mmogit, LangMem. Compare architectures, evaluate SDI capsule compatibility."
-      - name: "Type system + amygdala protocol"
-        tasks: [mem-02, mem-03]
-        strategy: "Design capsule-shaped memory types grounded in SDI modality (§3.9). Design PersistentState interface + createMemoryTools factory. Amygdala as ℒ=ℬ gate."
-      - name: "Persistence + security"
-        tasks: [mem-04, mem-05]
-        strategy: "Amygdala integration as Option B with ℒ=ℬ framing. Security as SDI pre-merge gate sequence. Visibility classes from day one."
-
-  - id: 25
-    title: "Core Memory + Integration"
-    milestone: agent-memory
-    goal: "Build PersistentState + memory tools + orchestrator integration + viz + red-team. Capsule-shaped entries, JSON storage."
-    phases:
-      - name: "Memory module + amygdala extension"
-        tasks: [mem-06, mem-07]
-        strategy: "TDD. PersistentState interface with JsonFilePersistentState. createMemoryTools factory."
-      - name: "Route integration + trace events"
-        tasks: [mem-08]
-        strategy: "Wire memory tools into registry, orchestrator mediates recall/write. Trace events for viz pipeline."
-      - name: "Viz + red-team + continuity test"
-        tasks: [mem-09, mem-10, mem-11]
-        strategy: "MemoryInspector component. Red-team poisoning tests. Cross-session continuity integration test."
+planned: []
 
 completed:
+  - id: 25
+    title: "Core Memory + Integration"
+    date: 2026-03-19
+    milestone: agent-memory
+    status: done
+    goal: "Build PersistentState + memory tools + orchestrator integration + viz + red-team. Capsule-shaped entries, JSON storage."
+    phases:
+      - name: "Memory module + amygdala extension ✓"
+        tasks: [mem-06, mem-07]
+        status: done
+      - name: "Route integration + trace events ✓"
+        tasks: [mem-08]
+        status: done
+      - name: "Viz + red-team + continuity test ✓"
+        tasks: [mem-09, mem-10, mem-11]
+        status: done
+    summary: |
+      Full implementation of agent persistent memory. All 6 tasks completed, 70 new tests.
+
+      **Phase 1 — Memory module (mem-06, mem-07):** PersistentState interface + JsonFilePersistentState
+      in packages/llm/src/memory/. 4 capsule-shaped types (observation, learning, relationship,
+      reflection) with SDI-compatible envelope (provenance, modality, uncertainty 0-1, visibility,
+      supersededBy, accessCount). Deduplication per type with uncertainty reinforcement (decreases
+      by 0.1, capped at 0.05). createMemoryTools factory returning memory_recall + memory_remember
+      (same pattern as createBlogTools). formatMemoryContext() for amygdala injection. 39 tests.
+
+      **Phase 2 — Route integration (mem-08):** Memory wired into route.ts pipeline: recall before
+      amygdala (memoryContext on AmygdalaInput, already had the field), write after orchestrator
+      with 4-band threat gating (<0.3 full write, 0.3-0.49 elevated uncertainty +0.2, >=0.5 blocked).
+      extractMemoryWrites() is deterministic (no LLM call). memory:recall and memory:write trace
+      events flow through SSE + session JSONL. Subagent registry updated: memory_recall added to
+      resume, project, blog-reader, blog-writer, conversational. Security/refusal get no memory
+      access. No subagent gets memory_remember (orchestrator-mediated, Option B). 16 tests.
+
+      **Phase 3 — Viz + security (mem-09, mem-10, mem-11):** MemoryInspector component (collapsible
+      panel, recall count/types, write entries with uncertainty badges and dedup indicators). Wired
+      into SSE via use-chat.ts (MemoryActivity type on ChatMessage). Red-team: 3 attack vectors
+      (direct poisoning blocked at >=0.5, social engineering gets elevated uncertainty, slow-burn
+      drift blocked on escalation). Cross-session continuity: 4 integration tests proving
+      write→persist→reload→recall→formatMemoryContext works end-to-end. 15 tests.
+
+      **Test totals:** 365 llm tests (23 files), 368 web tests (32 files). 733 total.
+
+      **Key decisions:**
+      - Deduplication creates new entry + supersedes old (rather than mutating in-place) — audit trail
+      - extractMemoryWrites is deterministic by intent, not LLM-generated — simpler, faster, testable
+      - MEMORY_DATA_DIR env var for Railway volume, defaults to data/memory/
+      - accessCount incremented on recall (not just write) — enables recency/reinforcement signals
+
+      **Bugs fixed:**
+      - api-chat.test.ts mock needed new exports (createJsonFilePersistentState, createMemoryTools, etc.)
+      - Blog routing test counts updated for memory_recall addition (8→9 tools for blog-writer)
+
+      **What's unblocked:** Agent memory milestone complete. No remaining planned sessions. Next
+      milestone work can build on persistent memory for context engineering, multi-interface, or
+      tools-as-packages phases.
+
+
+  - id: 24
+    title: "Memory Research + Design"
+    date: 2026-03-19
+    milestone: agent-memory
+    status: done
+    goal: "Survey agent memory architectures, design the type system (capsule-shaped), amygdala-as-ℒ=ℬ-gate integration, persistence layer, and attack surface defenses. Output: design doc grounded in SDI spec."
+    phases:
+      - name: "Prior art survey ✓"
+        tasks: [mem-01]
+        status: done
+      - name: "Type system + amygdala protocol ✓"
+        tasks: [mem-02, mem-03]
+        status: done
+      - name: "Persistence + security ✓"
+        tasks: [mem-04, mem-05]
+        status: done
+    summary: |
+      Research + design session. No code changes. Produced comprehensive design doc
+      at designs/memory-architecture.md covering all 5 research tasks.
+
+      **Prior art survey (mem-01):**
+      Surveyed 6 systems via parallel research agents: MemGPT/Letta, Generative Agents
+      (Park et al.), LangMem, Zep/Graphiti, Mem0, Cognee. Plus internal mmogit notes
+      and calibration memory. Key finding: memory-as-tool is an established pattern
+      (Letta's 7 tools, LangMem's 2 tools), but NO existing system combines tool
+      interface + typed entries + provenance + uncertainty + metabolism + visibility.
+      That's the gap our design fills.
+
+      **Type system (mem-02):**
+      4 types for v1: observation, learning, relationship, reflection. Each mapped to
+      SDI modality (observation/belief/claim/hypothesis). Capsule-shaped entries from
+      day one: id, provenance (agent/timestamp/used/source), modality, uncertainty,
+      visibility, tags, supersededBy, accessCount. Deduplication per type with
+      confidence reinforcement. Post/remember duality (low-cost reads vs high-cost writes).
+
+      **PersistentState + createMemoryTools (mem-03):**
+      Polymorphic PersistentState interface (recall/remember/stats). JsonFilePersistentState
+      for v1. createMemoryTools factory returning memory_recall + memory_remember as
+      defineTool instances. UCAN mapping: recall=capsule/read, remember=capsule/write.
+      Tool scoping: subagents get memory_recall only, orchestrator mediates writes.
+
+      **Amygdala integration (mem-04):**
+      Option B confirmed. Pipeline: recall→amygdala(memoryContext)→orchestrator→subagent→
+      write(gated by threatLevel). Threat score IS L.magnitude. Write threshold IS Bβ.width.
+      Four threat bands: <0.3 full write, 0.3-0.49 write with elevated uncertainty,
+      0.5-0.79 no write, ≥0.8 refusal. Path to Option C documented (4 phases).
+
+      **Security analysis (mem-05):**
+      5 attack vectors identified (direct poisoning, social engineering, slow-burn drift,
+      recall-time exploitation, training data poisoning). SDI pre-merge gate sequence
+      mapped to v1 (7 gates, 4 implemented, 3 deferred). Defenses: write gating (Gate 5),
+      recall-time filtering (Gate 3 at read), confidence decay (compounds uncertainty on
+      mildly suspicious interactions), visibility quarantine (research class).
+
+      **tools-as-ontology validation:**
+      All 7 testable theory claims validated. Memory IS a tool. Capsule-shaped entries
+      work. Amygdala IS an L=B gate. PersistentState IS polymorphic. Post/remember
+      duality maps to SDI affect. Metabolism replaces deletion.
+
+      **Unblocked:** Session 25 (implementation). Design doc is the spec.
+
   - id: 23
     title: "Agent Memory Planning"
     date: 2026-03-19

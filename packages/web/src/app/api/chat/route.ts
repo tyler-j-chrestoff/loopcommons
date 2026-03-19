@@ -1,5 +1,15 @@
-import { createAmygdala, createOrchestrator, createToolRegistry, createJudge, LLMError } from '@loopcommons/llm';
-import type { TraceEvent, TraceCollector } from '@loopcommons/llm';
+import {
+  createAmygdala,
+  createOrchestrator,
+  createToolRegistry,
+  createJudge,
+  createJsonFilePersistentState,
+  createMemoryTools,
+  formatMemoryContext,
+  extractMemoryWrites,
+  LLMError,
+} from '@loopcommons/llm';
+import type { TraceEvent, TraceCollector, MemoryInput } from '@loopcommons/llm';
 import { tools } from '@/tools';
 import { createBlogTools } from '@/tools/blog';
 import { checkRateLimit, acquireConnection, releaseConnection, getClientIp, getRateLimitStatus } from '@/lib/rate-limit';
@@ -24,7 +34,12 @@ const amygdala = createAmygdala();
 const orchestrator = createOrchestrator();
 const blogDataDir = process.env.BLOG_DATA_DIR ?? 'data/blog';
 const blogTools = createBlogTools({ dataDir: blogDataDir });
-const toolRegistry = createToolRegistry([...tools, ...blogTools]);
+const memoryDataDir = process.env.MEMORY_DATA_DIR ?? 'data/memory';
+const memoryState = createJsonFilePersistentState({
+  filePath: `${memoryDataDir}/world-model.json`,
+});
+const memoryTools = createMemoryTools({ state: memoryState });
+const toolRegistry = createToolRegistry([...tools, ...blogTools, ...memoryTools]);
 const sessionWriter = new FileSessionWriter();
 const judge = process.env.ENABLE_LLM_JUDGE === 'true' ? createJudge() : null;
 
@@ -239,6 +254,33 @@ export async function POST(request: Request): Promise<Response> {
       }
 
       // =====================================================================
+      // MEMORY RECALL — pre-amygdala context injection
+      // =====================================================================
+      let memoryContext: string | undefined;
+      try {
+        const recalledMemories = await memoryState.recall({
+          limit: 10,
+          includeSuperseded: false,
+        });
+        if (recalledMemories.length > 0) {
+          memoryContext = formatMemoryContext(recalledMemories);
+          // Emit memory:recall trace event
+          const memoryTypes: Record<string, number> = {};
+          for (const m of recalledMemories) {
+            memoryTypes[m.type] = (memoryTypes[m.type] ?? 0) + 1;
+          }
+          sendAndPersist({
+            type: 'memory:recall',
+            memoriesRetrieved: recalledMemories.length,
+            memoryTypes,
+            timestamp: Date.now(),
+          } as SessionEvent);
+        }
+      } catch {
+        // Memory recall failure should not break the pipeline
+      }
+
+      // =====================================================================
       // AMYGDALA PASS — metacognitive security layer
       // =====================================================================
       // The amygdala sees the raw sanitized message (not XML-wrapped).
@@ -253,6 +295,7 @@ export async function POST(request: Request): Promise<Response> {
       const amygdalaResult = await amygdala({
         rawMessage: rawForAmygdala,
         conversationHistory: validatedMessages.slice(0, -1),
+        memoryContext,
       });
 
       // Guard: if amygdala returned a history message as the rewrite instead of
@@ -330,6 +373,42 @@ export async function POST(request: Request): Promise<Response> {
         ...budgetSnapshot,
         timestamp: Date.now(),
       });
+
+      // =====================================================================
+      // MEMORY WRITE — post-orchestrator, gated by threat assessment
+      // =====================================================================
+      try {
+        const WRITE_THRESHOLD_FULL = 0.3;
+        const WRITE_THRESHOLD_CAUTIOUS = 0.5;
+        const threatScore = amygdalaResult.threat.score;
+
+        if (threatScore < WRITE_THRESHOLD_CAUTIOUS) {
+          const memoryWrites = extractMemoryWrites(
+            rawForAmygdala,
+            amygdalaResult,
+            result.agentResult.message,
+          );
+
+          for (const write of memoryWrites) {
+            // Elevate uncertainty for 0.3-0.49 threat band
+            const adjustedWrite: MemoryInput =
+              threatScore >= WRITE_THRESHOLD_FULL
+                ? { ...write, uncertainty: ((write as any).uncertainty ?? 0.5) + 0.2 }
+                : write;
+
+            const stored = await memoryState.remember(adjustedWrite);
+            sendAndPersist({
+              type: 'memory:write',
+              memory: stored,
+              gatedBy: threatScore,
+              deduplication: stored.provenance.used.length > 0 ? 'reinforced' : 'new',
+              timestamp: Date.now(),
+            } as SessionEvent);
+          }
+        }
+      } catch {
+        // Memory write failure should not break the pipeline
+      }
 
       // =====================================================================
       // LLM-AS-JUDGE — async quality scoring (eval-11)

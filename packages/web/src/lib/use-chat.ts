@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { Trace, Round } from '@loopcommons/llm';
-import type { ChatMessage, ChatSSEEvent, AmygdalaClassification, RoutingDecision, MessageSegment } from './types';
+import type { ChatMessage, ChatSSEEvent, AmygdalaClassification, RoutingDecision, MemoryActivity, MessageSegment } from './types';
 import type { BudgetSnapshot } from './token-budget';
 import type { FeedbackRating, FeedbackCategory } from './feedback';
 
@@ -141,6 +141,7 @@ export function useChat(): UseChatReturn {
         // Accumulate amygdala classification from multiple events
         let amygdalaData: Partial<AmygdalaClassification> = {};
         let routingData: Partial<RoutingDecision> = {};
+        let memoryData: Partial<MemoryActivity> = { memoriesWritten: [] };
 
         while (true) {
           const { done, value } = await reader.read();
@@ -270,6 +271,20 @@ export function useChat(): UseChatReturn {
                 usedSummary: event.usedSummary,
               };
               setLiveRouting(routingData as RoutingDecision);
+            } else if (event.type === 'memory:recall') {
+              memoryData = {
+                ...memoryData,
+                memoriesRetrieved: event.memoriesRetrieved,
+                memoryTypes: event.memoryTypes,
+              };
+            } else if (event.type === 'memory:write') {
+              memoryData = {
+                ...memoryData,
+                memoriesWritten: [
+                  ...(memoryData.memoriesWritten ?? []),
+                  { memory: event.memory, gatedBy: event.gatedBy, deduplication: event.deduplication },
+                ],
+              };
             } else if (event.type === 'token-budget:update') {
               setTokenBudget({
                 cumulative: event.cumulative,
@@ -307,6 +322,7 @@ export function useChat(): UseChatReturn {
             cost: finalTrace?.totalCost,
             amygdala: amygdalaData.intent ? amygdalaData as AmygdalaClassification : undefined,
             routing: routingData.subagentId ? routingData as RoutingDecision : undefined,
+            memory: memoryData.memoriesRetrieved != null ? memoryData as MemoryActivity : undefined,
             sessionId: respSessionId ?? undefined,
           };
           setMessages(prev => {

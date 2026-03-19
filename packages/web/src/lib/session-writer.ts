@@ -10,7 +10,7 @@
  * not through this interface.
  */
 
-import type { TraceEvent, AmygdalaTraceEvent, OrchestratorTraceEvent, JudgeScoreEvent } from '@loopcommons/llm';
+import type { TraceEvent, AmygdalaTraceEvent, OrchestratorTraceEvent, JudgeScoreEvent, Memory, MemoryType } from '@loopcommons/llm';
 import type { BudgetSnapshot } from '@/lib/token-budget';
 import type { FeedbackEvent } from '@/lib/feedback';
 
@@ -28,7 +28,9 @@ export type WebSessionEvent =
   | { type: 'security:input-rejected'; reason: string; timestamp: number }
   | ({ type: 'token-budget:update'; timestamp: number } & BudgetSnapshot)
   | FeedbackEvent
-  | JudgeScoreEvent;
+  | JudgeScoreEvent
+  | { type: 'memory:recall'; memoriesRetrieved: number; memoryTypes: Record<string, number>; timestamp: number }
+  | { type: 'memory:write'; memory: Memory; gatedBy: number; deduplication: 'new' | 'reinforced' | 'updated'; timestamp: number };
 
 /** Union of all events that can be persisted in a session.
  *  Includes LLM trace events, amygdala events, orchestrator events, and web events.

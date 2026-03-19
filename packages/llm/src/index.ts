@@ -37,3 +37,19 @@ export { createJudge } from './eval';
 export type { JudgeConfig, JudgeInput, JudgeResult, JudgeScoreEvent, JudgeScores } from './eval';
 export { SLUG_REGEX, BlogFrontmatterSchema } from './blog/types';
 export type { BlogPost, BlogPostSummary, BlogFrontmatter } from './blog/types';
+export { createJsonFilePersistentState, formatMemoryContext, MemorySchema } from './memory';
+export type {
+  PersistentState,
+  Memory,
+  MemoryType,
+  MemoryInput,
+  MemoryStats,
+  RecallQuery,
+  ObservationMemory,
+  LearningMemory,
+  RelationshipMemory,
+  ReflectionMemory,
+  Visibility,
+} from './memory';
+export { createMemoryTools } from './memory/tools';
+export { extractMemoryWrites } from './memory/extract';
