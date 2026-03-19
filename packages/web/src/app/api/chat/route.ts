@@ -3,13 +3,11 @@ import {
   createOrchestrator,
   createToolRegistry,
   createJudge,
-  createJsonFilePersistentState,
-  createMemoryTools,
-  formatMemoryContext,
   hashForPrivacy,
   LLMError,
 } from '@loopcommons/llm';
 import type { TraceEvent, TraceCollector, RequestMetadata } from '@loopcommons/llm';
+import { createKeywordMemoryPackage } from '@loopcommons/memory/keyword';
 import { tools } from '@/tools';
 import { createBlogTools } from '@/tools/blog';
 import { checkRateLimit, acquireConnection, releaseConnection, getClientIp, getRateLimitStatus } from '@/lib/rate-limit';
@@ -35,18 +33,15 @@ const orchestrator = createOrchestrator();
 const blogDataDir = process.env.BLOG_DATA_DIR ?? 'data/blog';
 const blogTools = createBlogTools({ dataDir: blogDataDir });
 const memoryDataDir = process.env.MEMORY_DATA_DIR ?? 'data/memory';
-const memoryState = createJsonFilePersistentState({
-  filePath: `${memoryDataDir}/world-model.json`,
-});
 
 // Mutable per-request threat score. The closure is read at tool execution time
 // (during subagent invocation), not at construction time.
 let currentRequestThreatScore = 0;
-const memoryTools = createMemoryTools({
-  state: memoryState,
+const memoryPackage = createKeywordMemoryPackage({
+  filePath: `${memoryDataDir}/world-model.json`,
   getThreatScore: () => currentRequestThreatScore,
 });
-const toolRegistry = createToolRegistry([...tools, ...blogTools, ...memoryTools]);
+const toolRegistry = createToolRegistry([...tools, ...blogTools, ...memoryPackage.tools]);
 const sessionWriter = new FileSessionWriter();
 const judge = process.env.ENABLE_LLM_JUDGE === 'true' ? createJudge() : null;
 
@@ -265,12 +260,12 @@ export async function POST(request: Request): Promise<Response> {
       // =====================================================================
       let memoryContext: string | undefined;
       try {
-        const recalledMemories = await memoryState.recall({
+        const recalledMemories = await memoryPackage.state.recall({
           limit: 10,
           includeSuperseded: false,
         });
         if (recalledMemories.length > 0) {
-          memoryContext = formatMemoryContext(recalledMemories);
+          memoryContext = memoryPackage.formatContext();
           // Emit memory:recall trace event
           const memoryTypes: Record<string, number> = {};
           for (const m of recalledMemories) {

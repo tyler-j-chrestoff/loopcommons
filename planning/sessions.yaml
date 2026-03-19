@@ -3,22 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 29
-    title: "Memory Packages — Interface + Extraction"
-    milestone: memory-packages
-    goal: "Define ToolPackage interface, extract packages/memory, wire route.ts through package contract."
-    phases:
-      - name: "Research + interface design"
-        tasks: [pkg-01, pkg-02]
-        status: planned
-      - name: "Extract + Package A"
-        tasks: [pkg-03, pkg-04]
-        status: planned
-      - name: "Wire route.ts"
-        tasks: [pkg-05]
-        status: planned
-    strategy: "pkg-01 research is mostly done (session 28 embedding research). Start with interface TDD, then extract. Keep all 93 memory tests green throughout."
-
   - id: 30
     title: "Memory Packages — Embeddings + Admin API"
     milestone: memory-packages
@@ -33,6 +17,35 @@ planned:
     strategy: "Needs OPENAI_API_KEY for embedding model. Mock in tests, live in eval. Blend scoring (0.6 semantic + 0.4 keyword) — tune weights with real queries."
 
 completed:
+  - id: 29
+    title: "Memory Packages — Interface + Extraction"
+    date: 2026-03-19
+    milestone: memory-packages
+    status: done
+    goal: "Define ToolPackage interface, extract packages/memory, wire route.ts through package contract."
+    phases:
+      - name: "Research + interface design ✓"
+        tasks: [pkg-01, pkg-02]
+        status: done
+      - name: "Extract + Package A ✓"
+        tasks: [pkg-03, pkg-04]
+        status: done
+      - name: "Wire route.ts ✓"
+        tasks: [pkg-05]
+        status: done
+    summary: |
+      All 5 tasks shipped. ToolPackage interface defined (type + 13 contract tests).
+      packages/memory extracted as npm workspace (zero circular deps — local tool-types.ts).
+      createKeywordMemoryPackage factory wraps core memory as Package A.
+      route.ts wired through package interface (memoryPackage.state.recall → memoryPackage.formatContext).
+      extract.ts stayed in packages/llm (depends on AmygdalaResult, legacy).
+      Test counts: memory 12 new, llm 486 (was 480), web 383. All green.
+    decisions:
+      - "Avoided circular dep by defining local ToolDefinition in packages/memory (structural typing = compatible)"
+      - "extract.ts stays in packages/llm — depends on AmygdalaResult and is legacy (session 27 deprecated it)"
+      - "Package A exposes .state for direct programmatic recall (route.ts needs async recall before sync formatContext)"
+    unblocked: ["Session 30: Package B (embeddings) + admin API"]
+
   - id: 28
     title: "Planning — Memory Packages Milestone"
     date: 2026-03-19

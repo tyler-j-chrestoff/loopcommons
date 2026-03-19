@@ -1,0 +1,114 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { z } from 'zod';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as os from 'node:os';
+import { defineTool } from '../src/tool';
+import type { ToolPackage } from '../src/tool';
+import { createKeywordMemoryPackage } from '@loopcommons/memory/keyword';
+
+/**
+ * Contract tests for ToolPackage interface.
+ * Any object satisfying ToolPackage must pass these tests.
+ * Used to verify both Package A (keyword) and Package B (embedding).
+ */
+export function runToolPackageContractTests(
+  name: string,
+  createPackage: () => ToolPackage,
+) {
+  describe(`ToolPackage contract: ${name}`, () => {
+    it('has a non-empty name in metadata', () => {
+      const pkg = createPackage();
+      expect(pkg.metadata.name).toBeTruthy();
+      expect(typeof pkg.metadata.name).toBe('string');
+    });
+
+    it('has a capabilities array in metadata', () => {
+      const pkg = createPackage();
+      expect(Array.isArray(pkg.metadata.capabilities)).toBe(true);
+      expect(pkg.metadata.capabilities.length).toBeGreaterThan(0);
+    });
+
+    it('exposes at least one tool', () => {
+      const pkg = createPackage();
+      expect(pkg.tools.length).toBeGreaterThan(0);
+    });
+
+    it('each tool has name, description, parameters, and execute', () => {
+      const pkg = createPackage();
+      for (const tool of pkg.tools) {
+        expect(typeof tool.name).toBe('string');
+        expect(tool.name.length).toBeGreaterThan(0);
+        expect(typeof tool.description).toBe('string');
+        expect(tool.parameters).toBeDefined();
+        expect(typeof tool.execute).toBe('function');
+      }
+    });
+
+    it('tool names are unique within the package', () => {
+      const pkg = createPackage();
+      const names = pkg.tools.map(t => t.name);
+      expect(new Set(names).size).toBe(names.length);
+    });
+
+    it('formatContext returns a string', () => {
+      const pkg = createPackage();
+      const ctx = pkg.formatContext();
+      expect(typeof ctx).toBe('string');
+    });
+  });
+}
+
+// --- Run contract tests against a minimal stub to prove the contract works ---
+
+function createStubPackage(): ToolPackage {
+  return {
+    tools: [
+      defineTool({
+        name: 'stub_tool',
+        description: 'A stub tool for testing',
+        parameters: z.object({ query: z.string() }),
+        execute: async () => 'stub result',
+      }),
+    ],
+    formatContext: () => 'stub context',
+    metadata: {
+      name: 'stub-package',
+      capabilities: ['testing'],
+    },
+  };
+}
+
+function tmpMemoryPath(): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pkg-contract-'));
+  return path.join(dir, 'test-memory.json');
+}
+
+describe('ToolPackage', () => {
+  runToolPackageContractTests('stub', createStubPackage);
+
+  // Contract tests against real Package A (keyword memory)
+  runToolPackageContractTests('keyword-memory (Package A)', () =>
+    createKeywordMemoryPackage({ filePath: tmpMemoryPath() }),
+  );
+
+  it('accepts optional cost in metadata', () => {
+    const pkg: ToolPackage = {
+      tools: [
+        defineTool({
+          name: 'test',
+          description: 'test',
+          parameters: z.object({}),
+          execute: async () => '',
+        }),
+      ],
+      formatContext: () => '',
+      metadata: {
+        name: 'test-pkg',
+        capabilities: ['test'],
+        cost: '$0.02/1M tokens',
+      },
+    };
+    expect(pkg.metadata.cost).toBe('$0.02/1M tokens');
+  });
+});

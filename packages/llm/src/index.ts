@@ -1,7 +1,7 @@
 export { agent } from './agent';
 export type { AgentParams } from './agent';
 export { defineTool, createToolRegistry, createScopedRegistry } from './tool';
-export type { ToolDefinition, ToolRegistry } from './tool';
+export type { ToolDefinition, ToolRegistry, ToolPackage } from './tool';
 export type { Message, ToolCall, ToolResult, TokenUsage, AgentResult } from './types';
 export type { Trace, Round, ToolExecution, TraceEvent, TraceCollector } from './trace';
 export { createTrace } from './trace';

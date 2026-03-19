@@ -14,6 +14,20 @@ export function defineTool<T extends z.ZodType>(config: ToolDefinition<T>): Tool
   return config;
 }
 
+/** A composable package of tools with context formatting for amygdala injection */
+export type ToolPackage = {
+  /** Tools provided by this package */
+  tools: ToolDefinition[];
+  /** Format recalled state as context string for amygdala system prompt */
+  formatContext: () => string;
+  /** Package metadata for discovery and composition */
+  metadata: {
+    name: string;
+    capabilities: string[];
+    cost?: string;
+  };
+};
+
 /** Registry for looking up tools by name */
 export type ToolRegistry = {
   get(name: string): ToolDefinition | undefined;

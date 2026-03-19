@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.58",
+    "@loopcommons/memory": "*",
     "ai": "^6.0.116",
     "zod": "^3.23.0"
   },

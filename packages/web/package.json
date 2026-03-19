@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@loopcommons/llm": "*",
+    "@loopcommons/memory": "*",
     "@tailwindcss/postcss": "^4.2.0",
     "gray-matter": "^4.0.3",
     "next": "^16.1.0",
