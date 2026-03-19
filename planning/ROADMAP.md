@@ -2,11 +2,11 @@
 
 Loop Commons is a live research platform and open-source training data pipeline. A substrate-aware conversational agent that defends itself through self-knowledge, with every decision traced, visualized, and exported as labeled training data for open-source language models.
 
-**Active milestone**: [auto-calibration](milestones/auto-calibration/) — Automated amygdala prompt optimization (propose/test/keep/revert). Runs against blog tools for real-stakes training data.
+**Active milestone**: [seasonal-theme](milestones/seasonal-theme/) — Replace generic dark theme with Cuyahoga Valley National Park-inspired seasonal palettes. Spring ships first.
 
 ## Now
 
-- **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Runs against blog tools for real-stakes training data. ~$1.30 per full run. 2 stories, 15 tasks (10 done).
+- **[seasonal-theme](milestones/seasonal-theme/)** — CVNP-inspired seasonal palette system. Spring theme: warm light mode, Virginia bluebell accent, typography split (proportional blog, mono chat). 1 story, 8 tasks. Architecture supports future summer/fall/winter as CSS-only additions.
 
 ## Next
 
@@ -14,6 +14,7 @@ Loop Commons is a live research platform and open-source training data pipeline.
 
 ## Done
 
+- **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Bayesian Pareto constraints, calibration history viz, thinking tag filter. 2 stories (15 tasks), 2 sessions. Completed 2026-03-18.
 - **[blog-tools](milestones/blog-tools/)** — Agent-as-CMS blog with auth-gated write tools. The first real security boundary. 4 stories (25 tasks), 2 sessions. Completed 2026-03-18.
 - **[eval-hooks](milestones/eval-hooks/)** — User feedback, LLM-as-judge, CI eval regression testing. 3 stories (22 tasks), 2 sessions. Core complete 2026-03-18 (6/8 gates; 2 remaining gates moved to backlog).
 - **[context-budget-viz](milestones/context-budget-viz/)** — Novel real-time context window budget visualization. 2 stories, 12 tasks, 2 sessions. Completed 2026-03-18.

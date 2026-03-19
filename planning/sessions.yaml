@@ -4,18 +4,99 @@
 
 planned:
   - id: 20
-    title: "Auto-Calibration: Visualization + First Run"
-    milestone: auto-calibration
-    goal: "Build calibration history visualization (cal-10 through cal-15). Run first real calibration loop against live API."
+    title: "Spring Theme: CVNP Palette"
+    milestone: seasonal-theme
+    goal: "Replace generic dark theme with spring Cuyahoga Valley National Park palette. Light mode, typography split, season infrastructure."
     phases:
-      - name: API + Components
-        tasks: [cal-10, cal-11, cal-12, cal-13, cal-14, cal-15]
-        strategy: "Build API endpoint, then viz components in parallel. TDD."
-      - name: First live run
-        tasks: []
-        strategy: "Run npm run calibrate with API key. Capture first optimization results. Verify log.jsonl and memory.json."
+      - name: Research + infrastructure
+        tasks: [theme-01, theme-02, theme-03]
+        strategy: "Font research first (informs typography), then theme infra + palette in parallel. TDD where applicable."
+      - name: Typography + blog + audit
+        tasks: [theme-04, theme-05, theme-06]
+        strategy: "Typography split, blog prose restyle, component contrast audit. Parallel where independent."
+      - name: Season picker + verification
+        tasks: [theme-07, theme-08]
+        strategy: "Wire season selector, run full test suite, visual spot-check all pages."
 
 completed:
+  - id: 21
+    title: "Auto-Calibration: Visualization + First Run"
+    date: 2026-03-18
+    milestone: auto-calibration
+    status: done
+    goal: "Build calibration history visualization (cal-10 through cal-15). Run first real calibration loop against live API."
+    phases:
+      - name: "API + Components ✓"
+        tasks: [cal-10, cal-11, cal-12, cal-13, cal-14, cal-15]
+        status: done
+      - name: "First live run ✓"
+        tasks: []
+        status: done
+      - name: "Bonus: Bayesian Pareto + thinking tag fix"
+        tasks: []
+        status: done
+    summary: |
+      All 6 viz tasks + 2 bonus fixes. Auto-calibration milestone complete.
+
+      **Phase 1 — Calibration viz (cal-10 through cal-15):**
+
+      cal-10 — API endpoint (GET /api/metrics/calibration). Reads JSONL log, strips
+      internal fields (commitHash, validationMetrics), auth-gated, cached. CalibrationIteration
+      type in web types.ts. 6 API tests.
+
+      cal-11 — CalibrationHistory component. Fetches on mount, vertical timeline of
+      iterations with kept/reverted/baseline badges, fitness scores, truncated edit
+      summaries with expand. Empty/loading/error states.
+
+      cal-12 — Convergence chart (inline SVG). Line chart of fitness over iterations,
+      solid dots for kept, hollow red for reverted, dashed baseline, hover tooltips.
+
+      cal-13 — Metric breakdown view. Four color-coded lines (detection rate, FP rate,
+      simplicity, cost efficiency) tracking only kept iterations. Legend with color dots.
+
+      cal-14 — Layout sidebar integration. CalibrationHistory as collapsible section in
+      right sidebar, collapsed by default, header shows iteration count + latest fitness.
+
+      cal-15 — 9 component tests + 6 API route tests = 15 total.
+
+      **Phase 2 — First live run:**
+
+      Ran npm run calibrate twice. First run: baseline 0.9375 (14/16 detection, 0% FP),
+      5 iterations all reverted — old hard Pareto constraint blocked everything (simplicity
+      regression on any added text). Second run after Bayesian fix: baseline 0.9688
+      (15/16 detection), 5 iterations all reverted — edits genuinely worse this time.
+      Conclusion: prompt is near-optimal for current 16-test battery.
+
+      **Bonus — Bayesian Pareto constraint:**
+
+      Replaced hard point-estimate Pareto gate with Bayesian Beta posteriors for sampled
+      metrics (detection rate, FP rate) + 5% tolerance for deterministic metrics
+      (simplicity, cost efficiency). betaProbBetter() uses Monte Carlo (10K samples) to
+      estimate P(new >= baseline). Threshold 0.4. 14 new tests (6 betaProbBetter + 8
+      constraint tests).
+
+      **Bonus — Thinking tag leak fix:**
+
+      Production bug: model <thinking> tags leaking through to chat UI. Added ThinkingFilter
+      (streaming state machine in packages/llm/src/agent/thinking-filter.ts) that buffers
+      and strips <thinking>...</thinking> blocks across chunk boundaries. Wired into agent
+      loop streaming path + stripThinkingTags() for non-streaming content. 10 tests.
+
+      **Key decisions:**
+      - Bayesian over hard Pareto: small test batteries (n=16) make point estimates noisy;
+        Beta posteriors with uniform prior properly account for uncertainty
+      - Thinking filter at agent loop level (not sanitize-event): strips before content
+        enters trace/session storage, not just SSE
+      - Prompt is near-optimal for current battery; next improvement vector is expanding
+        the test battery, not tuning the proposer
+
+      **Test counts:** LLM: 305 passed (20 files). Web: 363 passed (31 files).
+      New this session: 39 tests (15 viz + 14 Bayesian + 10 thinking filter).
+
+      **Unblocked:** Auto-calibration milestone complete. Expanding test battery would
+      give the calibration loop more room to optimize.
+
+
   - id: 19
     title: "Auto-Calibration: Runner Implementation"
     date: 2026-03-18

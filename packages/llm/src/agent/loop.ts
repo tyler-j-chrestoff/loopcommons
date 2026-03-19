@@ -6,6 +6,7 @@ import { createTrace } from '../trace';
 import type { ProviderCallResult } from '../provider/base';
 import { resolveProvider } from '../provider';
 import { LLMError } from '../errors';
+import { createThinkingFilter, stripThinkingTags } from './thinking-filter';
 
 /** Parameters for the agent function */
 export type AgentParams = {
@@ -75,10 +76,17 @@ async function callProvider(
 
   if (useStreaming && provider.streamCall) {
     let result: ProviderCallResult | undefined;
+    const thinkingFilter = createThinkingFilter();
     for await (const event of provider.streamCall(callParams)) {
       if (event.type === 'text-delta') {
-        emit(collectors, { type: 'text-delta', delta: event.delta, timestamp: Date.now() });
+        for (const chunk of thinkingFilter.push(event.delta)) {
+          emit(collectors, { type: 'text-delta', delta: chunk, timestamp: Date.now() });
+        }
       } else if (event.type === 'finish') {
+        // Flush any remaining buffered content
+        for (const chunk of thinkingFilter.flush()) {
+          emit(collectors, { type: 'text-delta', delta: chunk, timestamp: Date.now() });
+        }
         result = event.result;
       }
     }
@@ -123,6 +131,7 @@ export async function agent(params: AgentParams): Promise<AgentResult> {
 
     const roundLatency = Date.now() - roundStartedAt;
     result.usage = clampUsage(result.usage);
+    result.content = stripThinkingTags(result.content);
     const roundCost = calculateCost(result.usage, params.model);
     lastContent = result.content;
 

@@ -69,6 +69,18 @@ export type MessageFeedback = {
   category?: FeedbackCategory;
 };
 
+/** A single calibration iteration from the auto-calibration JSONL log */
+export type CalibrationIteration = {
+  iteration: number;
+  timestamp: string;
+  proposedEdit: string | null;
+  diff: string | null;
+  metricsBefore: { detectionRate: number; fpRate: number; simplicity: number; costEfficiency: number } | null;
+  metricsAfter: { detectionRate: number; fpRate: number; simplicity: number; costEfficiency: number };
+  fitnessScore: number;
+  decision: 'baseline' | 'kept' | 'reverted';
+};
+
 /** A chat message in the UI */
 export type ChatMessage = {
   id: string;

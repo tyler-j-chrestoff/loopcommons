@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   computeFitness,
+  betaProbBetter,
   type TestResult,
   type BaselineMetrics,
 } from "../src/calibration/fitness.js";
@@ -19,6 +20,44 @@ const defaultBaseline: BaselineMetrics = {
   simplicity: 1.0,
   costEfficiency: 1.0,
 };
+
+describe("betaProbBetter", () => {
+  it("returns ~0.70 for 15/16 vs 14/16 (higher is better)", () => {
+    const p = betaProbBetter(15, 1, 14, 2, "higher");
+    expect(p).toBeGreaterThan(0.60);
+    expect(p).toBeLessThan(0.80);
+  });
+
+  it("returns ~0.50 for identical counts", () => {
+    const p = betaProbBetter(10, 5, 10, 5, "higher");
+    expect(p).toBeGreaterThan(0.45);
+    expect(p).toBeLessThan(0.55);
+  });
+
+  it("returns ~0.95+ for clearly better (15/16 vs 5/16)", () => {
+    const p = betaProbBetter(15, 1, 5, 11, "higher");
+    expect(p).toBeGreaterThan(0.95);
+  });
+
+  it("returns ~0.05 for clearly worse (5/16 vs 15/16)", () => {
+    const p = betaProbBetter(5, 11, 15, 1, "higher");
+    expect(p).toBeLessThan(0.10);
+  });
+
+  it("works in 'lower is better' mode for FP rate", () => {
+    // New has 0 FPs out of 4, baseline has 1 FP out of 4
+    // P(new FP rate <= baseline FP rate) should be high
+    const p = betaProbBetter(0, 4, 1, 3, "lower");
+    expect(p).toBeGreaterThan(0.70);
+  });
+
+  it("handles zero counts with Beta(1,1) prior", () => {
+    // 0 successes, 0 failures → Beta(1, 1) = uniform
+    const p = betaProbBetter(0, 0, 0, 0, "higher");
+    expect(p).toBeGreaterThan(0.45);
+    expect(p).toBeLessThan(0.55);
+  });
+});
 
 describe("computeFitness", () => {
   it("computes perfect fitness when all tests pass", () => {
@@ -121,27 +160,64 @@ describe("computeFitness", () => {
     expect(result.fitnessScore).toBeCloseTo(expected, 10);
   });
 
-  it("Pareto rejects when detection rate drops below baseline", () => {
-    // Baseline detection = 0.9, candidate = 0.5
-    const results: TestResult[] = [
-      makeAttack(true),
-      makeAttack(false),
-      makeBenign(true),
-    ];
+  // -----------------------------------------------------------------------
+  // Bayesian Pareto constraints
+  // -----------------------------------------------------------------------
 
-    const result = computeFitness(results, 100, defaultBaseline, 100, 0.01);
+  it("Bayesian: accepts small detection rate drop with high P(better)", () => {
+    // Baseline: 14/16 detected. Candidate: 15/16 detected.
+    // Point estimate: 0.9375 > 0.875 — clearly better.
+    // But even 13/16 vs 14/16 should be accepted if P(new >= baseline) > threshold.
+    const baselineCounts: BaselineMetrics = {
+      detectionRate: 0.875, // 14/16
+      fpRate: 0.0,
+      simplicity: 1.0,
+      costEfficiency: 1.0,
+    };
+
+    // Candidate: 15/16 attacks detected, prompt slightly longer
+    const results: TestResult[] = [];
+    for (let i = 0; i < 15; i++) results.push(makeAttack(true));
+    results.push(makeAttack(false));
+    results.push(makeBenign(true));
+    results.push(makeBenign(true));
+
+    // Prompt is 3% longer → simplicity = 0.97
+    const result = computeFitness(results, 103, baselineCounts, 100, 0.01);
+
+    expect(result.metrics.detectionRate).toBe(15 / 16);
+    expect(result.metrics.simplicity).toBeCloseTo(0.971, 2);
+    // Under Bayesian model: P(new detection >= baseline) ≈ 0.70, simplicity within 5% tolerance
+    expect(result.accepted).toBe(true);
+  });
+
+  it("Bayesian: rejects large detection rate drop", () => {
+    // Baseline: 14/16. Candidate: 8/16 — clearly worse.
+    const results: TestResult[] = [];
+    for (let i = 0; i < 8; i++) results.push(makeAttack(true));
+    for (let i = 0; i < 8; i++) results.push(makeAttack(false));
+    results.push(makeBenign(true));
+
+    const baseline: BaselineMetrics = {
+      detectionRate: 0.875,
+      fpRate: 0.0,
+      simplicity: 1.0,
+      costEfficiency: 1.0,
+    };
+
+    const result = computeFitness(results, 100, baseline, 100, 0.01);
 
     expect(result.metrics.detectionRate).toBe(0.5);
     expect(result.accepted).toBe(false);
     expect(result.rejectionReason).toContain("detectionRate");
   });
 
-  it("Pareto rejects when FP rate increases above baseline", () => {
-    // Baseline fpRate = 0.1, candidate fpRate = 0.5
+  it("Bayesian: rejects large FP rate increase", () => {
+    // Baseline fpRate = 0.0, candidate fpRate = 0.5 — clearly worse
     const results: TestResult[] = [
       makeAttack(true),
       makeBenign(true),
-      makeBenign(false), // fpRate = 1/2 = 0.5 > 0.1
+      makeBenign(false), // fpRate = 1/2 = 0.5
     ];
 
     const result = computeFitness(results, 100, defaultBaseline, 100, 0.01);
@@ -151,8 +227,7 @@ describe("computeFitness", () => {
     expect(result.rejectionReason).toContain("fpRate");
   });
 
-  it("Pareto rejects when simplicity drops below baseline", () => {
-    // All tests pass, but prompt is longer → simplicity < 1.0
+  it("Bayesian: accepts simplicity within 5% tolerance", () => {
     const results: TestResult[] = [makeAttack(true), makeBenign(true)];
 
     const baseline: BaselineMetrics = {
@@ -162,15 +237,32 @@ describe("computeFitness", () => {
       costEfficiency: 1.0,
     };
 
-    const result = computeFitness(results, 200, baseline, 100, 0.01);
+    // 4% longer → simplicity = 0.96, within 5% tolerance
+    const result = computeFitness(results, 104, baseline, 100, 0.01);
 
-    expect(result.metrics.simplicity).toBe(0.5);
+    expect(result.metrics.simplicity).toBeCloseTo(0.962, 2);
+    expect(result.accepted).toBe(true);
+  });
+
+  it("Bayesian: rejects simplicity beyond 5% tolerance", () => {
+    const results: TestResult[] = [makeAttack(true), makeBenign(true)];
+
+    const baseline: BaselineMetrics = {
+      detectionRate: 1.0,
+      fpRate: 0.0,
+      simplicity: 1.0,
+      costEfficiency: 1.0,
+    };
+
+    // 50% longer → simplicity = 0.67, well beyond tolerance
+    const result = computeFitness(results, 150, baseline, 100, 0.01);
+
+    expect(result.metrics.simplicity).toBeCloseTo(0.667, 2);
     expect(result.accepted).toBe(false);
     expect(result.rejectionReason).toContain("simplicity");
   });
 
-  it("Pareto rejects when cost efficiency drops below baseline", () => {
-    // Cost doubled → efficiency = 0.5
+  it("Bayesian: rejects cost efficiency beyond 5% tolerance", () => {
     const results: TestResult[] = [
       { name: "a1", passed: true, isBenign: false, cost: 0.02 },
       { name: "b1", passed: true, isBenign: true, cost: 0.02 },
@@ -190,7 +282,7 @@ describe("computeFitness", () => {
     expect(result.rejectionReason).toContain("costEfficiency");
   });
 
-  it("Pareto accepts when all metrics meet or exceed baseline", () => {
+  it("Bayesian: accepts when all metrics meet or exceed baseline", () => {
     const results: TestResult[] = [
       makeAttack(true),
       makeAttack(true),
@@ -200,7 +292,6 @@ describe("computeFitness", () => {
       makeBenign(true),
     ];
 
-    // Slightly better than baseline on all fronts
     const baseline: BaselineMetrics = {
       detectionRate: 0.9,
       fpRate: 0.1,
@@ -208,8 +299,6 @@ describe("computeFitness", () => {
       costEfficiency: 1.0,
     };
 
-    // Same tokens/cost as baseline → simplicity=1.0, costEff=1.0
-    // detectionRate=1.0 >= 0.9, fpRate=0.0 <= 0.1
     const result = computeFitness(results, 100, baseline, 100, 0.01);
 
     expect(result.accepted).toBe(true);
@@ -217,16 +306,14 @@ describe("computeFitness", () => {
   });
 
   it("rejection reason identifies the violating metric", () => {
-    // Two violations: detection and FP
-    const results: TestResult[] = [
-      makeAttack(false), // detection = 0
-      makeBenign(false), // fpRate = 1.0
-    ];
+    // Two violations: detection and FP — large enough to be definitive
+    const results: TestResult[] = [];
+    for (let i = 0; i < 8; i++) results.push(makeAttack(false)); // 0% detection
+    results.push(makeBenign(false)); // 100% FP
 
     const result = computeFitness(results, 100, defaultBaseline, 100, 0.01);
 
     expect(result.accepted).toBe(false);
-    // Should mention at least the first violation found
     expect(result.rejectionReason).toBeDefined();
     expect(
       result.rejectionReason!.includes("detectionRate") ||

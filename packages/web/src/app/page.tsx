@@ -15,6 +15,7 @@ import { SessionThread } from '@/components/SessionThread';
 import { ContextBudgetBar } from '@/components/ContextBudgetBar';
 import { ToolCallInline } from '@/components/ToolCallInline';
 import { JudgeScoreCard } from '@/components/JudgeScoreCard';
+import { CalibrationHistory } from '@/components/CalibrationHistory';
 import type { ChatMessage } from '@/lib/types';
 
 function renderToolCalls(message: ChatMessage) {
@@ -101,6 +102,7 @@ export default function Home() {
             <JudgeScoreCard scores={latestAssistant.judgeScores} />
           )}
           <SecurityEventLog events={securityEvents} />
+          <CalibrationHistory />
         </>
       }
       metricsPanel={<ComparisonMode />}
