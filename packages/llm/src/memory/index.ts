@@ -44,6 +44,8 @@ const MemoryBaseSchema = z.object({
   supersededBy: z.string().optional(),
   accessCount: z.number(),
   lastAccessedAt: z.string().optional(),
+  /** ACC conflict flag: set when dedup detects contradictory content. */
+  conflicted: z.boolean().optional(),
 });
 
 export const ObservationMemorySchema = MemoryBaseSchema.extend({
@@ -90,43 +92,42 @@ export type Memory = z.infer<typeof MemorySchema>;
 // Input types (what callers provide — auto-generated fields omitted)
 // ---------------------------------------------------------------------------
 
-export type ObservationInput = {
-  type: 'observation';
-  subject: string;
-  content: string;
+/** Common optional fields for all memory input types. */
+type MemoryInputCommon = {
   tags?: string[];
   uncertainty?: number;
   visibility?: Visibility;
+  /** Override provenance source (default: 'conversation'). Used by consolidation. */
+  source?: string;
+  /** IDs of memories that this entry was derived from. */
+  derivedFrom?: string[];
 };
 
-export type LearningInput = {
+export type ObservationInput = MemoryInputCommon & {
+  type: 'observation';
+  subject: string;
+  content: string;
+};
+
+export type LearningInput = MemoryInputCommon & {
   type: 'learning';
   topic: string;
   insight: string;
   applicableTo?: string[];
-  tags?: string[];
-  uncertainty?: number;
-  visibility?: Visibility;
 };
 
-export type RelationshipInput = {
+export type RelationshipInput = MemoryInputCommon & {
   type: 'relationship';
   entity: string;
   context: string;
   rapport?: number;
-  tags?: string[];
-  uncertainty?: number;
-  visibility?: Visibility;
 };
 
-export type ReflectionInput = {
+export type ReflectionInput = MemoryInputCommon & {
   type: 'reflection';
   insight: string;
   evidence: string[];
   significance: 'minor' | 'notable' | 'major';
-  tags?: string[];
-  uncertainty?: number;
-  visibility?: Visibility;
 };
 
 export type MemoryInput = ObservationInput | LearningInput | RelationshipInput | ReflectionInput;
@@ -179,6 +180,102 @@ const TYPE_TO_MODALITY: Record<MemoryType, Modality> = {
 
 const MIN_UNCERTAINTY = 0.05;
 const UNCERTAINTY_REINFORCEMENT = 0.1;
+const CONFLICT_UNCERTAINTY_BOOST = 0.1;
+
+// ---------------------------------------------------------------------------
+// ACC conflict detection — heuristic contradiction check
+// ---------------------------------------------------------------------------
+
+/**
+ * Detect whether two content strings meaningfully contradict each other.
+ * Returns true for contradictions, false for refinements/identical content.
+ *
+ * Heuristic: extract significant words, compute overlap. If the overlap is
+ * low relative to both strings (neither is a subset of the other), it's
+ * likely a contradiction rather than a refinement.
+ */
+export function isContradiction(oldContent: string, newContent: string): boolean {
+  if (oldContent === newContent) return false;
+
+  const oldLower = oldContent.toLowerCase();
+  const newLower = newContent.toLowerCase();
+
+  // Check for negation patterns: one says X, other says "not X" / "no X" / "never X"
+  if (hasNegationConflict(oldLower, newLower)) return true;
+
+  // Check for antonym-style contradictions
+  if (hasAntonymConflict(oldLower, newLower)) return true;
+
+  // Word overlap heuristic: if neither is a subset of the other, likely contradiction
+  const oldWords = significantWords(oldContent);
+  const newWords = significantWords(newContent);
+
+  if (oldWords.size === 0 || newWords.size === 0) return false;
+
+  const oldInNew = [...oldWords].filter((w) => fuzzyMatch(w, newWords)).length / oldWords.size;
+  const newInOld = [...newWords].filter((w) => fuzzyMatch(w, oldWords)).length / newWords.size;
+
+  // If one is mostly a superset of the other, it's a refinement
+  if (oldInNew >= 0.6 || newInOld >= 0.6) return false;
+
+  // Low overlap in both directions = likely contradiction
+  return true;
+}
+
+/** Check if one string negates a claim in the other. */
+function hasNegationConflict(a: string, b: string): boolean {
+  const negationPatterns = [
+    /\bnot\b/, /\bnever\b/, /\bno\b/, /\bdon't\b/, /\bdoesn't\b/,
+    /\bwon't\b/, /\bcan't\b/, /\bhates?\b/, /\bdislikes?\b/,
+  ];
+  const aHasNeg = negationPatterns.some((p) => p.test(a));
+  const bHasNeg = negationPatterns.some((p) => p.test(b));
+  // If exactly one has negation, likely contradiction
+  return aHasNeg !== bHasNeg;
+}
+
+/** Check for common antonym pairs. */
+function hasAntonymConflict(a: string, b: string): boolean {
+  const antonyms: [string, string][] = [
+    ['dark', 'light'], ['true', 'false'], ['yes', 'no'],
+    ['always', 'never'], ['frontend', 'backend'], ['mock', 'real'],
+    ['unit', 'integration'], ['prefer', 'avoid'], ['like', 'dislike'],
+  ];
+  for (const [word1, word2] of antonyms) {
+    const r1 = new RegExp(`\\b${word1}\\b`);
+    const r2 = new RegExp(`\\b${word2}\\b`);
+    if ((r1.test(a) && r2.test(b)) || (r2.test(a) && r1.test(b))) return true;
+  }
+  return false;
+}
+
+/** Check if a word fuzzy-matches any word in the set (prefix match, min 4 chars shared). */
+function fuzzyMatch(word: string, wordSet: Set<string>): boolean {
+  if (wordSet.has(word)) return true;
+  // Prefix matching: "functions" matches "functional" (share "function")
+  const minPrefix = Math.min(word.length, 4);
+  const prefix = word.slice(0, minPrefix);
+  for (const w of wordSet) {
+    if (w.startsWith(prefix) && Math.abs(w.length - word.length) <= 3) return true;
+  }
+  return false;
+}
+
+/** Extract significant words (lowercase, 3+ chars, no stopwords). */
+function significantWords(text: string): Set<string> {
+  const stopwords = new Set([
+    'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had',
+    'her', 'was', 'one', 'our', 'out', 'has', 'have', 'been', 'with', 'that',
+    'this', 'from', 'they', 'will', 'each', 'make', 'like', 'into', 'them',
+    'some', 'when', 'very', 'what', 'just', 'than', 'more', 'also', 'about',
+  ]);
+  return new Set(
+    text
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((w) => w.length >= 3 && !stopwords.has(w)),
+  );
+}
 
 // ---------------------------------------------------------------------------
 // JsonFilePersistentState implementation
@@ -265,7 +362,14 @@ export function createJsonFilePersistentState(options: {
         );
         existing.supersededBy = crypto.randomUUID();
 
-        const newEntry: ObservationMemory = {
+        // ACC conflict detection: is this a contradiction or refinement?
+        const oldContent = (existing as ObservationMemory).content;
+        const contradiction = isContradiction(oldContent, input.content);
+        const finalUncertainty = contradiction
+          ? Math.min(1, reinforcedUncertainty + CONFLICT_UNCERTAINTY_BOOST)
+          : reinforcedUncertainty;
+
+        const newEntry: ObservationMemory & { conflicted?: boolean } = {
           type: 'observation',
           id: existing.supersededBy,
           subject: input.subject,
@@ -274,19 +378,20 @@ export function createJsonFilePersistentState(options: {
             agent: 'loop-commons-agent',
             timestamp: now,
             used: [existing.id],
-            source: 'conversation',
+            source: input.source ?? 'conversation',
           },
           modality: 'observation',
-          uncertainty: reinforcedUncertainty,
+          uncertainty: finalUncertainty,
           visibility: input.visibility ?? existing.visibility,
           tags: input.tags ?? existing.tags,
           updatedAt: now,
           accessCount: 0,
+          ...(contradiction ? { conflicted: true } : {}),
         };
 
-        entries.push(newEntry);
+        entries.push(newEntry as Memory);
         persist();
-        return newEntry;
+        return newEntry as Memory;
       }
     }
 
@@ -301,7 +406,14 @@ export function createJsonFilePersistentState(options: {
         );
         existing.supersededBy = crypto.randomUUID();
 
-        const newEntry: LearningMemory = {
+        // ACC conflict detection for learnings
+        const oldInsight = (existing as LearningMemory).insight;
+        const contradiction = isContradiction(oldInsight, input.insight);
+        const finalUncertainty = contradiction
+          ? Math.min(1, reinforcedUncertainty + CONFLICT_UNCERTAINTY_BOOST)
+          : reinforcedUncertainty;
+
+        const newEntry: LearningMemory & { conflicted?: boolean } = {
           type: 'learning',
           id: existing.supersededBy,
           topic: input.topic,
@@ -311,19 +423,20 @@ export function createJsonFilePersistentState(options: {
             agent: 'loop-commons-agent',
             timestamp: now,
             used: [existing.id],
-            source: 'conversation',
+            source: input.source ?? 'conversation',
           },
           modality: 'belief',
-          uncertainty: reinforcedUncertainty,
+          uncertainty: finalUncertainty,
           visibility: input.visibility ?? existing.visibility,
           tags: input.tags ?? existing.tags,
           updatedAt: now,
           accessCount: 0,
+          ...(contradiction ? { conflicted: true } : {}),
         };
 
-        entries.push(newEntry);
+        entries.push(newEntry as Memory);
         persist();
-        return newEntry;
+        return newEntry as Memory;
       }
     }
 
@@ -348,7 +461,7 @@ export function createJsonFilePersistentState(options: {
             agent: 'loop-commons-agent',
             timestamp: now,
             used: [existing.id],
-            source: 'conversation',
+            source: input.source ?? 'conversation',
           },
           modality: 'claim',
           uncertainty: reinforcedUncertainty,
@@ -371,8 +484,9 @@ export function createJsonFilePersistentState(options: {
       provenance: {
         agent: 'loop-commons-agent',
         timestamp: now,
-        used: input.type === 'reflection' ? (input as ReflectionInput).evidence : [],
-        source: 'conversation' as const,
+        used: (input as MemoryInputCommon).derivedFrom
+          ?? (input.type === 'reflection' ? (input as ReflectionInput).evidence : []),
+        source: (input as MemoryInputCommon).source ?? 'conversation',
       },
       modality: TYPE_TO_MODALITY[input.type],
       uncertainty,

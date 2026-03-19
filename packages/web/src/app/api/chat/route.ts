@@ -6,11 +6,10 @@ import {
   createJsonFilePersistentState,
   createMemoryTools,
   formatMemoryContext,
-  extractMemoryWrites,
   hashForPrivacy,
   LLMError,
 } from '@loopcommons/llm';
-import type { TraceEvent, TraceCollector, MemoryInput, RequestMetadata } from '@loopcommons/llm';
+import type { TraceEvent, TraceCollector, RequestMetadata } from '@loopcommons/llm';
 import { tools } from '@/tools';
 import { createBlogTools } from '@/tools/blog';
 import { checkRateLimit, acquireConnection, releaseConnection, getClientIp, getRateLimitStatus } from '@/lib/rate-limit';
@@ -39,7 +38,14 @@ const memoryDataDir = process.env.MEMORY_DATA_DIR ?? 'data/memory';
 const memoryState = createJsonFilePersistentState({
   filePath: `${memoryDataDir}/world-model.json`,
 });
-const memoryTools = createMemoryTools({ state: memoryState });
+
+// Mutable per-request threat score. The closure is read at tool execution time
+// (during subagent invocation), not at construction time.
+let currentRequestThreatScore = 0;
+const memoryTools = createMemoryTools({
+  state: memoryState,
+  getThreatScore: () => currentRequestThreatScore,
+});
 const toolRegistry = createToolRegistry([...tools, ...blogTools, ...memoryTools]);
 const sessionWriter = new FileSessionWriter();
 const judge = process.env.ENABLE_LLM_JUDGE === 'true' ? createJudge() : null;
@@ -338,6 +344,9 @@ export async function POST(request: Request): Promise<Response> {
         }
       }
 
+      // Set per-request threat score for tool-level memory gating (alive-02)
+      currentRequestThreatScore = amygdalaResult.threat?.score ?? 0;
+
       // Track amygdala token usage
       tokenBudget.addActual('amygdala', {
         inputTokens: amygdalaResult.usage.inputTokens,
@@ -386,41 +395,8 @@ export async function POST(request: Request): Promise<Response> {
         timestamp: Date.now(),
       });
 
-      // =====================================================================
-      // MEMORY WRITE — post-orchestrator, gated by threat assessment
-      // =====================================================================
-      try {
-        const WRITE_THRESHOLD_FULL = 0.3;
-        const WRITE_THRESHOLD_CAUTIOUS = 0.5;
-        const threatScore = amygdalaResult.threat.score;
-
-        if (threatScore < WRITE_THRESHOLD_CAUTIOUS) {
-          const memoryWrites = extractMemoryWrites(
-            rawForAmygdala,
-            amygdalaResult,
-            result.agentResult.message,
-          );
-
-          for (const write of memoryWrites) {
-            // Elevate uncertainty for 0.3-0.49 threat band
-            const adjustedWrite: MemoryInput =
-              threatScore >= WRITE_THRESHOLD_FULL
-                ? { ...write, uncertainty: ((write as any).uncertainty ?? 0.5) + 0.2 }
-                : write;
-
-            const stored = await memoryState.remember(adjustedWrite);
-            sendAndPersist({
-              type: 'memory:write',
-              memory: stored,
-              gatedBy: threatScore,
-              deduplication: stored.provenance.used.length > 0 ? 'reinforced' : 'new',
-              timestamp: Date.now(),
-            } as SessionEvent);
-          }
-        }
-      } catch {
-        // Memory write failure should not break the pipeline
-      }
+      // Memory writes are now handled by subagents via memory_remember tool
+      // with tool-level threat gating (alive-02). extractMemoryWrites removed.
 
       // =====================================================================
       // LLM-AS-JUDGE — async quality scoring (eval-11)

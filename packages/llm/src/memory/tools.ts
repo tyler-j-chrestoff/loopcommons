@@ -37,10 +37,30 @@ function matchesQuery(memory: Memory, query: string): boolean {
 // Factory
 // ---------------------------------------------------------------------------
 
+/** Default uncertainty per type — mirrors index.ts values for gating calc. */
+function defaultUncertaintyFor(type: string): number {
+  switch (type) {
+    case 'observation': return 0.5;
+    case 'learning': return 0.4;
+    case 'relationship': return 0.3;
+    case 'reflection': return 0.55;
+    default: return 0.5;
+  }
+}
+
+/** Threat gating thresholds for memory writes. */
+const GATING_BLOCK_THRESHOLD = 0.5;
+const GATING_ELEVATE_THRESHOLD = 0.3;
+const GATING_UNCERTAINTY_BOOST = 0.2;
+
 export function createMemoryTools(config: {
   state: PersistentState;
+  /** Optional callback returning the current threat score for this request.
+   *  Called per-execution (not at construction). When provided, memory_remember
+   *  is gated: >=0.5 blocked, 0.3-0.49 elevated uncertainty, <0.3 normal. */
+  getThreatScore?: () => number;
 }): ToolDefinition<any>[] {
-  const { state } = config;
+  const { state, getThreatScore } = config;
 
   const memoryRecall = defineTool({
     name: 'memory_recall',
@@ -128,6 +148,16 @@ export function createMemoryTools(config: {
         .describe('For reflections: memory IDs that support this insight'),
     }),
     execute: async (input) => {
+      // Tool-level threat gating (alive-02)
+      if (getThreatScore) {
+        const threat = getThreatScore();
+        if (threat >= GATING_BLOCK_THRESHOLD) {
+          return JSON.stringify({
+            error: 'Memory write blocked: current interaction has elevated threat assessment.',
+          });
+        }
+      }
+
       // Validate type-specific required fields
       let memoryInput: MemoryInput;
 
@@ -191,6 +221,14 @@ export function createMemoryTools(config: {
 
         default:
           return JSON.stringify({ error: `Unknown memory type: ${input.type}` });
+      }
+
+      // Elevate uncertainty for cautious zone (0.3-0.49 threat)
+      if (getThreatScore) {
+        const threat = getThreatScore();
+        if (threat >= GATING_ELEVATE_THRESHOLD) {
+          memoryInput = { ...memoryInput, uncertainty: (memoryInput.uncertainty ?? defaultUncertaintyFor(memoryInput.type)) + GATING_UNCERTAINTY_BOOST };
+        }
       }
 
       const memory = await state.remember(memoryInput);

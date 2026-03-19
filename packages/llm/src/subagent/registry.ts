@@ -55,7 +55,7 @@ export type SubagentRegistry = {
 const resumeSubagent: SubagentConfig = {
   id: 'resume',
   name: 'Resume',
-  toolAllowlist: ['get_resume', 'memory_recall'],
+  toolAllowlist: ['get_resume', 'memory_recall', 'memory_remember'],
   systemPrompt:
     'You help visitors learn about Tyler\'s professional background, skills, and experience. ' +
     'Present information naturally and conversationally — not as a recitation of a CV. ' +
@@ -71,7 +71,7 @@ const resumeSubagent: SubagentConfig = {
 const projectSubagent: SubagentConfig = {
   id: 'project',
   name: 'Project',
-  toolAllowlist: ['get_project', 'memory_recall'],
+  toolAllowlist: ['get_project', 'memory_recall', 'memory_remember'],
   systemPrompt:
     'You explain how Loop Commons is built — its architecture, tech stack, design decisions, ' +
     'and research goals. Be technically precise but accessible. This is a research platform ' +
@@ -105,7 +105,7 @@ const securitySubagent: SubagentConfig = {
 const blogReaderSubagent: SubagentConfig = {
   id: 'blog-reader',
   name: 'Blog Reader',
-  toolAllowlist: ['list_posts', 'read_post', 'memory_recall'],
+  toolAllowlist: ['list_posts', 'read_post', 'memory_recall', 'memory_remember'],
   systemPrompt:
     'You help visitors explore published blog posts on Loop Commons. ' +
     'Present posts conversationally — summarize, link, and highlight what\'s relevant to the visitor\'s question. ' +
@@ -122,7 +122,7 @@ const blogReaderSubagent: SubagentConfig = {
 const blogWriterSubagent: SubagentConfig = {
   id: 'blog-writer',
   name: 'Blog Writer',
-  toolAllowlist: ['list_posts', 'read_post', 'create_draft', 'edit_post', 'publish_post', 'unpublish_post', 'delete_post', 'list_drafts', 'memory_recall'],
+  toolAllowlist: ['list_posts', 'read_post', 'create_draft', 'edit_post', 'publish_post', 'unpublish_post', 'delete_post', 'list_drafts', 'memory_recall', 'memory_remember'],
   systemPrompt:
     'You help Tyler manage blog content on Loop Commons. You have full access to create, edit, ' +
     'publish, unpublish, and delete blog posts. Use drafts for work-in-progress. ' +
@@ -137,7 +137,7 @@ const blogWriterSubagent: SubagentConfig = {
 const conversationalSubagent: SubagentConfig = {
   id: 'conversational',
   name: 'Conversational',
-  toolAllowlist: ['memory_recall'],
+  toolAllowlist: ['memory_recall', 'memory_remember'],
   systemPrompt:
     'You are a friendly, on-topic conversational agent on Tyler Chrestoff\'s research site. ' +
     'You can chat about AI, consciousness research, software engineering, and related topics ' +

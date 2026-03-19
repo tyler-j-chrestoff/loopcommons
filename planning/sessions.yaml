@@ -2,23 +2,38 @@
 # Each session is one Claude Code conversation (~1M token context).
 # Subagents stretch this further via parallel execution.
 
-planned:
-  - id: 27
-    title: "Alive Memory — Subagent Writes + Consolidation"
-    milestone: agent-identity
-    goal: "Subagents decide what to remember (Option C). Hippocampal consolidation synthesizes observations into reflections. ACC conflict detection."
-    phases:
-      - name: "Research + subagent-driven memory"
-        tasks: [alive-01, alive-02]
-        strategy: "Research consolidation approaches. Give subagents memory_remember with tool-level threat gating. Remove extractMemoryWrites."
-      - name: "Consolidation + conflict detection"
-        tasks: [alive-03, alive-04]
-        strategy: "Hippocampal pass after session end. ACC flags contradictions. Both guided by soul document."
-      - name: "Red-team"
-        tasks: [alive-05]
-        strategy: "Verify Option C doesn't open poisoning vectors. Test consolidation doesn't amplify bad data."
+planned: []
 
 completed:
+  - id: 27
+    title: "Alive Memory — Subagent Writes + Consolidation"
+    date: 2026-03-19
+    milestone: agent-identity
+    status: done
+    goal: "Subagents decide what to remember (Option C). Hippocampal consolidation synthesizes observations into reflections. ACC conflict detection."
+    phases:
+      - name: "Research + subagent-driven memory ✓"
+        tasks: [alive-01, alive-02]
+        status: done
+      - name: "Consolidation + conflict detection ✓"
+        tasks: [alive-03, alive-04]
+        status: done
+      - name: "Red-team ✓"
+        tasks: [alive-05]
+        status: done
+    summary: |
+      All 5 tasks completed. Alive-memory story done. 38 new tests (460 llm total, 383 web total).
+
+      Key deliverables:
+      - Subagents now call memory_remember directly (Option C). Tool-level threat gating in createMemoryTools via getThreatScore closure.
+      - extractMemoryWrites removed from route.ts. Memory writes are subagent-driven.
+      - ACC conflict detection: isContradiction() heuristic (negation, antonyms, fuzzy word overlap). conflicted flag on Memory entries.
+      - Hippocampal consolidation: consolidateMemories() synthesizes observations into learnings/reflections with evidence chains. LLM-injected, idempotent, excludes high-uncertainty observations.
+      - Red-team validated: poisoning blocked at ≥0.5, elevated uncertainty at 0.3-0.49, consolidation doesn't amplify poisoned data.
+      - MemoryInput now has source + derivedFrom fields for provenance tracking.
+      - Agent-identity milestone complete (both stories done).
+
+
   - id: 26
     title: "Agent Identity — Soul + Blog"
     date: 2026-03-19

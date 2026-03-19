@@ -2,17 +2,17 @@
 
 Loop Commons is a live research platform and open-source training data pipeline. A substrate-aware conversational agent that defends itself through self-knowledge, with every decision traced, visualized, and exported as labeled training data for open-source language models.
 
-**Active milestone**: [agent-identity](milestones/agent-identity/) — rewrite amygdala from security classifier to identity/alignment system. Soul document, behavioral metadata, subagent-driven memory, hippocampal consolidation, blog post.
+**Active milestone**: None — planning next milestone.
 
 ## Now
 
-- **[agent-identity](milestones/agent-identity/)** — The amygdala becomes an alignment monitor, not a threat classifier. SOUL.md defines who the agent is; `A(soul, tools) = system_prompt`. Subagents decide what to remember (Option C). Hippocampal consolidation synthesizes observations into reflections. Blog post captures the theory. 2 stories (10 tasks), 2 sessions.
 - **eval-hooks completion** — Remaining eval-hooks gates: feedback data flows through pipeline to training export, evaluation dashboard. 2 open gates.
 
 ## Next
 
 ## Done
 
+- **[agent-identity](milestones/agent-identity/)** — Amygdala rewritten from security classifier to identity/alignment monitor. SOUL.md soul document, subagent-driven memory writes (Option C), hippocampal consolidation, ACC conflict detection, 3-part blog series. 2 stories (10 tasks), 2 sessions. Completed 2026-03-19.
 - **[agent-memory](milestones/agent-memory/)** — Persistent agent world model. Capsule-shaped entries (observation/learning/relationship/reflection) with SDI-compatible envelope. Amygdala-mediated memory write gating. MemoryInspector viz. 2 stories (12 tasks), 2 sessions. Completed 2026-03-19.
 - **[seasonal-theme](milestones/seasonal-theme/)** — CVNP-inspired seasonal palette system. Spring theme: Literata serif for blog, everforest-light code blocks, warm light mode. Season picker with localStorage persistence. 1 story (8 tasks), 1 session. Completed 2026-03-18.
 - **[auto-calibration](milestones/auto-calibration/)** — Automated amygdala prompt optimization (propose/test/keep/revert). Bayesian Pareto constraints, calibration history viz, thinking tag filter. 2 stories (15 tasks), 2 sessions. Completed 2026-03-18.

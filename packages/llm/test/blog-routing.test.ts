@@ -47,13 +47,13 @@ describe('Blog routing — reader vs writer', () => {
     expect(config.toolAllowlist).toContain('unpublish_post');
     expect(config.toolAllowlist).toContain('delete_post');
     expect(config.toolAllowlist).toContain('list_drafts');
-    expect(config.toolAllowlist.length).toBe(9); // 8 blog tools + memory_recall
+    expect(config.toolAllowlist.length).toBe(10); // 8 blog tools + memory_recall + memory_remember
   });
 
   it('blog intent with isAdmin=false routes to blog-reader with read-only tools + memory_recall', () => {
     const config = registry.get('blog', { isAdmin: false });
     expect(config.id).toBe('blog-reader');
-    expect(config.toolAllowlist).toEqual(['list_posts', 'read_post', 'memory_recall']);
+    expect(config.toolAllowlist).toEqual(['list_posts', 'read_post', 'memory_recall', 'memory_remember']);
   });
 
   it('blog intent without context defaults to blog-reader', () => {
