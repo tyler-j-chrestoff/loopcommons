@@ -1,6 +1,6 @@
 # Milestone: Tool Packages
 
-**Status**: planned
+**Status**: done
 **Sessions**: 1
 **Stories**: 1
 **Prerequisite**: memory-packages (completed)
@@ -16,12 +16,12 @@ Wrap all tools as ToolPackages with enriched metadata. Prove the pattern general
 
 ## Verification Gate
 
-- [ ] ToolPackage metadata type extended with `intent`, `sideEffects`, `authRequired`
-- [ ] `createResumePackage()`, `createProjectPackage()`, `createBlogToolPackage()` factories exist
-- [ ] Memory packages updated with new metadata fields
-- [ ] route.ts assembles tools exclusively from ToolPackage instances
-- [ ] All packages pass contract test suite
-- [ ] Full regression: all existing tests pass
+- [x] ToolPackage metadata type extended with `intent`, `sideEffects`, `authRequired`
+- [x] `createResumePackage()`, `createProjectPackage()`, `createBlogToolPackage()` factories exist
+- [x] Memory packages updated with new metadata fields
+- [x] route.ts assembles tools exclusively from ToolPackage instances
+- [x] All packages pass contract test suite
+- [x] Full regression: all existing tests pass
 
 ## Files
 

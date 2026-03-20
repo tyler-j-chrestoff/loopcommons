@@ -1,4 +1,5 @@
 import { defineTool } from '@loopcommons/llm';
+import type { ToolPackage } from '@loopcommons/llm';
 import { z } from 'zod';
 
 const topics = ['architecture', 'trace-system', 'tech-stack', 'agent-loop'] as const;
@@ -68,3 +69,16 @@ export const projectTool = defineTool({
   }),
   execute: async ({ topic }) => topicData[topic as Topic],
 });
+
+export function createProjectPackage(): ToolPackage {
+  return {
+    tools: [projectTool],
+    formatContext: () => '',
+    metadata: {
+      name: 'project',
+      capabilities: ['project-info'],
+      intent: ['project'],
+      sideEffects: false,
+    },
+  };
+}

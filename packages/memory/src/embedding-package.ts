@@ -31,6 +31,9 @@ export interface EmbeddingMemoryPackage {
   metadata: {
     name: string;
     capabilities: string[];
+    intent: string[];
+    sideEffects: boolean;
+    authRequired?: boolean;
     cost?: string;
   };
   /** Direct access to the underlying EmbeddingState (recall with semantic query). */
@@ -75,6 +78,8 @@ export function createEmbeddingMemoryPackage(config: EmbeddingMemoryPackageConfi
     metadata: {
       name: 'embedding-memory',
       capabilities: ['recall', 'remember', 'semantic-search', 'consolidation'],
+      intent: ['memory-recall', 'memory-remember'],
+      sideEffects: true,
       cost: '~$0.02/1M tokens (text-embedding-3-small)',
     },
     state: wrappedState,

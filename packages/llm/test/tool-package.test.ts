@@ -30,6 +30,20 @@ export function runToolPackageContractTests(
       expect(pkg.metadata.capabilities.length).toBeGreaterThan(0);
     });
 
+    it('has an intent array in metadata', () => {
+      const pkg = createPackage();
+      expect(Array.isArray(pkg.metadata.intent)).toBe(true);
+      expect(pkg.metadata.intent.length).toBeGreaterThan(0);
+      for (const i of pkg.metadata.intent) {
+        expect(typeof i).toBe('string');
+      }
+    });
+
+    it('has a sideEffects boolean in metadata', () => {
+      const pkg = createPackage();
+      expect(typeof pkg.metadata.sideEffects).toBe('boolean');
+    });
+
     it('exposes at least one tool', () => {
       const pkg = createPackage();
       expect(pkg.tools.length).toBeGreaterThan(0);
@@ -76,6 +90,8 @@ function createStubPackage(): ToolPackage {
     metadata: {
       name: 'stub-package',
       capabilities: ['testing'],
+      intent: ['testing'],
+      sideEffects: false,
     },
   };
 }
@@ -117,9 +133,33 @@ describe('ToolPackage', () => {
       metadata: {
         name: 'test-pkg',
         capabilities: ['test'],
+        intent: ['test'],
+        sideEffects: false,
         cost: '$0.02/1M tokens',
       },
     };
     expect(pkg.metadata.cost).toBe('$0.02/1M tokens');
+  });
+
+  it('accepts optional authRequired in metadata', () => {
+    const pkg: ToolPackage = {
+      tools: [
+        defineTool({
+          name: 'test',
+          description: 'test',
+          parameters: z.object({}),
+          execute: async () => '',
+        }),
+      ],
+      formatContext: () => '',
+      metadata: {
+        name: 'test-pkg',
+        capabilities: ['test'],
+        intent: ['test'],
+        sideEffects: true,
+        authRequired: true,
+      },
+    };
+    expect(pkg.metadata.authRequired).toBe(true);
   });
 });

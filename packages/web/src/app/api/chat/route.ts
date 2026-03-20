@@ -8,8 +8,9 @@ import {
 } from '@loopcommons/llm';
 import type { TraceEvent, TraceCollector, RequestMetadata } from '@loopcommons/llm';
 import { createKeywordMemoryPackage } from '@loopcommons/memory/keyword';
-import { tools } from '@/tools';
-import { createBlogTools } from '@/tools/blog';
+import { createResumePackage } from '@/tools/resume';
+import { createProjectPackage } from '@/tools/project';
+import { createBlogToolPackage } from '@/tools/blog';
 import { checkRateLimit, acquireConnection, releaseConnection, getClientIp, getRateLimitStatus } from '@/lib/rate-limit';
 import { sanitizeInput, containsRoleSpoofing } from '@/lib/sanitize';
 import { canSpend, recordSpend, getSpendStatus } from '@/lib/spend-tracker';
@@ -31,8 +32,12 @@ const MAX_MESSAGES = 50;
 const amygdala = createAmygdala();
 const orchestrator = createOrchestrator();
 const blogDataDir = process.env.BLOG_DATA_DIR ?? 'data/blog';
-const blogTools = createBlogTools({ dataDir: blogDataDir });
 const memoryDataDir = process.env.MEMORY_DATA_DIR ?? 'data/memory';
+
+// --- ToolPackage assembly ---
+const resumePackage = createResumePackage();
+const projectPackage = createProjectPackage();
+const blogPackage = createBlogToolPackage({ dataDir: blogDataDir, variant: 'writer' });
 
 // Mutable per-request threat score. The closure is read at tool execution time
 // (during subagent invocation), not at construction time.
@@ -41,7 +46,12 @@ const memoryPackage = createKeywordMemoryPackage({
   filePath: `${memoryDataDir}/world-model.json`,
   getThreatScore: () => currentRequestThreatScore,
 });
-const toolRegistry = createToolRegistry([...tools, ...blogTools, ...memoryPackage.tools]);
+const toolRegistry = createToolRegistry([
+  ...resumePackage.tools,
+  ...projectPackage.tools,
+  ...blogPackage.tools,
+  ...memoryPackage.tools,
+]);
 const sessionWriter = new FileSessionWriter();
 const judge = process.env.ENABLE_LLM_JUDGE === 'true' ? createJudge() : null;
 

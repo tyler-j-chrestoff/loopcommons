@@ -23,6 +23,10 @@ export interface KeywordMemoryPackage {
   metadata: {
     name: string;
     capabilities: string[];
+    intent: string[];
+    sideEffects: boolean;
+    authRequired?: boolean;
+    cost?: string;
   };
   /** Direct access to the underlying PersistentState (for amygdala recall, etc.) */
   state: PersistentState;
@@ -60,6 +64,8 @@ export function createKeywordMemoryPackage(config: KeywordMemoryPackageConfig): 
     metadata: {
       name: 'keyword-memory',
       capabilities: ['recall', 'remember', 'consolidation'],
+      intent: ['memory-recall', 'memory-remember'],
+      sideEffects: true,
     },
     state: wrappedState,
   };

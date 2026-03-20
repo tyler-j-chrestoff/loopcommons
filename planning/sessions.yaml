@@ -3,21 +3,45 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 32
-    title: "Tool Packages — Wrap all tools as ToolPackages"
-    milestone: tool-packages
-    goal: "Every tool exposed through ToolPackage with enriched metadata (intent, sideEffects, authRequired). route.ts assembles exclusively from ToolPackages."
+  - id: 33
+    title: "Derived Prompts — Derive subagent capabilities from ToolPackages"
+    milestone: derived-prompts
+    goal: "Generate subagent system prompt capability sections from ToolPackage metadata. Prove prompts can be derived from tool composition."
     phases:
-      - name: "Extend ToolPackage metadata type"
-        tasks: [tp-01]
-      - name: "Wrap resume, project, blog tools"
-        tasks: [tp-02, tp-03, tp-04]
-      - name: "Update memory packages + route.ts"
-        tasks: [tp-05, tp-06]
-      - name: "Contract tests + regression"
-        tasks: [tp-07, tp-08]
+      - name: "Derive capabilities from metadata"
+        tasks: [dp-01, dp-02, dp-03]
+      - name: "Integration + regression"
+        tasks: [dp-04, dp-05]
 
 completed:
+  - id: 32
+    title: "Tool Packages — Wrap all tools as ToolPackages"
+    date: 2026-03-19
+    milestone: tool-packages
+    status: done
+    goal: "Every tool exposed through ToolPackage with enriched metadata (intent, sideEffects, authRequired). route.ts assembles exclusively from ToolPackages."
+    phases:
+      - name: "Extend ToolPackage metadata type ✓"
+        tasks: [tp-01]
+        status: done
+      - name: "Wrap resume, project, blog tools ✓"
+        tasks: [tp-02, tp-03, tp-04]
+        status: done
+      - name: "Update memory packages + route.ts ✓"
+        tasks: [tp-05, tp-06]
+        status: done
+      - name: "Contract tests + regression ✓"
+        tasks: [tp-07, tp-08]
+        status: done
+    summary: |
+      All 8 tasks completed in one session. ToolPackage pattern now generalizes across all tools.
+      Extended ToolPackage metadata with intent, sideEffects, authRequired fields.
+      Created 4 new package factories: createResumePackage(), createProjectPackage(), createBlogToolPackage({ dataDir, variant: 'reader' | 'writer' }).
+      Updated keyword-package and embedding-package with enriched metadata.
+      route.ts now assembles toolRegistry exclusively from ToolPackage instances — no direct tool imports.
+      70 contract tests (26 llm + 44 web), all green. Pre-existing web test alias resolution issues noted (not caused by this session).
+      tool-packages milestone complete. Next milestone: derived-prompts.
+
   - id: 31
     title: "Planning — Tools-as-Ontology Milestones + Roadmap Reindex"
     date: 2026-03-19

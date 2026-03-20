@@ -24,6 +24,12 @@ export type ToolPackage = {
   metadata: {
     name: string;
     capabilities: string[];
+    /** What the tools in this package are for (feeds derived-prompts). */
+    intent: string[];
+    /** Whether any tool in this package modifies state. */
+    sideEffects: boolean;
+    /** Whether tools require authenticated admin access. */
+    authRequired?: boolean;
     cost?: string;
   };
 };

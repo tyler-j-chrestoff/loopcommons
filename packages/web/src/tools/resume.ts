@@ -1,4 +1,5 @@
 import { defineTool } from '@loopcommons/llm';
+import type { ToolPackage } from '@loopcommons/llm';
 import { z } from 'zod';
 
 const sections = ['experience', 'skills', 'education', 'certifications', 'all'] as const;
@@ -149,3 +150,16 @@ export const resumeTool = defineTool({
   }),
   execute: async ({ section }) => getSection(section),
 });
+
+export function createResumePackage(): ToolPackage {
+  return {
+    tools: [resumeTool],
+    formatContext: () => '',
+    metadata: {
+      name: 'resume',
+      capabilities: ['resume-lookup'],
+      intent: ['resume'],
+      sideEffects: false,
+    },
+  };
+}

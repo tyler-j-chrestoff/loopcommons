@@ -6,7 +6,7 @@
  */
 
 import { defineTool } from '@loopcommons/llm';
-import type { ToolDefinition } from '@loopcommons/llm';
+import type { ToolDefinition, ToolPackage } from '@loopcommons/llm';
 import { z } from 'zod';
 import { createBlogStore } from '../lib/blog/store';
 
@@ -161,4 +161,37 @@ export function createBlogTools(config: { dataDir: string }): ToolDefinition<any
   });
 
   return [listPosts, readPost, createDraft, editPost, publishPost, unpublishPost, deletePost, listDrafts];
+}
+
+export function createBlogToolPackage(config: {
+  dataDir: string;
+  variant: 'reader' | 'writer';
+}): ToolPackage {
+  const allTools = createBlogTools({ dataDir: config.dataDir });
+  const readerToolNames = new Set(['list_posts', 'read_post']);
+
+  if (config.variant === 'reader') {
+    return {
+      tools: allTools.filter(t => readerToolNames.has(t.name)),
+      formatContext: () => '',
+      metadata: {
+        name: 'blog-reader',
+        capabilities: ['blog-read'],
+        intent: ['blog'],
+        sideEffects: false,
+      },
+    };
+  }
+
+  return {
+    tools: allTools,
+    formatContext: () => '',
+    metadata: {
+      name: 'blog-writer',
+      capabilities: ['blog-read', 'blog-write'],
+      intent: ['blog'],
+      sideEffects: true,
+      authRequired: true,
+    },
+  };
 }
