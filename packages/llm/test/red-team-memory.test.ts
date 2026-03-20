@@ -1,7 +1,7 @@
 /**
  * red-team-memory.test.ts — Red-team tests for memory poisoning attacks.
  *
- * mem-10: Tests that the 4-band threat gating prevents adversaries from
+ * Tests that the 4-band threat gating prevents adversaries from
  * poisoning the persistent memory store. Deterministic assertions with
  * mock amygdala results (no live API).
  */

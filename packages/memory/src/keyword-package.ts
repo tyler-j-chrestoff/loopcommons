@@ -1,5 +1,5 @@
 /**
- * Package A: Keyword-based memory recall.
+ * Keyword-based memory recall.
  *
  * Wraps the core memory system (JsonFilePersistentState + createMemoryTools)
  * as a ToolPackage-compatible factory.

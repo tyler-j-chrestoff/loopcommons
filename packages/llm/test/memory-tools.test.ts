@@ -1,8 +1,7 @@
 /**
  * memory-tools.test.ts — Tests for createMemoryTools factory.
  *
- * RED-GREEN TDD: Tests written first (RED), then implementation follows (GREEN).
- * mem-07: memory_recall and memory_remember tools backed by PersistentState.
+ * memory_recall and memory_remember tools backed by PersistentState.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';

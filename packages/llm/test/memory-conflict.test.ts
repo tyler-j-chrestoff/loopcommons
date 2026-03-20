@@ -1,8 +1,7 @@
 /**
  * memory-conflict.test.ts — ACC-inspired conflict detection in memory.
  *
- * RED-GREEN TDD: Tests written first (RED), then implementation follows (GREEN).
- * alive-04: When dedup finds a meaningfully different existing entry,
+ * When dedup finds a meaningfully different existing entry,
  * flag it as conflicted rather than silently overwriting.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';

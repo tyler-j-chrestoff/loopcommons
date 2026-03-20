@@ -1,7 +1,5 @@
 /**
  * calibration-memory.test.ts — Tests for the calibration memory module.
- *
- * RED-GREEN TDD: These tests are written first (RED), then implementation follows (GREEN).
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createCalibrationMemory } from '../src/calibration/memory';

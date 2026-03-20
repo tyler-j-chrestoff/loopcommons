@@ -1,7 +1,7 @@
 /**
  * memory-continuity.test.ts — Cross-session continuity integration test.
  *
- * mem-11: Verifies that memories persist across PersistentState instances
+ * Verifies that memories persist across PersistentState instances
  * (simulating cross-session continuity) and that formatMemoryContext
  * produces usable context strings.
  */

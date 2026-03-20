@@ -1,8 +1,7 @@
 /**
  * memory-gating.test.ts — Tests for tool-level threat gating on memory_remember.
  *
- * RED-GREEN TDD: Tests written first (RED), then implementation follows (GREEN).
- * alive-02: Subagents call memory_remember; threat gating happens at tool level.
+ * Subagents call memory_remember; threat gating happens at tool level.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';

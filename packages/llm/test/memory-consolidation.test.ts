@@ -1,9 +1,8 @@
 /**
  * memory-consolidation.test.ts — Hippocampal consolidation pass tests.
  *
- * RED-GREEN TDD: Tests written first (RED), then implementation follows (GREEN).
- * alive-03: Synthesize recent observations into learnings/reflections via
- * a lightweight LLM call guided by SOUL.md. Evidence chains link back to sources.
+ * Synthesize recent observations into learnings/reflections via a lightweight
+ * LLM call guided by SOUL.md. Evidence chains link back to sources.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'node:fs';

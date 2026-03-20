@@ -339,7 +339,7 @@ export async function POST(request: Request): Promise<Response> {
         }
       }
 
-      // Set per-request threat score for tool-level memory gating (alive-02)
+      // Set per-request threat score for tool-level memory gating
       currentRequestThreatScore = amygdalaResult.threat?.score ?? 0;
 
       // Track amygdala token usage
@@ -391,7 +391,7 @@ export async function POST(request: Request): Promise<Response> {
       });
 
       // Memory writes are now handled by subagents via memory_remember tool
-      // with tool-level threat gating (alive-02). extractMemoryWrites removed.
+      // with tool-level threat gating. extractMemoryWrites removed.
 
       // =====================================================================
       // LLM-AS-JUDGE — async quality scoring (eval-11)

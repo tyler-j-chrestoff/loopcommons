@@ -1,7 +1,7 @@
 /**
  * memory-inspector.test.tsx — Tests for MemoryInspector component.
  *
- * RED-GREEN TDD. mem-09: collapsible panel showing memory recall + writes.
+ * Collapsible panel showing memory recall + writes.
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';

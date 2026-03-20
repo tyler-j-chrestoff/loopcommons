@@ -2,21 +2,32 @@
 # Each session is one Claude Code conversation (~1M token context).
 # Subagents stretch this further via parallel execution.
 
-planned:
-  - id: 30
-    title: "Memory Packages — Embeddings + Admin API"
-    milestone: memory-packages
-    goal: "Semantic recall via embeddings (Package B), admin memory inspection, swappability proof."
-    phases:
-      - name: "Embedding strategy"
-        tasks: [emb-01, emb-02, emb-03]
-        status: planned
-      - name: "Admin API + red-team"
-        tasks: [emb-04, emb-05]
-        status: planned
-    strategy: "Needs OPENAI_API_KEY for embedding model. Mock in tests, live in eval. Blend scoring (0.6 semantic + 0.4 keyword) — tune weights with real queries."
+planned: []
 
 completed:
+  - id: 30
+    title: "Memory Packages — Embeddings + Admin API"
+    date: 2026-03-19
+    milestone: memory-packages
+    status: done
+    goal: "Semantic recall via embeddings (Package B), admin memory inspection, swappability proof."
+    phases:
+      - name: "Embedding strategy ✓"
+        tasks: [emb-01, emb-02, emb-03]
+        status: done
+      - name: "Admin API + red-team ✓"
+        tasks: [emb-04, emb-05]
+        status: done
+    summary: |
+      All 5 tasks shipped. memory-packages milestone complete.
+      emb-01: Optional vector: number[] field on MemoryBaseSchema + all input types. Backward-compatible — existing memories without vectors load cleanly. 6 new tests.
+      emb-02: Embedding strategy module (embedding.ts) — cosineSimilarity, keywordScore, blendScore (0.6 semantic + 0.4 keyword), createEmbeddingState (wraps PersistentState, embeds at write, ranks by blended similarity at recall). Embed function is dependency-injected — @loopcommons/memory stays zero-dep beyond zod. 20 new tests.
+      emb-03: createEmbeddingMemoryPackage (Package B) — same ToolPackage interface as Package A. Swappability proven: both A and B pass ToolPackage contract tests (6 new contract tests in packages/llm). 11 new tests.
+      emb-04: GET /api/memory — paginated, filterable (type/tags/limit/includeSuperseded), auth-gated via checkApiKey, strips vector fields from response. 9 new tests.
+      emb-05: 13 red-team tests — threat gating preserved with embeddings, adversarial queries can't bypass recall filtering, vector poisoning blocked, embed failures degrade gracefully, similarity edge cases (zero/large/mismatched vectors) handled.
+      Key decisions: embed function is injected (not imported) to keep memory package zero-dep. OPENAI_API_KEY not needed at test time — all tests use mocked embed. Package exports added: ./embedding, ./embedding-strategy.
+      Unplanned: cleaned all planning jargon (task IDs, methodology stamps, "Package A/B") from 17 source files across all 3 packages. Added CLAUDE.md rule #1 "Minimum Description Length" — grounded in SDI metabolism/thermodynamics. Reordered and unified all 4 rules under a metabolic narrative.
+      Total new tests: 62 in packages/memory (was 18), 19 in packages/llm tool-package (was 13), 9 in packages/web api-memory. Zero regressions across 946 total tests.
   - id: 29
     title: "Memory Packages — Interface + Extraction"
     date: 2026-03-19

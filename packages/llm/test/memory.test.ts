@@ -1,8 +1,7 @@
 /**
  * memory.test.ts — Tests for the agent memory module (PersistentState + JsonFilePersistentState).
  *
- * RED-GREEN TDD: Tests written first (RED), then implementation follows (GREEN).
- * mem-06: PersistentState interface, capsule-shaped types, JSON persistence.
+ * PersistentState interface, capsule-shaped types, JSON persistence.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';

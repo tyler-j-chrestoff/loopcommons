@@ -6,11 +6,11 @@ import { createKeywordMemoryPackage } from '../src/keyword-package';
 import type { ToolPackage } from '@loopcommons/llm';
 
 function tmpMemoryPath(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'memory-pkg-a-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'memory-kw-'));
   return path.join(dir, 'test-memory.json');
 }
 
-describe('createKeywordMemoryPackage (Package A)', () => {
+describe('createKeywordMemoryPackage', () => {
   let filePath: string;
 
   beforeEach(() => {

@@ -1,7 +1,7 @@
 /**
  * red-team-memory-subagent.test.ts — Red-team tests for Option C (subagent memory writes).
  *
- * alive-05: Now that subagents can call memory_remember, verify that:
+ * Now that subagents can call memory_remember, verify that:
  * 1. Tool-level threat gating holds at all bands
  * 2. Subagents can't bypass gating by calling state.remember() directly
  * 3. Consolidation doesn't amplify poisoned memories

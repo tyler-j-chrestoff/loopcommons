@@ -4,7 +4,6 @@
  * No LLM call. Examines amygdala result + user message to produce
  * MemoryInput[] for the orchestrator to persist.
  *
- * mem-08: Part of route.ts integration.
  */
 
 import type { AmygdalaResult } from '../amygdala/types';

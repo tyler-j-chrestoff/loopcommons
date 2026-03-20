@@ -1,9 +1,9 @@
 /**
  * Hippocampal consolidation — synthesize observations into learnings/reflections.
  *
- * alive-03: Background pass that reviews recent observations and, guided by
- * the soul document, produces higher-order memories (learnings + reflections)
- * with evidence chains pointing to source observations.
+ * Background pass that reviews recent observations and, guided by the soul
+ * document, produces higher-order memories (learnings + reflections) with
+ * evidence chains pointing to source observations.
  *
  * Design constraints:
  * - No external dependencies beyond the PersistentState interface

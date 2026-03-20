@@ -7,7 +7,9 @@
     ".": "./src/index.ts",
     "./tools": "./src/tools.ts",
     "./consolidation": "./src/consolidation.ts",
-    "./keyword": "./src/keyword-package.ts"
+    "./keyword": "./src/keyword-package.ts",
+    "./embedding": "./src/embedding-package.ts",
+    "./embedding-strategy": "./src/embedding.ts"
   },
   "dependencies": {
     "zod": "^3.23.0"

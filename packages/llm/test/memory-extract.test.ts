@@ -1,7 +1,7 @@
 /**
  * memory-extract.test.ts — Tests for extractMemoryWrites + formatMemoryContext.
  *
- * RED-GREEN TDD. mem-08: deterministic memory extraction from interactions.
+ * Deterministic memory extraction from interactions.
  */
 import { describe, it, expect } from 'vitest';
 import { extractMemoryWrites } from '../src/memory/extract';

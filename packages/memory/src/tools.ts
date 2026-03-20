@@ -4,7 +4,6 @@
  * Same factory pattern as createBlogTools. Accepts PersistentState,
  * returns ToolDefinition[] for the tool registry.
  *
- * mem-07: createMemoryTools factory for the agent-memory milestone.
  */
 
 import { z } from 'zod';
@@ -151,7 +150,7 @@ export function createMemoryTools(config: {
         .describe('For reflections: memory IDs that support this insight'),
     }),
     execute: async (input) => {
-      // Tool-level threat gating (alive-02)
+      // Tool-level threat gating
       if (getThreatScore) {
         const threat = getThreatScore();
         if (threat >= GATING_BLOCK_THRESHOLD) {

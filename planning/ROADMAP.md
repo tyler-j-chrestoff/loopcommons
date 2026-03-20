@@ -2,17 +2,17 @@
 
 Loop Commons is a live research platform and open-source training data pipeline. A substrate-aware conversational agent that defends itself through self-knowledge, with every decision traced, visualized, and exported as labeled training data for open-source language models.
 
-**Active milestone**: [memory-packages](milestones/memory-packages/) — Composable memory as the pilot for tool packages. ToolPackage interface, keyword strategy (A), embedding strategy (B), admin API. 2 stories (10 tasks), 2 sessions.
+**Active milestone**: none — plan next milestone.
 
 ## Now
 
-- **[memory-packages](milestones/memory-packages/)** — Extract memory into a composable tool package. Keyword recall (Package A) + embedding recall (Package B) behind a shared ToolPackage interface. Proves the tools-as-ontology pattern.
 - **eval-hooks completion** — Remaining eval-hooks gates: feedback data flows through pipeline to training export, evaluation dashboard. 2 open gates.
 
 ## Next
 
 ## Done
 
+- **[memory-packages](milestones/memory-packages/)** — Composable memory as the pilot for tool packages. ToolPackage interface, keyword strategy (Package A), embedding strategy (Package B), admin API, red-team. 2 stories (10 tasks), 2 sessions. Completed 2026-03-19.
 - **[agent-identity](milestones/agent-identity/)** — Amygdala rewritten from security classifier to identity/alignment monitor. SOUL.md soul document, subagent-driven memory writes (Option C), hippocampal consolidation, ACC conflict detection, 3-part blog series. 2 stories (10 tasks), 2 sessions. Completed 2026-03-19.
 - **[agent-memory](milestones/agent-memory/)** — Persistent agent world model. Capsule-shaped entries (observation/learning/relationship/reflection) with SDI-compatible envelope. Amygdala-mediated memory write gating. MemoryInspector viz. 2 stories (12 tasks), 2 sessions. Completed 2026-03-19.
 - **[seasonal-theme](milestones/seasonal-theme/)** — CVNP-inspired seasonal palette system. Spring theme: Literata serif for blog, everforest-light code blocks, warm light mode. Season picker with localStorage persistence. 1 story (8 tasks), 1 session. Completed 2026-03-18.

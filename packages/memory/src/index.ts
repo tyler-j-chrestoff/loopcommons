@@ -5,7 +5,6 @@
  * 4 memory types: observation, learning, relationship, reflection.
  * SDI-compatible capsule envelope (provenance, modality, uncertainty, visibility).
  *
- * mem-06: Core module for the agent-memory milestone.
  */
 
 import { z } from 'zod';
@@ -46,6 +45,8 @@ const MemoryBaseSchema = z.object({
   lastAccessedAt: z.string().optional(),
   /** ACC conflict flag: set when dedup detects contradictory content. */
   conflicted: z.boolean().optional(),
+  /** Embedding vector — optional, populated by embedding-capable packages. */
+  vector: z.array(z.number()).optional(),
 });
 
 export const ObservationMemorySchema = MemoryBaseSchema.extend({
@@ -101,6 +102,8 @@ type MemoryInputCommon = {
   source?: string;
   /** IDs of memories that this entry was derived from. */
   derivedFrom?: string[];
+  /** Embedding vector — populated by embedding-capable packages at write time. */
+  vector?: number[];
 };
 
 export type ObservationInput = MemoryInputCommon & {
@@ -387,6 +390,7 @@ export function createJsonFilePersistentState(options: {
           updatedAt: now,
           accessCount: 0,
           ...(contradiction ? { conflicted: true } : {}),
+          ...(input.vector ? { vector: input.vector } : {}),
         };
 
         entries.push(newEntry as Memory);
@@ -432,6 +436,7 @@ export function createJsonFilePersistentState(options: {
           updatedAt: now,
           accessCount: 0,
           ...(contradiction ? { conflicted: true } : {}),
+          ...(input.vector ? { vector: input.vector } : {}),
         };
 
         entries.push(newEntry as Memory);
@@ -469,6 +474,7 @@ export function createJsonFilePersistentState(options: {
           tags: input.tags ?? existing.tags,
           updatedAt: now,
           accessCount: 0,
+          ...(input.vector ? { vector: input.vector } : {}),
         };
 
         entries.push(newEntry);
@@ -494,6 +500,7 @@ export function createJsonFilePersistentState(options: {
       tags: input.tags ?? [],
       updatedAt: now,
       accessCount: 0,
+      ...((input as MemoryInputCommon).vector ? { vector: (input as MemoryInputCommon).vector } : {}),
     };
 
     let entry: Memory;

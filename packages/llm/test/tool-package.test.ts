@@ -6,11 +6,12 @@ import * as os from 'node:os';
 import { defineTool } from '../src/tool';
 import type { ToolPackage } from '../src/tool';
 import { createKeywordMemoryPackage } from '@loopcommons/memory/keyword';
+import { createEmbeddingMemoryPackage } from '@loopcommons/memory/embedding';
 
 /**
  * Contract tests for ToolPackage interface.
  * Any object satisfying ToolPackage must pass these tests.
- * Used to verify both Package A (keyword) and Package B (embedding).
+ * Used to verify all ToolPackage implementations (keyword, embedding, etc.).
  */
 export function runToolPackageContractTests(
   name: string,
@@ -87,9 +88,19 @@ function tmpMemoryPath(): string {
 describe('ToolPackage', () => {
   runToolPackageContractTests('stub', createStubPackage);
 
-  // Contract tests against real Package A (keyword memory)
-  runToolPackageContractTests('keyword-memory (Package A)', () =>
+  runToolPackageContractTests('keyword-memory', () =>
     createKeywordMemoryPackage({ filePath: tmpMemoryPath() }),
+  );
+
+  runToolPackageContractTests('embedding-memory', () =>
+    createEmbeddingMemoryPackage({
+      filePath: tmpMemoryPath(),
+      embed: async (text) => {
+        const codes = text.split('').slice(0, 4).map((c) => c.charCodeAt(0) / 200);
+        while (codes.length < 4) codes.push(0);
+        return codes;
+      },
+    }),
   );
 
   it('accepts optional cost in metadata', () => {
