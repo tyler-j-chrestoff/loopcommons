@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { getPublishedPosts } from '@/lib/blog/data';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Blog — Loop Commons',
   description: "Tyler's research and engineering writing.",
