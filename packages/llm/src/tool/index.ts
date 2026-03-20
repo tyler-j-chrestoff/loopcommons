@@ -16,7 +16,7 @@ export function defineTool<T extends z.ZodType>(config: ToolDefinition<T>): Tool
 
 /** A composable package of tools with context formatting for amygdala injection */
 export type ToolPackage = {
-  /** Tools provided by this package */
+  /** Tools provided by this package (LLM-callable, appear in derived prompts) */
   tools: ToolDefinition[];
   /** Format recalled state as context string for amygdala system prompt */
   formatContext: () => string;
@@ -31,7 +31,18 @@ export type ToolPackage = {
     /** Whether tools require authenticated admin access. */
     authRequired?: boolean;
     cost?: string;
+    /** Whether memory survives the session (memory packages only). */
+    persistence?: boolean;
+    /** Visibility boundary: private, shared, or inherited (memory packages only). */
+    scope?: 'private' | 'shared' | 'inherited';
+    /** Whether this strategy responds to consolidation signals (memory packages only). */
+    consolidation?: boolean;
   };
+  /**
+   * System methods — orchestrator-callable, never in LLM tool list or derived prompts.
+   * Keyed by method name. The orchestrator calls these at lifecycle boundaries.
+   */
+  systemMethods?: Record<string, (...args: any[]) => Promise<any>>;
 };
 
 /** Registry for looking up tools by name */

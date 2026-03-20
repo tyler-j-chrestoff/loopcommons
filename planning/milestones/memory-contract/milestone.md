@@ -1,6 +1,6 @@
 # Milestone: Memory Contract
 
-**Status**: planned
+**Status**: done
 **Sessions**: 1
 **Stories**: 1
 **Prerequisite**: derived-prompts
@@ -81,17 +81,17 @@ Three additions that cost almost nothing now but enable the pain-as-prediction-e
 
 ## Verification Gate
 
-- [ ] Memory contract types defined (4 operations, package metadata, operation metadata)
-- [ ] ToolPackage interface supports system methods partition (agent tools vs orchestrator methods)
-- [ ] NullMemory strategy exists with `tools: []` and populated metadata
-- [ ] KeywordMemory conforms to new contract (recall with opts, store with meta, forget by query, consolidate with trigger)
-- [ ] EmbeddingMemory conforms to new contract
-- [ ] All three strategies pass shared contract tests (swappability proven)
-- [ ] Orchestrator validates memory ToolPackage presence at construction
-- [ ] Derived prompts reflect memory metadata (NullMemory → "no persistent memory")
-- [ ] Consolidation wired as lifecycle signal (orchestrator can trigger at session end)
-- [ ] Existing tests pass (backward compatibility)
+- [x] Memory contract types defined (4 operations, package metadata, operation metadata)
+- [x] ToolPackage interface supports system methods partition (agent tools vs orchestrator methods)
+- [x] NullMemory strategy exists with `tools: []` and populated metadata
+- [x] KeywordMemory conforms to new contract (recall with opts, store with meta, forget by query, consolidate with trigger)
+- [x] EmbeddingMemory conforms to new contract
+- [x] All three strategies pass shared contract tests (swappability proven)
+- [x] Orchestrator validates memory ToolPackage presence at construction
+- [x] Derived prompts reflect memory metadata (NullMemory → "no persistent memory")
+- [x] Consolidation wired as lifecycle signal (orchestrator can trigger at session end)
+- [x] Existing tests pass (backward compatibility)
 
 ## Files
 
-`packages/memory/src/index.ts`, `packages/memory/src/tools.ts`, `packages/memory/src/keyword-package.ts`, `packages/memory/src/embedding-package.ts`, `packages/llm/src/tool/index.ts` (ToolPackage interface), `packages/llm/src/orchestrator/index.ts`
+`packages/memory/src/contract.ts` (MemoryContract types), `packages/memory/src/null-package.ts` (NullMemory), `packages/memory/src/keyword-package.ts`, `packages/memory/src/embedding-package.ts`, `packages/llm/src/tool/index.ts` (ToolPackage interface + systemMethods + memory metadata), `packages/llm/src/tool/derive.ts` (memory metadata in derived prompts), `packages/llm/src/orchestrator/index.ts` (validation + consolidation lifecycle)

@@ -3,19 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 36
-    title: "Memory Contract — Formalize memory as identity component"
-    milestone: memory-contract
-    goal: "Memory is a required component of identity. Formalize 4-operation contract, system methods partition, NullMemory strategy, orchestrator validates presence at construction."
-    phases:
-      - name: "Contract types + ToolPackage partition"
-        tasks: [mc-01, mc-02, mc-03]
-      - name: "NullMemory + conform existing strategies"
-        tasks: [mc-04, mc-05, mc-06]
-      - name: "Contract tests + orchestrator wiring"
-        tasks: [mc-07, mc-08, mc-09]
-    strategy: "Foundational session. Memory contract must be solid before createAgentCore() can validate it. Existing code is promoted, not rewritten — keyword/embedding strategies conform to new contract. Three-way architectural convergence (Claude Code + Claude Web + Gemini) produced the contract spec."
-
   - id: 37
     title: "Multi-Interface — Extract agent core"
     milestone: multi-interface
@@ -63,6 +50,36 @@ planned:
         tasks: []
 
 completed:
+  - id: 36
+    title: "Memory Contract — Formalize memory as identity component"
+    date: 2026-03-20
+    milestone: memory-contract
+    status: done
+    goal: "Memory is a required component of identity. Formalize 4-operation contract, system methods partition, NullMemory strategy, orchestrator validates presence at construction."
+    phases:
+      - name: "Contract types + ToolPackage partition ✓"
+        tasks: [mc-01, mc-02, mc-03]
+        status: done
+      - name: "NullMemory + conform existing strategies ✓"
+        tasks: [mc-04, mc-05, mc-06]
+        status: done
+      - name: "Contract tests + orchestrator wiring ✓"
+        tasks: [mc-07, mc-08, mc-09]
+        status: done
+    summary: |
+      All 9 tasks complete. Memory-contract milestone done.
+      MemoryContract interface: 4 operations (recall, store, forget, consolidate) with RecallOpts, OperationMeta (Ttl discriminated union), StoreReceipt, ConsolidationTrigger, ConsolidateStats.
+      ToolPackage gains: systemMethods (orchestrator-callable, never in LLM tool list), memory metadata (persistence, scope, consolidation).
+      NullMemory: tools:[], metadata populated, all ops are no-ops. Valid third strategy.
+      KeywordMemory + EmbeddingMemory conformed: contract property with all 4 ops, fuzzy forget by query, operation-level meta.
+      37 shared contract tests prove swappability across all 3 strategies.
+      Orchestrator: validates memory package presence (mc-09), calls consolidate(session_end) post-interaction (mc-08), skips for refusal/consolidation:false.
+      Derived prompts: persistence:false → "no persistent memory", persistence:true → describes scope/consolidation.
+      Bonus: fixed conversational subagent deflection pattern (directness principle added to prompt).
+      Tests: packages/memory 141 (8 files), packages/llm 567 (35 files). Pre-existing api-chat mock failure in web (not our change).
+      Key decision: intent array gains 'memory' alongside existing 'memory-recall'/'memory-remember' for package-level discovery.
+      Unblocks: session 37 (multi-interface core extraction) — createAgentCore can now validate memory presence.
+
   - id: 35
     title: "Planning — Möbius Principle, memory contract, trajectory rewrite"
     date: 2026-03-20

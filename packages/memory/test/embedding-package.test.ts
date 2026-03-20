@@ -143,4 +143,76 @@ describe('createEmbeddingMemoryPackage', () => {
     expect(typeof a.formatContext).toBe('function');
     expect(typeof b.formatContext).toBe('function');
   });
+
+  // --- Memory contract conformance ---
+
+  it('exposes a MemoryContract via contract property', () => {
+    const pkg = createEmbeddingMemoryPackage({ filePath, embed });
+    expect(pkg.contract).toBeDefined();
+    expect(typeof pkg.contract.recall).toBe('function');
+    expect(typeof pkg.contract.store).toBe('function');
+    expect(typeof pkg.contract.forget).toBe('function');
+    expect(typeof pkg.contract.consolidate).toBe('function');
+  });
+
+  it('contract.recall returns RecallResult', async () => {
+    const pkg = createEmbeddingMemoryPackage({ filePath, embed });
+    const result = await pkg.contract.recall('anything');
+    expect(result).toHaveProperty('capsules');
+    expect(result).toHaveProperty('truncated');
+  });
+
+  it('contract.store returns StoreReceipt', async () => {
+    const pkg = createEmbeddingMemoryPackage({ filePath, embed });
+    const receipt = await pkg.contract.store({
+      type: 'observation',
+      subject: 'test',
+      content: 'data',
+    });
+    expect(receipt).toHaveProperty('id');
+    expect(receipt).toHaveProperty('timestamp');
+  });
+
+  it('contract.recall finds what contract.store stored', async () => {
+    const pkg = createEmbeddingMemoryPackage({ filePath, embed });
+    await pkg.contract.store({
+      type: 'observation',
+      subject: 'favorite-color',
+      content: 'blue',
+    });
+    const result = await pkg.contract.recall('favorite-color');
+    expect(result.capsules.length).toBeGreaterThan(0);
+  });
+
+  it('contract.forget removes matching entries', async () => {
+    const pkg = createEmbeddingMemoryPackage({ filePath, embed });
+    await pkg.contract.store({
+      type: 'observation',
+      subject: 'secret',
+      content: 'should be forgotten',
+    });
+    await pkg.contract.forget('secret');
+    const result = await pkg.contract.recall('secret');
+    expect(result.capsules.length).toBe(0);
+  });
+
+  it('contract.consolidate returns stats', async () => {
+    const pkg = createEmbeddingMemoryPackage({ filePath, embed });
+    const stats = await pkg.contract.consolidate({ type: 'session_end' });
+    expect(stats).toHaveProperty('pruned');
+    expect(stats).toHaveProperty('promoted');
+  });
+
+  it('has memory metadata fields', () => {
+    const pkg = createEmbeddingMemoryPackage({ filePath, embed });
+    expect(pkg.metadata.persistence).toBe(true);
+    expect(pkg.metadata.scope).toBe('private');
+    expect(pkg.metadata.consolidation).toBe(true);
+  });
+
+  it('exposes consolidate as systemMethod', () => {
+    const pkg = createEmbeddingMemoryPackage({ filePath, embed });
+    expect(pkg.systemMethods).toBeDefined();
+    expect(typeof pkg.systemMethods!.consolidate).toBe('function');
+  });
 });

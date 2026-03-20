@@ -110,6 +110,26 @@ export function buildSystemPrompt(input: BuildSystemPromptInput): string {
     }
   }
 
+  // Derived memory metadata
+  if (input.packages) {
+    const memoryPkg = input.packages.find(p => p.metadata.intent.includes('memory'));
+    if (memoryPkg) {
+      const { persistence, scope, consolidation } = memoryPkg.metadata;
+      if (persistence === false) {
+        parts.push('');
+        parts.push('## Memory');
+        parts.push('You have no persistent memory. You cannot recall or store information across sessions.');
+      } else if (persistence === true) {
+        parts.push('');
+        parts.push('## Memory');
+        const lines: string[] = ['Your memory is persistent across sessions.'];
+        if (scope) lines.push(`Scope: ${scope}.`);
+        if (consolidation) lines.push('Consolidation is enabled.');
+        parts.push(lines.join(' '));
+      }
+    }
+  }
+
   // Context annotations from amygdala
   if (input.annotations && input.annotations.length > 0) {
     parts.push('');

@@ -81,6 +81,14 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
     const traceEvents: OrchestratorTraceEvent[] = [];
     const now = Date.now();
 
+    // ----- Step 0: Validate memory package presence -----
+    if (toolPackages && !toolPackages.some(pkg => pkg.metadata.intent.some(i => i.includes('memory')))) {
+      throw new Error(
+        'OrchestratorInput.toolPackages must include at least one memory ToolPackage ' +
+        '(a package with intent containing "memory"). Memory is a required component of agent identity.',
+      );
+    }
+
     // ----- Step 1: Select subagent -----
     const { subagent, threatOverride, authGated, reasoning } = selectSubagent(
       registry,
@@ -206,6 +214,18 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
       stream,
       trace: collectors.length > 0 ? collectors : undefined,
     });
+
+    // ----- Step 6: Consolidation lifecycle signal -----
+    if (toolPackages) {
+      for (const pkg of toolPackages) {
+        if (
+          pkg.metadata.consolidation &&
+          pkg.systemMethods?.consolidate
+        ) {
+          await pkg.systemMethods.consolidate({ type: 'session_end' });
+        }
+      }
+    }
 
     return {
       agentResult,

@@ -162,4 +162,73 @@ describe('ToolPackage', () => {
     };
     expect(pkg.metadata.authRequired).toBe(true);
   });
+
+  it('accepts optional systemMethods record', () => {
+    const consolidateFn = async () => ({ pruned: 0, promoted: 0 });
+    const pkg: ToolPackage = {
+      tools: [
+        defineTool({
+          name: 'test',
+          description: 'test',
+          parameters: z.object({}),
+          execute: async () => '',
+        }),
+      ],
+      formatContext: () => '',
+      metadata: {
+        name: 'test-pkg',
+        capabilities: ['test'],
+        intent: ['test'],
+        sideEffects: false,
+      },
+      systemMethods: {
+        consolidate: consolidateFn,
+      },
+    };
+    expect(pkg.systemMethods).toBeDefined();
+    expect(typeof pkg.systemMethods!.consolidate).toBe('function');
+  });
+
+  it('systemMethods are not required (backward compatible)', () => {
+    const pkg: ToolPackage = {
+      tools: [],
+      formatContext: () => '',
+      metadata: {
+        name: 'test-pkg',
+        capabilities: [],
+        intent: ['test'],
+        sideEffects: false,
+      },
+    };
+    expect(pkg.systemMethods).toBeUndefined();
+  });
+
+  it('systemMethods are excluded from tool list', () => {
+    const consolidateFn = async () => ({ pruned: 0, promoted: 0 });
+    const pkg: ToolPackage = {
+      tools: [
+        defineTool({
+          name: 'memory_recall',
+          description: 'recall',
+          parameters: z.object({}),
+          execute: async () => '',
+        }),
+      ],
+      formatContext: () => '',
+      metadata: {
+        name: 'memory-pkg',
+        capabilities: ['recall'],
+        intent: ['memory'],
+        sideEffects: false,
+      },
+      systemMethods: {
+        consolidate: consolidateFn,
+      },
+    };
+    // consolidate should NOT appear in tools array
+    const toolNames = pkg.tools.map(t => t.name);
+    expect(toolNames).not.toContain('consolidate');
+    // but should be available via systemMethods
+    expect(pkg.systemMethods!.consolidate).toBeDefined();
+  });
 });

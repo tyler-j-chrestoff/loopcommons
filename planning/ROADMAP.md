@@ -6,7 +6,7 @@ This is "Consciousness as Variational Inference" applied to agent architecture. 
 
 Everything below serves this thesis. The platform generates open-source training data as a side effect of testing it.
 
-**Active milestone**: [memory-contract](milestones/memory-contract/)
+**Active milestone**: [multi-interface](milestones/multi-interface/)
 
 ---
 

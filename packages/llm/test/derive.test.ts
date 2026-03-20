@@ -206,4 +206,50 @@ describe('buildSystemPrompt', () => {
     });
     expect(result).toContain('read-only');
   });
+
+  it('includes memory metadata section when package has persistence field', () => {
+    const tools = [makeTool('memory_recall', 'Recall memories')];
+    const packages: ToolPackage[] = [{
+      tools,
+      formatContext: () => '',
+      metadata: {
+        name: 'keyword-memory',
+        capabilities: ['recall', 'remember'],
+        intent: ['memory'],
+        sideEffects: true,
+        persistence: true,
+        scope: 'private',
+        consolidation: true,
+      },
+    }];
+    const result = buildSystemPrompt({
+      domainKnowledge: 'Conversational agent.',
+      tools,
+      packages,
+    });
+    expect(result).toContain('Memory');
+    expect(result).toContain('persistent');
+  });
+
+  it('derives "no persistent memory" for NullMemory metadata', () => {
+    const packages: ToolPackage[] = [{
+      tools: [],
+      formatContext: () => '',
+      metadata: {
+        name: 'null-memory',
+        capabilities: [],
+        intent: ['memory'],
+        sideEffects: false,
+        persistence: false,
+        scope: 'private',
+        consolidation: false,
+      },
+    }];
+    const result = buildSystemPrompt({
+      domainKnowledge: 'Security subagent.',
+      tools: [],
+      packages,
+    });
+    expect(result).toContain('no persistent memory');
+  });
 });
