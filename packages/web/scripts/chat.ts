@@ -12,7 +12,7 @@
 import * as readline from 'node:readline';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
-import { createAgentCore } from '@loopcommons/llm';
+import { createAgentCore, getCommitSha, buildAgentIdentity } from '@loopcommons/llm';
 import type { InvocationIdentity, TraceEvent, ToolPackage } from '@loopcommons/llm';
 import type { Message } from '@loopcommons/llm';
 import { createKeywordMemoryPackage } from '@loopcommons/memory/keyword';
@@ -71,6 +71,7 @@ export function buildIdentity(opts: { admin: boolean }): InvocationIdentity {
     interfaceId: 'cli',
     isAdmin: opts.admin,
     isAuthenticated: true,
+    commitSha: getCommitSha(),
     requestMetadata: {
       ipHash: 'cli-local',
       isAuthenticated: true,
@@ -127,10 +128,14 @@ async function main(): Promise<void> {
   const sessionWriter = new FileSessionWriter({ basePath: dataDir });
   const sessionId = crypto.randomUUID();
   await sessionWriter.create(sessionId);
+
+  const commitSha = getCommitSha();
+  const agentIdentity = await buildAgentIdentity(commitSha, toolPackages, '');
   sessionWriter.append(sessionId, {
     type: 'session:start',
     sessionId,
     interfaceId: 'cli',
+    agentIdentity,
     timestamp: Date.now(),
   } as any);
 

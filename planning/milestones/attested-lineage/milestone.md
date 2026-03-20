@@ -1,6 +1,6 @@
 # Milestone: Attested Lineage
 
-**Status**: planned
+**Status**: done
 **Sessions**: 0.5–1 (parallelizable with CLI adapter)
 **Stories**: 1
 **Prerequisite**: multi-interface (core extraction)

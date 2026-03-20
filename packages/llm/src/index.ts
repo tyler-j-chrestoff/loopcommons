@@ -49,6 +49,8 @@ export { createOrchestrator } from './orchestrator';
 export type { OrchestratorConfig } from './orchestrator';
 export { createJudge } from './eval';
 export type { JudgeConfig, JudgeInput, JudgeResult, JudgeScoreEvent, JudgeScores } from './eval';
+export { computeIdentity, buildAgentIdentity, getCommitSha, computeToolDiff, buildLineageRecord } from './identity';
+export type { AgentIdentity, LineageRecord } from './identity';
 export { SLUG_REGEX, BlogFrontmatterSchema } from './blog/types';
 export type { BlogPost, BlogPostSummary, BlogFrontmatter } from './blog/types';
 export { createJsonFilePersistentState, formatMemoryContext, MemorySchema, isContradiction } from './memory';

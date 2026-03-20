@@ -13,6 +13,7 @@ import type { RequestMetadata } from '../amygdala/types';
 import type { ToolPackage, ToolRegistry } from '../tool';
 import type { AmygdalaFn } from '../amygdala/types';
 import type { OrchestratorFn } from '../orchestrator/types';
+import type { AgentIdentity } from '../identity';
 
 // ---------------------------------------------------------------------------
 // Invocation identity — who is calling and from where
@@ -29,6 +30,8 @@ export type InvocationIdentity = {
   userId?: string;
   /** Optional HTTP-layer metadata for the amygdala. */
   requestMetadata?: RequestMetadata;
+  /** Git commit SHA for content-addressed identity. Read from env or git. */
+  commitSha?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -69,6 +72,8 @@ export type AgentInvocationResult = {
   amygdalaUsage: TokenUsage;
   /** Amygdala cost in USD. */
   amygdalaCost: number;
+  /** Content-addressed identity for this agent instance. Present when commitSha was provided. */
+  agentIdentity?: AgentIdentity;
 };
 
 // ---------------------------------------------------------------------------

@@ -3,19 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 38b
-    title: "Attested Lineage — Content-addressed agent identity"
-    milestone: attested-lineage
-    goal: "Every agent instance carries a verifiable identity derived from git commit SHA + tool composition. Lineage chains trace ancestry."
-    phases:
-      - name: "Verify determinism + define types"
-        tasks: [al-01, al-02]
-      - name: "Compute identity + wire through pipeline"
-        tasks: [al-03, al-04, al-05]
-      - name: "Lineage recording"
-        tasks: [al-06]
-    strategy: "Parallelizable with 38a. This is the Attest primitive — the twist that makes multi-interface a Möbius strip rather than a cylinder. Git SHAs are the attestation mechanism."
-
   - id: 39
     title: "Roguelike v1 — Encounter design + arena harness"
     milestone: roguelike-v1
@@ -68,6 +55,32 @@ planned:
         tasks: []
 
 completed:
+  - id: 38b
+    title: "Attested Lineage — Content-addressed agent identity"
+    date: 2026-03-20
+    milestone: attested-lineage
+    status: done
+    goal: "Every agent instance carries a verifiable identity derived from git commit SHA + tool composition. Lineage chains trace ancestry."
+    phases:
+      - name: "Verify determinism + define types ✓"
+        tasks: [al-01, al-02]
+        status: done
+      - name: "Compute identity + wire through pipeline ✓"
+        tasks: [al-03, al-04, al-05]
+        status: done
+      - name: "Lineage recording ✓"
+        tasks: [al-06]
+        status: done
+    summary: |
+      Attested-lineage milestone complete. All 6 tasks done.
+      New module: packages/llm/src/identity/ — AgentIdentity type (commitSha + toolCompositionHash + derivedPromptHash), LineageRecord type (parent/child/toolDiff), computeIdentity, buildAgentIdentity, getCommitSha (RAILWAY_GIT_COMMIT_SHA || git rev-parse HEAD), computeToolDiff, buildLineageRecord.
+      InvocationIdentity gains optional commitSha. AgentInvocationResult gains optional agentIdentity. createAgentCore computes identity when commitSha provided.
+      session:start events carry agentIdentity in both web route.ts and CLI chat.ts.
+      38 new tests (4 files: derive-determinism 8, identity 20, identity-wiring 6, lineage 4). 0 regressions (626 existing LLM tests pass).
+      buildSystemPrompt verified as pure function (no Date.now, Math.random, process.env — static analysis + 100-iteration determinism test).
+      Key decision: agent self-verification in system prompt deferred to roguelike-v1 (MDL violation — waste heat without a consumer). Updated roguelike-v1 stories to include self-verification as acceptance criteria for crossroads engine.
+      Unblocked: roguelike-v1 session 39 (all prerequisites met).
+
   - id: 38-plan
     title: "Planning — Roguelike v1 milestone design (3-way convergence)"
     date: 2026-03-20

@@ -2,6 +2,8 @@ import {
   createAgentCore,
   createJudge,
   hashForPrivacy,
+  getCommitSha,
+  buildAgentIdentity,
   LLMError,
 } from '@loopcommons/llm';
 import type { TraceEvent } from '@loopcommons/llm';
@@ -223,12 +225,17 @@ export async function POST(request: Request): Promise<Response> {
       // Initialize session persistence
       await sessionWriter.create(sessionId, { parentSessionId });
 
+      // Compute content-addressed identity for this session
+      const commitSha = getCommitSha();
+      const agentIdentity = await buildAgentIdentity(commitSha, toolPackages, '');
+
       // Emit session:start as the very first event
       sendAndPersist({
         type: 'session:start',
         sessionId,
         ...(parentSessionId ? { parentSessionId } : {}),
         interfaceId: 'web',
+        agentIdentity,
         timestamp: Date.now(),
       });
 
@@ -263,6 +270,7 @@ export async function POST(request: Request): Promise<Response> {
           interfaceId: 'web',
           isAdmin,
           isAuthenticated: true,
+          commitSha: getCommitSha(),
           requestMetadata: {
             ipHash: hashForPrivacy(ip),
             isAuthenticated: true,

@@ -1,4 +1,4 @@
-import type { Round, Trace, ToolExecution, AmygdalaIntent, ThreatCategory, JudgeScores, Memory } from '@loopcommons/llm';
+import type { Round, Trace, ToolExecution, AmygdalaIntent, ThreatCategory, JudgeScores, Memory, AgentIdentity } from '@loopcommons/llm';
 import type { BudgetSnapshot } from '@/lib/token-budget';
 import type { FeedbackRating, FeedbackCategory } from '@/lib/feedback';
 
@@ -34,7 +34,7 @@ export type ChatSSEEvent =
   | { type: 'memory:recall'; memoriesRetrieved: number; memoryTypes: Record<string, number>; timestamp: number }
   | { type: 'memory:write'; memory: Memory; gatedBy: number; deduplication: 'new' | 'reinforced' | 'updated'; timestamp: number }
   // --- Session events ---
-  | { type: 'session:start'; sessionId: string; parentSessionId?: string; interfaceId?: string; timestamp: number }
+  | { type: 'session:start'; sessionId: string; parentSessionId?: string; interfaceId?: string; agentIdentity?: AgentIdentity; timestamp: number }
   | { type: 'session:complete'; sessionId: string; timestamp: number }
   // --- Terminal ---
   | { type: 'done' };

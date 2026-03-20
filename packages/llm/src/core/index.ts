@@ -12,6 +12,7 @@ import { createToolRegistry } from '../tool';
 import type { TraceEvent } from '../trace/events';
 import type { TraceCollector } from '../trace';
 import type { AgentCore, AgentCoreConfig, AgentInvocation, AgentInvocationResult } from './types';
+import { buildAgentIdentity } from '../identity';
 
 export type { AgentCore, AgentCoreConfig, AgentInvocation, AgentInvocationResult, AgentCoreFn, InvocationIdentity } from './types';
 
@@ -138,6 +139,12 @@ export function createAgentCore(config: AgentCoreConfig): AgentCore {
         outputTokens: amygdalaResult.usage.outputTokens,
         cachedTokens: amygdalaResult.usage.cachedTokens ?? 0,
       };
+
+      // Compute content-addressed identity when commitSha is provided
+      const agentIdentity = identity.commitSha
+        ? await buildAgentIdentity(identity.commitSha, toolPackages, '')
+        : undefined;
+
       return {
         response: result.agentResult.message,
         traceEvents: allTraceEvents,
@@ -151,6 +158,7 @@ export function createAgentCore(config: AgentCoreConfig): AgentCore {
         subagentName: result.subagentName,
         amygdalaUsage,
         amygdalaCost: amygdalaResult.cost,
+        agentIdentity,
       };
     },
   };
