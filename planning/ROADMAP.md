@@ -6,7 +6,7 @@ This is "Consciousness as Variational Inference" applied to agent architecture. 
 
 Everything below serves this thesis. The platform generates open-source training data as a side effect of testing it.
 
-**Active milestone**: [multi-interface](milestones/multi-interface/)
+**Active milestone**: [memory-contract](milestones/memory-contract/)
 
 ---
 
@@ -18,10 +18,28 @@ Each milestone proves a stronger claim about the thesis. Each is independently u
 |---|-----------|-------------|----------|
 | 1 | [tool-packages](milestones/tool-packages/) | Tools carry enough metadata to describe themselves | 1 |
 | 2 | [derived-prompts](milestones/derived-prompts/) | System prompts can be generated from tool composition | 2 |
-| 3 | [multi-interface](milestones/multi-interface/) | Tool-defined identity is portable across interfaces | 2 |
-| 4 | [agent-arena](milestones/agent-arena/) | Evolution over tool compositions discovers identities that hand-design can't | 2-3 |
+| 3 | [memory-contract](milestones/memory-contract/) | Memory is a required component of identity, not an optional tool | 1 |
+| 4 | [multi-interface](milestones/multi-interface/) | Tool-defined identity (incl. memory) is portable across interfaces | 2 |
+| 5 | [attested-lineage](milestones/attested-lineage/) | Identity derivations are content-addressed and carry ancestry | 0.5–1 |
+| 6 | [agent-arena](milestones/agent-arena/) | Evolution over attested compositions discovers identities that hand-design can't | 2-3 |
 
-**7-8 sessions, 7 stories, 41 tasks.** Design doc: `milestones/agent-memory/designs/tools-as-ontology.md`
+```
+derived-prompts (done) → memory-contract
+                              ↓
+                        multi-interface (core extraction)
+                              ↓
+                    ┌─────────┴─────────┐
+                    │                   │
+              CLI adapter      attested-lineage
+                    │                   │
+                    └─────────┬─────────┘
+                              ↓
+                         agent-arena
+```
+
+Memory-contract formalizes memory as a construction-time invariant before core extraction. Attested-lineage needs core extraction (the canonical derivation path must be clean before you hash it) but not CLI. CLI doesn't need lineage chains. Arena needs both. Agent-arena without attestation is just hyperparameter search — compositions can't vouch for their own continuity across generations. See `planning/memos/MOBIUS_PRINCIPLE.md`.
+
+**9-11 sessions, 9 stories, 56 tasks.** Design doc: `milestones/agent-memory/designs/tools-as-ontology.md`
 
 ---
 

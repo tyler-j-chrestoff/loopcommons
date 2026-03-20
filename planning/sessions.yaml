@@ -3,15 +3,102 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 35
-    title: "Multi-Interface — Tool-defined identity across interfaces"
-    milestone: multi-interface
-    goal: "Prove ToolPackage-defined identity is portable across CLI, API, and web interfaces."
+  - id: 36
+    title: "Memory Contract — Formalize memory as identity component"
+    milestone: memory-contract
+    goal: "Memory is a required component of identity. Formalize 4-operation contract, system methods partition, NullMemory strategy, orchestrator validates presence at construction."
     phases:
-      - name: "TBD — read multi-interface milestone stories"
+      - name: "Contract types + ToolPackage partition"
+        tasks: [mc-01, mc-02, mc-03]
+      - name: "NullMemory + conform existing strategies"
+        tasks: [mc-04, mc-05, mc-06]
+      - name: "Contract tests + orchestrator wiring"
+        tasks: [mc-07, mc-08, mc-09]
+    strategy: "Foundational session. Memory contract must be solid before createAgentCore() can validate it. Existing code is promoted, not rewritten — keyword/embedding strategies conform to new contract. Three-way architectural convergence (Claude Code + Claude Web + Gemini) produced the contract spec."
+
+  - id: 37
+    title: "Multi-Interface — Extract agent core"
+    milestone: multi-interface
+    goal: "Extract pipeline from route.ts into createAgentCore() factory with memory as construction-time invariant. Web becomes thin HTTP adapter."
+    phases:
+      - name: "Define invocation contract"
+        tasks: [mi-01]
+      - name: "Extract pipeline + refactor route.ts"
+        tasks: [mi-02, mi-03]
+      - name: "Interface metadata + portable session/rate-limit"
+        tasks: [mi-04, mi-05]
+    strategy: "Core extraction. createAgentCore() validates memory ToolPackage presence (from memory-contract milestone). The derivation path must be clean and testable before attested-lineage can hash it."
+
+  # Sessions 38a and 38b are parallelizable (no dependencies between them)
+  - id: 38a
+    title: "Multi-Interface — CLI adapter"
+    milestone: multi-interface
+    goal: "Terminal REPL as second interface, proving tool-defined identity (incl. memory) is portable across substrates."
+    phases:
+      - name: "CLI REPL + wire to agent core"
+        tasks: [mi-06, mi-07, mi-08]
+      - name: "Session persistence + pipeline + red-team"
+        tasks: [mi-09, mi-10, mi-11]
+    strategy: "Parallelizable with 38b. CLI is the Execute primitive — prove the surface is continuous across substrates."
+
+  - id: 38b
+    title: "Attested Lineage — Content-addressed agent identity"
+    milestone: attested-lineage
+    goal: "Every agent instance carries a verifiable identity derived from git commit SHA + tool composition. Lineage chains trace ancestry."
+    phases:
+      - name: "Verify determinism + define types"
+        tasks: [al-01, al-02]
+      - name: "Compute identity + wire through pipeline"
+        tasks: [al-03, al-04, al-05]
+      - name: "Lineage recording"
+        tasks: [al-06]
+    strategy: "Parallelizable with 38a. This is the Attest primitive — the twist that makes multi-interface a Möbius strip rather than a cylinder. Git SHAs are the attestation mechanism."
+
+  - id: 39
+    title: "Agent Arena — TBD"
+    milestone: agent-arena
+    goal: "Evolution over attested tool compositions. Depends on both multi-interface and attested-lineage."
+    phases:
+      - name: "TBD — read agent-arena milestone stories"
         tasks: []
 
 completed:
+  - id: 35
+    title: "Planning — Möbius Principle, memory contract, trajectory rewrite"
+    date: 2026-03-20
+    milestone: memory-contract
+    status: done
+    goal: "Shape the forward trajectory informed by the Möbius Principle memo. Design memory contract via three-way convergence (Claude Code + Claude Web + Gemini)."
+    phases:
+      - name: "README + trajectory review ✓"
+        tasks: []
+        status: done
+      - name: "Möbius Principle → attested-lineage milestone ✓"
+        tasks: []
+        status: done
+      - name: "Memory contract design (3-way convergence) ✓"
+        tasks: []
+        status: done
+      - name: "Pain-as-prediction-error research + suggestion ✓"
+        tasks: []
+        status: done
+    summary: |
+      Planning session — no implementation code. Major trajectory rewrite.
+      README.md: Research-paper-style project overview pushed to GitHub.
+      Möbius Principle memo: Tyler's theoretical foundation for identity-as-replacement-protocol.
+      Led to insight: git commit SHAs ARE content-addressed attestation. attested-lineage milestone created (1 story, 6 tasks).
+      Memory-contract milestone created via three-way architectural convergence (Claude Code + Claude Web + Gemini):
+        - 4-operation contract (recall, store, forget, consolidate)
+        - System methods partition (agent tools vs orchestrator methods)
+        - NullMemory strategy (metadata-only, no tools — resolves the stateless-but-identity-aware paradox)
+        - Package-level metadata (persistence, scope, consolidation)
+        - SQLite via better-sqlite3, file-per-identity isolation
+        - Extensibility hooks for future pain/depth system (provenance, discriminated union triggers, mutable confidence)
+      Memory reordered as foundational — goes BEFORE multi-interface in trajectory. Equation updated: A(soul, tools, memory) = identity.
+      Pain-as-prediction-error suggestion filed: Type 1 (nociceptive, single-layer) vs Type 2 (relational, multi-layer). Depth = number of recursive layers undermined simultaneously. Research: Reflexion, Seymour 2019, active inference (Bo Wen 2025), Evo-Memory.
+      Compute sandboxing section added to agent-arena milestone (ToolPackage generation → code execution progression).
+      Trajectory: 6 milestones, 9 stories. tool-packages (done) → derived-prompts (done) → memory-contract → multi-interface → attested-lineage ∥ CLI → agent-arena.
+      tools-define-identity suggestion marked fully promoted.
   - id: 34
     title: "Derived Prompts — Integration, regression, and red-team"
     date: 2026-03-20

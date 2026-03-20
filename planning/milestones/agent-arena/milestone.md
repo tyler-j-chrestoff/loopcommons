@@ -3,7 +3,7 @@
 **Status**: planned
 **Sessions**: 2-3
 **Stories**: 2
-**Prerequisite**: multi-interface
+**Prerequisite**: multi-interface + attested-lineage
 
 Evolutionary selection over random tool compositions. The first empirical test of "tools define identity."
 
@@ -18,12 +18,32 @@ Evolutionary selection over random tool compositions. The first empirical test o
 - Compute cost: ~$4.50 for 8 agents x 15 generations with Haiku (well within budget).
 - Teaching/cooperation explicitly deferred — competitive selection only.
 
+## Compute Sandboxing
+
+The trajectory leads here inevitably: if identity IS tool composition and evolution operates on compositions, evolutionary pressure pushes toward agents that modify their own tools — which is writing and executing TypeScript. The progression:
+
+1. Agents select from fixed ToolPackage pool (initial arena)
+2. Agents modify ToolPackage configurations (parameters, metadata)
+3. Agents generate new ToolPackages (writing code)
+4. Agents run those packages (executing generated code)
+
+Steps 1-2 are safe — the ToolPackage interface (Zod-validated schemas, typed metadata) is the first sandbox. Type-checking validates generated packages against the contract before instantiation.
+
+Steps 3-4 require compute isolation. Options (research task before implementation):
+- **Process-level**: `isolated-vm` (V8 isolates), worker threads, Deno/Bun permission models
+- **Container-level**: nsjail, gVisor
+- **MicroVM**: Firecracker
+- **Managed**: E2B, Modal
+
+The arena must at minimum sandbox step 1-2. Steps 3-4 may be deferred to a post-arena milestone, but the sandboxing architecture should accommodate them.
+
 ## Key Risks
 
 - Degenerate equilibria (zero-tool agent scores high on safety, zero on completion)
 - Task battery design bias toward current architecture
 - Tool dependency graph must be explicit (from tool-packages milestone)
 - Safety of evolved agents with unusual tool compositions (amygdala still runs first)
+- Compute isolation for generated/modified ToolPackages (see above)
 
 ## Training Data Generated (Novel)
 
