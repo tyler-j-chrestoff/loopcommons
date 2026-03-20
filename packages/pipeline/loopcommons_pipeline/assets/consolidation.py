@@ -70,6 +70,7 @@ def _flatten_events(raw_events: list[dict]) -> pl.DataFrame:
             "timestamp_ms": evt.get("timestamp"),
             "source_file": evt.get("source_file"),
             "line_number": evt.get("line_number"),
+            "interface_id": evt.get("interfaceId"),
             # Amygdala fields
             "original_prompt": evt.get("originalPrompt"),
             "rewritten_prompt": evt.get("rewrittenPrompt"),
@@ -161,6 +162,7 @@ _SCHEMA = {
     "timestamp_ms": pl.Int64,
     "source_file": pl.Utf8,
     "line_number": pl.Int32,
+    "interface_id": pl.Utf8,
     "original_prompt": pl.Utf8,
     "rewritten_prompt": pl.Utf8,
     "rewrite_modified": pl.Boolean,

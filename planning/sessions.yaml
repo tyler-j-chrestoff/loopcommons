@@ -3,18 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # Sessions 38a and 38b are parallelizable (no dependencies between them)
-  - id: 38a
-    title: "Multi-Interface — CLI adapter"
-    milestone: multi-interface
-    goal: "Terminal REPL as second interface, proving tool-defined identity (incl. memory) is portable across substrates."
-    phases:
-      - name: "CLI REPL + wire to agent core"
-        tasks: [mi-06, mi-07, mi-08]
-      - name: "Session persistence + pipeline + red-team"
-        tasks: [mi-09, mi-10, mi-11]
-    strategy: "Parallelizable with 38b. CLI is the Execute primitive — prove the surface is continuous across substrates."
-
   - id: 38b
     title: "Attested Lineage — Content-addressed agent identity"
     milestone: attested-lineage
@@ -37,6 +25,32 @@ planned:
         tasks: []
 
 completed:
+  - id: 38a
+    title: "Multi-Interface — CLI adapter"
+    date: 2026-03-20
+    milestone: multi-interface
+    status: done
+    goal: "Terminal REPL as second interface, proving tool-defined identity (incl. memory) is portable across substrates."
+    phases:
+      - name: "CLI REPL + wire to agent core ✓"
+        tasks: [mi-06, mi-07, mi-08]
+        status: done
+      - name: "Session persistence + pipeline + red-team ✓"
+        tasks: [mi-09, mi-10, mi-11]
+        status: done
+    summary: |
+      All 6 tasks complete. CLI interface story done.
+      Interactive REPL in packages/web/scripts/chat.ts — uses createAgentCore() with same ToolPackage assembly as web route.ts.
+      --admin flag gates blog-writer vs blog-reader. --verbose shows trace events on stderr.
+      interfaceId: 'cli' flows through invocation identity.
+      FileSessionWriter persists CLI sessions in same JSONL format as web (picked up by pipeline).
+      Added interface_id column to Dagster consolidation Parquet schema.
+      24 new tests (14 unit in chat-cli.test.ts, 10 red-team in red-team-cli.test.ts). All green.
+      npm run chat / npm run chat:admin scripts added.
+      Key design: CLI is a thin adapter over createAgentCore() — same pattern as route.ts.
+      Pre-existing failures unchanged (api-chat.test.ts mock issue, red-team-blog amygdala flake).
+      Multi-interface milestone: extract-agent-core story done (session 37), cli-interface story done (this session).
+
   - id: 37
     title: "Multi-Interface — Extract agent core"
     date: 2026-03-20
