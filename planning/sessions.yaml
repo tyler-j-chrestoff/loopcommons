@@ -17,14 +17,87 @@ planned:
     strategy: "Parallelizable with 38a. This is the Attest primitive — the twist that makes multi-interface a Möbius strip rather than a cylinder. Git SHAs are the attestation mechanism."
 
   - id: 39
-    title: "Agent Arena — TBD"
-    milestone: agent-arena
-    goal: "Evolution over attested tool compositions. Depends on both multi-interface and attested-lineage."
+    title: "Roguelike v1 — Encounter design + arena harness"
+    milestone: roguelike-v1
+    goal: "Build the arena harness, design composition-sensitive encounters, implement crossroads engine. Runnable experiment by end of session."
     phases:
-      - name: "TBD — read agent-arena milestone stories"
+      - name: "Research: encounter design + tool packages"
+        tasks: [rl-01]
+      - name: "Arena types, encounter engine, crossroads engine"
+        tasks: [rl-02, rl-03, rl-04]
+      - name: "Run orchestrator + E3 feedback generator"
+        tasks: [rl-05, rl-06]
+      - name: "Experiment runner + red-team"
+        tasks: [rl-07, rl-08]
+    strategy: "Encounter design (rl-01) is the critical path — everything depends on good encounters. Three-way convergence produced two paradigms (knowledge-work vs filesystem). Session starts with finalizing encounter content, then builds harness around it. Pilot runs at end to check abort conditions."
+
+  - id: 40
+    title: "Roguelike v1 — Trace storage, analysis, and experiment run"
+    milestone: roguelike-v1
+    goal: "Trace schema, analysis pipeline, pre-registration, pilot runs, full 150-run experiment, statistical analysis."
+    phases:
+      - name: "Trace schema + writer"
+        tasks: [rl-09, rl-10]
+      - name: "Analysis queries + pre-registration"
+        tasks: [rl-11, rl-12]
+      - name: "Run experiment (pilot → full)"
+        tasks: []
+      - name: "Analyze results → pass/fail/abort gate"
+        tasks: []
+    strategy: "Pre-register before running anything. Pilot 20 runs to check abort conditions. If clear, run full 150. Analyze. The gate result shapes session 41."
+
+  - id: 41
+    title: "Roguelike v1 — Viz, export, and arena planning"
+    milestone: roguelike-v1
+    goal: "Visualization components, training data export, and use results to plan agent-arena."
+    phases:
+      - name: "Arena API + viz components"
+        tasks: [rl-13, rl-14, rl-15, rl-16]
+      - name: "Pipeline consolidation + training data export"
+        tasks: [rl-17, rl-18]
+      - name: "Plan agent-arena based on gate results"
+        tasks: []
+    strategy: "If PASS: reshape agent-arena to evolve over acquisition sequences. If CONDITIONAL PASS: roguelike as diversity generator for population seeding. If FAIL: fall back to original agent-arena design (static composition evolution)."
+
+  - id: 42
+    title: "Agent Arena — TBD (informed by roguelike results)"
+    milestone: agent-arena
+    goal: "Evolution over attested tool compositions. Design informed by roguelike-v1 gate results."
+    phases:
+      - name: "TBD — design depends on roguelike-v1 outcome"
         tasks: []
 
 completed:
+  - id: 38-plan
+    title: "Planning — Roguelike v1 milestone design (3-way convergence)"
+    date: 2026-03-20
+    milestone: roguelike-v1
+    status: done
+    goal: "Shape the agent-arena trajectory via three-way architectural convergence (Claude Code + Claude Opus 4.6 web + Gemini 3 Pro). Design the roguelike/deckbuilder experiment."
+    phases:
+      - name: "Context load + MiroFish research ✓"
+        tasks: []
+        status: done
+      - name: "Three-way convergence: 5 rounds of dialectic ✓"
+        tasks: []
+        status: done
+      - name: "Planning artifacts: milestone, stories, sessions ✓"
+        tasks: []
+        status: done
+    summary: |
+      Planning session — no implementation code. Major trajectory addition.
+      Researched MiroFish (multi-agent swarm intelligence engine) for lessons. Key takeaway: their assigned-identity approach validates our derived-identity thesis by contrast.
+      Tyler's roguelike/ARPG intuition for agent tool acquisition sparked 5-round three-way convergence:
+        Round 1: Initial framing → all 3 converge on deckbuilder (Slay the Spire) over ARPG (Diablo)
+        Round 2: Stress-testing → bootstrapping problem, encounter design as hidden 80%, context bloat solved by capacity limits
+        Round 3: Pushed from theory to artifacts → encounter designs (2 paradigms), crossroads prompt, data schema, arena harness
+        Round 4: Direct engagement between approaches → hybrid "Semantic DevOps" encounters, schema↔prompt alignment, harness pseudocode
+        Round 5: Verification gate → 3 statistical tests (chi-square, permutation clustering, Mann-Whitney), pre-registration checklist, N=150
+      New milestone: roguelike-v1 (3 stories, 18 tasks). Tests path dependence: does tool acquisition order matter when final composition is identical?
+      Trajectory updated: attested-lineage → roguelike-v1 → agent-arena (informed by results).
+      Key design decisions: deckbuilder capacity limits, structural death (not score threshold), eval gaming instrumented not prevented, dual identity hashing (state + chain), single agent (not party) for v1.
+      Sessions 39-42 planned. Gate result at end of session 40 determines agent-arena design.
+
   - id: 38a
     title: "Multi-Interface — CLI adapter"
     date: 2026-03-20

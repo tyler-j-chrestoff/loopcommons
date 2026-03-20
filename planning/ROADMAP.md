@@ -21,25 +21,28 @@ Each milestone proves a stronger claim about the thesis. Each is independently u
 | 3 | [memory-contract](milestones/memory-contract/) | Memory is a required component of identity, not an optional tool | 1 |
 | 4 | [multi-interface](milestones/multi-interface/) | Tool-defined identity (incl. memory) is portable across interfaces | 2 ✓ |
 | 5 | [attested-lineage](milestones/attested-lineage/) | Identity derivations are content-addressed and carry ancestry | 0.5–1 |
-| 6 | [agent-arena](milestones/agent-arena/) | Evolution over attested compositions discovers identities that hand-design can't | 2-3 |
+| 6 | [roguelike-v1](milestones/roguelike-v1/) | Tool acquisition order produces measurably different agents (path dependence) | 2-3 |
+| 7 | [agent-arena](milestones/agent-arena/) | Evolution over attested compositions discovers identities that hand-design can't | 2-3 |
 
 ```
-derived-prompts (done) → memory-contract
+derived-prompts (done) → memory-contract (done)
                               ↓
-                        multi-interface (core extraction)
+                        multi-interface (done)
                               ↓
                     ┌─────────┴─────────┐
                     │                   │
-              CLI adapter      attested-lineage
+              CLI adapter (done)  attested-lineage
                     │                   │
                     └─────────┬─────────┘
                               ↓
-                         agent-arena
+                        roguelike-v1
+                              ↓
+                    agent-arena (informed by results)
 ```
 
-Memory-contract formalizes memory as a construction-time invariant before core extraction. Attested-lineage needs core extraction (the canonical derivation path must be clean before you hash it) but not CLI. CLI doesn't need lineage chains. Arena needs both. Agent-arena without attestation is just hyperparameter search — compositions can't vouch for their own continuity across generations. See `planning/memos/MOBIUS_PRINCIPLE.md`.
+Memory-contract formalizes memory as a construction-time invariant before core extraction. Attested-lineage needs core extraction (the canonical derivation path must be clean before you hash it) but not CLI. CLI doesn't need lineage chains. Roguelike-v1 needs attested lineage (identity hashes at every state transition). Its results determine what kind of arena to build: if path dependence is real, evolution operates over acquisition sequences; if not, standard population-based selection is sufficient. See `planning/memos/MOBIUS_PRINCIPLE.md`.
 
-**9-11 sessions, 9 stories, 56 tasks.** Design doc: `milestones/agent-memory/designs/tools-as-ontology.md`
+**11-14 sessions, 12 stories, 74 tasks.** Design doc: `milestones/agent-memory/designs/tools-as-ontology.md`
 
 ---
 
