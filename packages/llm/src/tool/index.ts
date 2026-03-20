@@ -17,7 +17,7 @@ export function defineTool<T extends z.ZodType>(config: ToolDefinition<T>): Tool
 /** A composable package of tools with context formatting for amygdala injection */
 export type ToolPackage = {
   /** Tools provided by this package (LLM-callable, appear in derived prompts) */
-  tools: ToolDefinition[];
+  tools: ToolDefinition<any>[];
   /** Format recalled state as context string for amygdala system prompt */
   formatContext: () => string;
   /** Package metadata for discovery and composition */
