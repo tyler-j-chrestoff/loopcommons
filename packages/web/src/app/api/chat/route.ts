@@ -373,6 +373,7 @@ export async function POST(request: Request): Promise<Response> {
         amygdalaResult,
         conversationHistory: validatedMessages.slice(0, -1),
         toolRegistry,
+        toolPackages: [resumePackage, projectPackage, blogPackage, memoryPackage],
         trace: collector,
         model: 'claude-haiku-4-5',
         maxRounds: 5,

@@ -18,10 +18,10 @@ Generate system prompts from tool composition + authored domain knowledge. Subag
 
 ## Verification Gate
 
-- [ ] `deriveCapabilities()` and `deriveBoundaries()` pure functions exist and are tested
-- [ ] SubagentConfig.systemPrompt trimmed to domain knowledge only
-- [ ] `buildSystemPrompt()` assembles hybrid prompts
-- [ ] Prompt equivalence tests: derived prompts contain all capability info
+- [x] `deriveCapabilities()` and `deriveBoundaries()` pure functions exist and are tested
+- [x] SubagentConfig.systemPrompt trimmed to domain knowledge only
+- [x] `buildSystemPrompt()` assembles hybrid prompts
+- [x] Prompt equivalence tests: derived prompts contain all capability info
 - [ ] All 152 CI eval tests pass
 - [ ] Live eval suite shows no regression
 - [ ] `promptSource` field on OrchestratorRouteEvent ('derived' | 'static' | 'hybrid')

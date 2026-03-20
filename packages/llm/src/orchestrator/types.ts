@@ -9,7 +9,7 @@
 
 import type { AmygdalaResult, AmygdalaIntent } from '../amygdala/types';
 import type { Message, AgentResult } from '../types';
-import type { ToolRegistry } from '../tool';
+import type { ToolRegistry, ToolPackage } from '../tool';
 import type { TraceCollector } from '../trace';
 
 // ---------------------------------------------------------------------------
@@ -85,6 +85,9 @@ export type OrchestratorInput = {
   stream?: boolean;
   /** Whether the current user is an authenticated admin. Affects blog routing. */
   isAdmin?: boolean;
+  /** ToolPackages for derived prompt generation. When provided, subagent prompts
+   *  include auto-generated capability and boundary sections from package metadata. */
+  toolPackages?: ToolPackage[];
 };
 
 export type OrchestratorResult = {

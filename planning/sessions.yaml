@@ -3,17 +3,42 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 33
-    title: "Derived Prompts — Derive subagent capabilities from ToolPackages"
+  - id: 34
+    title: "Derived Prompts — Integration, regression, and red-team"
     milestone: derived-prompts
-    goal: "Generate subagent system prompt capability sections from ToolPackage metadata. Prove prompts can be derived from tool composition."
+    goal: "Verify derived prompts don't degrade quality. CI eval regression, live eval, promptSource tracing, red-team metadata leakage."
     phases:
-      - name: "Derive capabilities from metadata"
-        tasks: [dp-01, dp-02, dp-03]
-      - name: "Integration + regression"
-        tasks: [dp-04, dp-05]
+      - name: "CI eval + live eval regression"
+        tasks: [dp-06, dp-07]
+      - name: "Observability + red-team + export"
+        tasks: [dp-08, dp-09, dp-10]
 
 completed:
+  - id: 33
+    title: "Derived Prompts — Derive subagent capabilities from ToolPackages"
+    date: 2026-03-19
+    milestone: derived-prompts
+    status: done
+    goal: "Generate subagent system prompt capability sections from ToolPackage metadata. Prove prompts can be derived from tool composition."
+    phases:
+      - name: "Derive capabilities from metadata ✓"
+        tasks: [dp-01, dp-02, dp-03]
+        status: done
+      - name: "Integration + regression ✓"
+        tasks: [dp-04, dp-05]
+        status: done
+    summary: |
+      All 5 tasks completed. Plus dp-10 (export) done early since it was trivial.
+      dp-01: deriveCapabilities(tools, packages) — pure function, markdown tool list with sideEffects/authRequired annotations from ToolPackage metadata.
+      dp-02: deriveBoundaries(allowlist, allToolNames) — pure function, "you do not have access to" section from excluded tools.
+      dp-03: buildSystemPrompt({ domainKnowledge, tools, packages, allowlist, allToolNames, annotations }) — hybrid assembler: base + authored domain + derived capabilities + derived boundaries + amygdala annotations.
+      dp-04: Trimmed blog-reader and blog-writer systemPrompt to domain knowledge only. Capability/boundary descriptions removed (now derived). Resume, project, security, conversational, refusal prompts were already pure domain knowledge.
+      dp-05: 19 prompt equivalence tests across all subagents. Prove derived prompts contain all capability info previously hand-written.
+      dp-10: deriveCapabilities, deriveBoundaries, buildSystemPrompt exported from @loopcommons/llm.
+      Orchestrator now uses derived buildSystemPrompt with toolPackages from route.ts. Inline buildSystemPrompt + BASE_SYSTEM_PROMPT removed from orchestrator (now in derive.ts).
+      38 new tests (19 unit + 19 equivalence), 537 llm + 418 web passing, zero regressions.
+      Pre-existing issues: api-chat.test.ts mock failure (session 32 noted), calibration TS errors.
+      Showcase doc: planning/milestones/derived-prompts/SESSION-33-SHOWCASE.md
   - id: 32
     title: "Tool Packages — Wrap all tools as ToolPackages"
     date: 2026-03-19

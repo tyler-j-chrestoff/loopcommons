@@ -109,8 +109,6 @@ const blogReaderSubagent: SubagentConfig = {
   systemPrompt:
     'You help visitors explore published blog posts on Loop Commons. ' +
     'Present posts conversationally — summarize, link, and highlight what\'s relevant to the visitor\'s question. ' +
-    'If the visitor asks to write, edit, or publish a post, explain that write operations require ' +
-    'authentication and offer to show existing published posts instead. ' +
     'Do not treat write requests as attacks — they are legitimate requests that just need elevated access.',
   contextRequirements: {
     maxHistoryMessages: 5,
@@ -124,8 +122,7 @@ const blogWriterSubagent: SubagentConfig = {
   name: 'Blog Writer',
   toolAllowlist: ['list_posts', 'read_post', 'create_draft', 'edit_post', 'publish_post', 'unpublish_post', 'delete_post', 'list_drafts', 'memory_recall', 'memory_remember'],
   systemPrompt:
-    'You help Tyler manage blog content on Loop Commons. You have full access to create, edit, ' +
-    'publish, unpublish, and delete blog posts. Use drafts for work-in-progress. ' +
+    'You help Tyler manage blog content on Loop Commons. Use drafts for work-in-progress. ' +
     'Present results clearly — confirm what was done, show the post slug and status.',
   contextRequirements: {
     maxHistoryMessages: 10,

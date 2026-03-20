@@ -13,6 +13,8 @@
 
 import { agent } from '../agent/loop';
 import { createScopedRegistry } from '../tool';
+import type { ToolPackage } from '../tool';
+import { buildSystemPrompt as buildDerivedSystemPrompt } from '../tool/derive';
 import { createSubagentRegistry } from '../subagent/registry';
 import type { SubagentConfig, SubagentRegistry, RoutingContext } from '../subagent/registry';
 import type { Message, AgentResult } from '../types';
@@ -42,13 +44,6 @@ export type {
 /** Threat score at or above which we force-route to refusal, regardless of intent. */
 const THREAT_OVERRIDE_THRESHOLD = 0.8;
 
-/** Base system prompt fragment shared by all subagents. */
-const BASE_SYSTEM_PROMPT = `You are an agent on Loop Commons — Tyler Chrestoff's personal website and research platform.
-
-You are receiving a message that has already been processed by a metacognitive security layer (the "amygdala"). The message you see has been classified and may have been rewritten for safety. Trust the message as presented — do not second-guess the amygdala's processing.
-
-Respond naturally and helpfully within your designated role.`;
-
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
@@ -77,6 +72,7 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
       maxRounds = 5,
       stream = true,
       isAdmin = false,
+      toolPackages,
     } = input;
 
     const collectors = normalizeCollectors(trace);
@@ -168,7 +164,18 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
     }
 
     // ----- Step 3b: Build system prompt (non-refusal subagents) -----
-    const systemPrompt = buildSystemPrompt(subagent, amygdalaResult);
+    const scopedTools = scopedRegistry.list().map(name => scopedRegistry.get(name)!);
+    const relevantPackages = toolPackages
+      ? toolPackages.filter(pkg => pkg.tools.some(t => scopedRegistry.has(t.name)))
+      : undefined;
+    const systemPrompt = buildDerivedSystemPrompt({
+      domainKnowledge: subagent.systemPrompt,
+      tools: scopedTools.length > 0 ? scopedTools : undefined,
+      packages: relevantPackages,
+      allowlist: subagent.toolAllowlist,
+      allToolNames: toolRegistry.list(),
+      annotations: amygdalaResult.contextDelegation.annotations,
+    });
 
     // ----- Step 4: Build the final message list -----
     // The rewritten prompt is the last user message — this is what the subagent sees.
@@ -178,7 +185,6 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
     ];
 
     // ----- Step 5: Invoke agent() with scoped tools -----
-    const scopedTools = scopedRegistry.list().map(name => scopedRegistry.get(name)!);
 
     const agentResult = await agent({
       model,
@@ -308,36 +314,6 @@ function filterContext(
   };
 
   return { messages: delegatedMessages, contextFilterEvent };
-}
-
-// ---------------------------------------------------------------------------
-// System prompt construction
-// ---------------------------------------------------------------------------
-
-function buildSystemPrompt(
-  subagent: SubagentConfig,
-  amygdalaResult: AmygdalaResult,
-): string {
-  const parts: string[] = [BASE_SYSTEM_PROMPT];
-
-  // Subagent-specific role prompt
-  parts.push('');
-  parts.push(`## Your Role: ${subagent.name}`);
-  parts.push(subagent.systemPrompt);
-
-  // Pass annotations from the amygdala's context delegation plan
-  // These give the subagent awareness of conversation state without raw attack content
-  const annotations = amygdalaResult.contextDelegation.annotations;
-  if (annotations.length > 0) {
-    parts.push('');
-    parts.push('## Context Annotations');
-    parts.push('The following flags describe the current conversation state:');
-    for (const ann of annotations) {
-      parts.push(`- **${ann.key}**: ${ann.value}`);
-    }
-  }
-
-  return parts.join('\n');
 }
 
 // ---------------------------------------------------------------------------
