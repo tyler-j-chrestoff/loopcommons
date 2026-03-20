@@ -3,21 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 39
-    title: "Roguelike v1 — Encounter design + arena harness"
-    milestone: roguelike-v1
-    goal: "Build the arena harness, design composition-sensitive encounters, implement crossroads engine. Runnable experiment by end of session."
-    phases:
-      - name: "Research: encounter design + tool packages"
-        tasks: [rl-01]
-      - name: "Arena types, encounter engine, crossroads engine"
-        tasks: [rl-02, rl-03, rl-04]
-      - name: "Run orchestrator + E3 feedback generator"
-        tasks: [rl-05, rl-06]
-      - name: "Experiment runner + red-team"
-        tasks: [rl-07, rl-08]
-    strategy: "Encounter design (rl-01) is the critical path — everything depends on good encounters. Three-way convergence produced two paradigms (knowledge-work vs filesystem). Session starts with finalizing encounter content, then builds harness around it. Pilot runs at end to check abort conditions."
-
   - id: 40
     title: "Roguelike v1 — Trace storage, analysis, and experiment run"
     milestone: roguelike-v1
@@ -55,6 +40,42 @@ planned:
         tasks: []
 
 completed:
+  - id: 39
+    title: "Roguelike v1 — Encounter design + arena harness"
+    date: 2026-03-20
+    milestone: roguelike-v1
+    status: done
+    goal: "Build the arena harness, design composition-sensitive encounters, implement crossroads engine. Runnable experiment by end of session."
+    phases:
+      - name: "Research: encounter design + tool packages ✓"
+        tasks: [rl-01]
+        status: done
+      - name: "Arena types, encounter engine, crossroads engine ✓"
+        tasks: [rl-02, rl-03, rl-04]
+        status: done
+      - name: "Run orchestrator + E3 feedback generator ✓"
+        tasks: [rl-05, rl-06]
+        status: done
+      - name: "Experiment runner + red-team ✓"
+        tasks: [rl-07, rl-08]
+        status: done
+    summary: |
+      Arena harness story complete. All 8 tasks done (rl-01 through rl-08).
+      New module: packages/llm/src/arena/ — 10 source files.
+      4 Semantic DevOps encounters: Silent Deployment (config drift), Resource Contention (connection pools),
+      Code Review (hostile feedback discrimination), Cascading Failure (schema migration cascade).
+      4 ToolPackages as epistemological stances: inspect (observation), act (intervention), search (precedent), model (structure).
+      Crossroads engine: structured XML prompt, decision parsing, dual identity hashing (state + chain) at every transition.
+      Arena run orchestrator: seed → crossroads → encounter → death check → recompose loop.
+      E3 feedback generator: 5 valid + 6 invalid templates, response analysis, 3 death conditions (capitulated/defensive/incomplete).
+      Experiment runner: all paths × N trials + baseline, chi-square test + Cramer's V (pure TS, no deps).
+      5 pre-registered E4 approach categories: observe-first, act-first, systematic, breadth-first, targeted.
+      Key design: dependency-injected agentFn/llmFn — harness is testable without API calls.
+      127 new tests (10 files: types, sandbox-tools, tool-packages, encounters, encounter-engine,
+      crossroads-engine, arena-run, feedback-generator, experiment-runner, red-team-arena).
+      0 regressions (753 total LLM package tests pass).
+      Unblocked: rl-09 through rl-12 (trace storage, analysis, pre-registration) for session 40.
+
   - id: 38b
     title: "Attested Lineage — Content-addressed agent identity"
     date: 2026-03-20
