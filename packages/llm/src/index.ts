@@ -1,5 +1,14 @@
 export { agent } from './agent';
 export type { AgentParams } from './agent';
+export { createAgentCore } from './core';
+export type {
+  AgentCore,
+  AgentCoreConfig,
+  AgentInvocation,
+  AgentInvocationResult,
+  AgentCoreFn,
+  InvocationIdentity,
+} from './core';
 export { defineTool, createToolRegistry, createScopedRegistry } from './tool';
 export type { ToolDefinition, ToolRegistry, ToolPackage } from './tool';
 export { deriveCapabilities, deriveBoundaries, buildSystemPrompt } from './tool/derive';

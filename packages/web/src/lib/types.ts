@@ -34,7 +34,7 @@ export type ChatSSEEvent =
   | { type: 'memory:recall'; memoriesRetrieved: number; memoryTypes: Record<string, number>; timestamp: number }
   | { type: 'memory:write'; memory: Memory; gatedBy: number; deduplication: 'new' | 'reinforced' | 'updated'; timestamp: number }
   // --- Session events ---
-  | { type: 'session:start'; sessionId: string; parentSessionId?: string; timestamp: number }
+  | { type: 'session:start'; sessionId: string; parentSessionId?: string; interfaceId?: string; timestamp: number }
   | { type: 'session:complete'; sessionId: string; timestamp: number }
   // --- Terminal ---
   | { type: 'done' };

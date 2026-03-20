@@ -1,12 +1,10 @@
 import {
-  createAmygdala,
-  createOrchestrator,
-  createToolRegistry,
+  createAgentCore,
   createJudge,
   hashForPrivacy,
   LLMError,
 } from '@loopcommons/llm';
-import type { TraceEvent, TraceCollector, RequestMetadata } from '@loopcommons/llm';
+import type { TraceEvent } from '@loopcommons/llm';
 import { createKeywordMemoryPackage } from '@loopcommons/memory/keyword';
 import { createResumePackage } from '@/tools/resume';
 import { createProjectPackage } from '@/tools/project';
@@ -29,8 +27,6 @@ const MAX_MESSAGES = 50;
 // Module-level singletons (reused across requests)
 // ---------------------------------------------------------------------------
 
-const amygdala = createAmygdala();
-const orchestrator = createOrchestrator();
 const blogDataDir = process.env.BLOG_DATA_DIR ?? 'data/blog';
 const memoryDataDir = process.env.MEMORY_DATA_DIR ?? 'data/memory';
 
@@ -46,24 +42,21 @@ const memoryPackage = createKeywordMemoryPackage({
   filePath: `${memoryDataDir}/world-model.json`,
   getThreatScore: () => currentRequestThreatScore,
 });
-const toolRegistry = createToolRegistry([
-  ...resumePackage.tools,
-  ...projectPackage.tools,
-  ...blogPackage.tools,
-  ...memoryPackage.tools,
-]);
+
+const toolPackages = [resumePackage, projectPackage, blogPackage, memoryPackage];
+
+const agentCore = createAgentCore({
+  toolPackages,
+  onThreatScore: (score) => { currentRequestThreatScore = score; },
+});
+
 const sessionWriter = new FileSessionWriter();
 const judge = process.env.ENABLE_LLM_JUDGE === 'true' ? createJudge() : null;
 
 /** Generate a short unique session ID (URL-safe, collision-resistant). */
 function generateSessionId(): string {
-  // 21-char nanoid equivalent using crypto.randomUUID
   return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
 }
-
-// Note: The old monolithic SYSTEM_PROMPT has been replaced by the amygdala +
-// orchestrator pipeline. The amygdala has its own substrate-aware system prompt.
-// The orchestrator builds per-subagent system prompts from the registry configs.
 
 export async function POST(request: Request): Promise<Response> {
   // --- Auth check ---
@@ -159,8 +152,6 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json({ error: 'Message contains invalid content' }, { status: 400 });
     }
 
-    // Only emit security events and agent notices for the latest message —
-    // history messages were already sanitized on their original request.
     if (modified && isLatestMessage) {
       securityEvents.push({
         type: 'security:input-sanitized',
@@ -181,6 +172,12 @@ export async function POST(request: Request): Promise<Response> {
     validatedMessages.push({ role: role as 'user' | 'assistant', content: finalContent });
   }
 
+  // --- Extract raw message for the agent core ---
+  const latestMessage = validatedMessages[validatedMessages.length - 1];
+  const rawMessage = latestMessage.content
+    .replace(/^<user_message>/, '')
+    .replace(/<\/user_message>[\s\S]*$/, '');
+
   // --- Session setup ---
   const sessionId = generateSessionId();
   const parentSessionId = request.headers.get('X-Parent-Session-Id') || undefined;
@@ -197,20 +194,10 @@ export async function POST(request: Request): Promise<Response> {
     writer.write(encoder.encode(payload)).catch(() => {});
   }
 
-  /** Send an event over SSE AND persist it to the session file. */
   function sendAndPersist(event: SessionEvent): void {
     sendEvent(event);
     sessionWriter.append(sessionId, event);
   }
-
-  // The collector handles LLM trace events — sanitize before sending,
-  // but persist the raw event (training data needs the unsanitized version).
-  const collector: TraceCollector = {
-    onEvent(event: TraceEvent) {
-      sendEvent(sanitizeEvent(event));
-      sessionWriter.append(sessionId, event);
-    },
-  };
 
   // Guard against double-release (abort + normal completion).
   let connectionReleased = false;
@@ -227,7 +214,10 @@ export async function POST(request: Request): Promise<Response> {
   // --- Rate-limit metadata ---
   const rateLimitStatus = getRateLimitStatus(ip);
 
-  // Run the full pipeline in background, stream events as SSE
+  // --- Build identity for the agent core ---
+  const isAdmin = session.user?.name === 'Admin';
+
+  // Run the agent pipeline in background, stream events as SSE
   (async () => {
     try {
       // Initialize session persistence
@@ -238,10 +228,10 @@ export async function POST(request: Request): Promise<Response> {
         type: 'session:start',
         sessionId,
         ...(parentSessionId ? { parentSessionId } : {}),
+        interfaceId: 'web',
         timestamp: Date.now(),
       });
 
-      // Emit rate-limit status
       sendAndPersist({
         type: 'rate-limit:status',
         remaining: rateLimitStatus.remaining,
@@ -252,7 +242,6 @@ export async function POST(request: Request): Promise<Response> {
         timestamp: Date.now(),
       });
 
-      // Emit initial spend status
       const initialSpend = getSpendStatus();
       sendAndPersist({
         type: 'spend:status',
@@ -260,140 +249,51 @@ export async function POST(request: Request): Promise<Response> {
         timestamp: Date.now(),
       });
 
-      // Emit any security events from validation phase
       for (const secEvt of securityEvents) {
         sendAndPersist(secEvt as SessionEvent);
       }
 
       // =====================================================================
-      // MEMORY RECALL — pre-amygdala context injection
+      // AGENT CORE — memory → amygdala → orchestrator → subagent
       // =====================================================================
-      let memoryContext: string | undefined;
-      try {
-        const recalledMemories = await memoryPackage.state.recall({
-          limit: 10,
-          includeSuperseded: false,
-        });
-        if (recalledMemories.length > 0) {
-          memoryContext = memoryPackage.formatContext();
-          // Emit memory:recall trace event
-          const memoryTypes: Record<string, number> = {};
-          for (const m of recalledMemories) {
-            memoryTypes[m.type] = (memoryTypes[m.type] ?? 0) + 1;
-          }
-          sendAndPersist({
-            type: 'memory:recall',
-            memoriesRetrieved: recalledMemories.length,
-            memoryTypes,
-            timestamp: Date.now(),
-          } as SessionEvent);
-        }
-      } catch {
-        // Memory recall failure should not break the pipeline
-      }
-
-      // =====================================================================
-      // AMYGDALA PASS — metacognitive security layer
-      // =====================================================================
-      // The amygdala sees the raw sanitized message (not XML-wrapped).
-      // It classifies intent, assesses threat, rewrites the prompt, and
-      // produces a context delegation plan.
-      const latestMessage = validatedMessages[validatedMessages.length - 1];
-      // Strip <user_message> wrapper for the amygdala — it needs the raw content
-      const rawForAmygdala = latestMessage.content
-        .replace(/^<user_message>/, '')
-        .replace(/<\/user_message>[\s\S]*$/, '');
-
-      // Build request metadata — identity consistency signals for the amygdala
-      const isAdmin = session.user?.name === 'Admin';
-      const requestMetadata: RequestMetadata = {
-        ipHash: hashForPrivacy(ip),
-        isAuthenticated: true,  // always true here (auth check above)
-        isAdmin,
-        sessionIndex: 0,       // TODO: track per-IP session count in memory store
-        hourUtc: new Date().getUTCHours(),
-        userAgentHash: request.headers.get('user-agent')
-          ? hashForPrivacy(request.headers.get('user-agent')!)
-          : undefined,
-      };
-
-      const amygdalaResult = await amygdala({
-        rawMessage: rawForAmygdala,
+      const coreResult = await agentCore.invoke({
+        message: rawMessage,
         conversationHistory: validatedMessages.slice(0, -1),
-        memoryContext,
-        requestMetadata,
-      });
-
-      // Guard: if amygdala returned a history message as the rewrite instead of
-      // transforming the current message, fall back to the raw message.
-      // This catches an observed LLM confusion where it copies a previous
-      // message from conversation history into rewrittenPrompt.
-      // Only triggers when the rewrite matches a history message that is NOT
-      // the same as the current message — avoids overriding legitimate rewrites
-      // of repeated messages.
-      if (amygdalaResult.rewrittenPrompt !== rawForAmygdala) {
-        const historyContents = validatedMessages.slice(0, -1).map(m => {
-          const raw = m.content.replace(/^<user_message>/, '').replace(/<\/user_message>[\s\S]*$/, '');
-          return raw;
-        });
-        const rewriteMatchesHistory = historyContents.some(
-          h => amygdalaResult.rewrittenPrompt === h,
-        );
-        const currentAppearsInHistory = historyContents.some(
-          h => h === rawForAmygdala,
-        );
-        // Only override if the rewrite matches a history message that isn't
-        // the same content as the current message (i.e., genuinely wrong copy)
-        if (rewriteMatchesHistory && !currentAppearsInHistory) {
-          amygdalaResult.rewrittenPrompt = rawForAmygdala;
-        }
-      }
-
-      // Set per-request threat score for tool-level memory gating
-      currentRequestThreatScore = amygdalaResult.threat?.score ?? 0;
-
-      // Track amygdala token usage
-      tokenBudget.addActual('amygdala', {
-        inputTokens: amygdalaResult.usage.inputTokens,
-        outputTokens: amygdalaResult.usage.outputTokens,
-        cacheReadTokens: amygdalaResult.usage.cachedTokens ?? 0,
-      });
-
-      // Emit amygdala trace events — these are educational, show every decision
-      for (const event of amygdalaResult.traceEvents) {
-        sendAndPersist(event as SessionEvent);
-      }
-
-      // =====================================================================
-      // ORCHESTRATOR — route to subagent with scoped tools
-      // =====================================================================
-      // The orchestrator selects a subagent, filters context, scopes tools,
-      // and invokes agent(). It emits its own trace events (route + filter).
-      const result = await orchestrator({
-        amygdalaResult,
-        conversationHistory: validatedMessages.slice(0, -1),
-        toolRegistry,
-        toolPackages: [resumePackage, projectPackage, blogPackage, memoryPackage],
-        trace: collector,
-        model: 'claude-haiku-4-5',
-        maxRounds: 5,
+        identity: {
+          interfaceId: 'web',
+          isAdmin,
+          isAuthenticated: true,
+          requestMetadata: {
+            ipHash: hashForPrivacy(ip),
+            isAuthenticated: true,
+            isAdmin,
+            sessionIndex: 0, // TODO: track per-IP session count
+            hourUtc: new Date().getUTCHours(),
+            userAgentHash: request.headers.get('user-agent')
+              ? hashForPrivacy(request.headers.get('user-agent')!)
+              : undefined,
+          },
+        },
         stream: true,
-        isAdmin,
+        onTraceEvent(event: TraceEvent) {
+          // Sanitize before sending to client, persist raw for training data
+          sendEvent(sanitizeEvent(event));
+          sessionWriter.append(sessionId, event);
+        },
       });
 
-      // Persist orchestrator trace events (already sent via collector for
-      // the agent events, but orchestrator:route and orchestrator:context-filter
-      // were emitted directly to the collector by the orchestrator)
-
-      // Track subagent token usage
-      const subagentUsage = result.agentResult.usage;
+      // Track token usage for budget visualization
+      tokenBudget.addActual('amygdala', {
+        inputTokens: coreResult.amygdalaUsage.inputTokens,
+        outputTokens: coreResult.amygdalaUsage.outputTokens,
+        cacheReadTokens: coreResult.amygdalaUsage.cachedTokens ?? 0,
+      });
       tokenBudget.addActual('subagent', {
-        inputTokens: subagentUsage.inputTokens,
-        outputTokens: subagentUsage.outputTokens,
-        cacheReadTokens: subagentUsage.cachedTokens ?? 0,
+        inputTokens: coreResult.usage.inputTokens - coreResult.amygdalaUsage.inputTokens,
+        outputTokens: coreResult.usage.outputTokens - coreResult.amygdalaUsage.outputTokens,
+        cacheReadTokens: (coreResult.usage.cachedTokens ?? 0) - (coreResult.amygdalaUsage.cachedTokens ?? 0),
       });
 
-      // Emit token budget update
       const budgetSnapshot = tokenBudget.getSnapshot();
       sendAndPersist({
         type: 'token-budget:update' as const,
@@ -401,28 +301,20 @@ export async function POST(request: Request): Promise<Response> {
         timestamp: Date.now(),
       });
 
-      // Memory writes are now handled by subagents via memory_remember tool
-      // with tool-level threat gating. extractMemoryWrites removed.
-
       // =====================================================================
-      // LLM-AS-JUDGE — async quality scoring (eval-11)
+      // LLM-AS-JUDGE — async quality scoring
       // =====================================================================
-      // Fire after response completes but before stream closes.
-      // Judge failure must never break the response flow.
-      if (judge && result.agentResult.message) {
+      if (judge && coreResult.response) {
         try {
-          const assistantResponse = result.agentResult.message;
-          // Use a generated message ID for the judge (matches client-side msg ID pattern)
           const messageId = `msg-${sessionId}-${Date.now()}`;
           const judgeResult = await judge({
-            userMessage: rawForAmygdala,
-            assistantResponse,
+            userMessage: rawMessage,
+            assistantResponse: coreResult.response,
             messageId,
             sessionId,
           });
           if (judgeResult.event) {
             sendAndPersist(judgeResult.event as SessionEvent);
-            // Track judge cost in spend tracker
             const judgeCost =
               (judgeResult.event.cost.inputTokens * 1.0 +
                 judgeResult.event.cost.outputTokens * 5.0) /
@@ -434,8 +326,8 @@ export async function POST(request: Request): Promise<Response> {
         }
       }
 
-      // Record spend after successful completion (amygdala + subagent)
-      recordSpend(amygdalaResult.cost + result.agentResult.cost);
+      // Record spend after successful completion
+      recordSpend(coreResult.cost);
       const spendStatus = getSpendStatus();
       sendAndPersist({
         type: 'spend:status',
@@ -454,7 +346,6 @@ export async function POST(request: Request): Promise<Response> {
       }
       sendEvent({ type: 'error', error: userMessage, timestamp: Date.now() });
     } finally {
-      // Finalize session (writes summary, atomic rename .tmp.jsonl → .jsonl)
       try {
         await sessionWriter.finalize(sessionId);
       } catch {

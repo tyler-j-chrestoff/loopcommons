@@ -3,19 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 37
-    title: "Multi-Interface — Extract agent core"
-    milestone: multi-interface
-    goal: "Extract pipeline from route.ts into createAgentCore() factory with memory as construction-time invariant. Web becomes thin HTTP adapter."
-    phases:
-      - name: "Define invocation contract"
-        tasks: [mi-01]
-      - name: "Extract pipeline + refactor route.ts"
-        tasks: [mi-02, mi-03]
-      - name: "Interface metadata + portable session/rate-limit"
-        tasks: [mi-04, mi-05]
-    strategy: "Core extraction. createAgentCore() validates memory ToolPackage presence (from memory-contract milestone). The derivation path must be clean and testable before attested-lineage can hash it."
-
   # Sessions 38a and 38b are parallelizable (no dependencies between them)
   - id: 38a
     title: "Multi-Interface — CLI adapter"
@@ -50,6 +37,33 @@ planned:
         tasks: []
 
 completed:
+  - id: 37
+    title: "Multi-Interface — Extract agent core"
+    date: 2026-03-20
+    milestone: multi-interface
+    status: done
+    goal: "Extract pipeline from route.ts into createAgentCore() factory with memory as construction-time invariant. Web becomes thin HTTP adapter."
+    phases:
+      - name: "Define invocation contract ✓"
+        tasks: [mi-01]
+        status: done
+      - name: "Extract pipeline + refactor route.ts ✓"
+        tasks: [mi-02, mi-03]
+        status: done
+      - name: "Interface metadata + portable session/rate-limit ✓"
+        tasks: [mi-04, mi-05]
+        status: done
+    summary: |
+      All 5 tasks complete. Extract-agent-core story done.
+      createAgentCore() factory in packages/llm/src/core/ — interface-agnostic pipeline: memory recall → amygdala (with rewrite guard) → threat score propagation → orchestrator → subagent.
+      Types: AgentInvocation (message, conversationHistory, identity with interfaceId/isAdmin/requestMetadata, stream, onTraceEvent), AgentInvocationResult (response, traceEvents, usage, cost, subagentId, amygdalaUsage split).
+      Config: toolPackages (with memory validation via orchestrator), amygdala, orchestrator, toolRegistry, model, maxRounds, onThreatScore callback.
+      route.ts refactored to thin HTTP adapter — only owns auth, rate limiting, SSE streaming, session persistence, token budget, judge, spending.
+      interfaceId added to session:start events (web adapter sets 'web').
+      Session writer and rate limiter are adapter-owned (core has zero dependency on them).
+      21 new tests (agent-core.test.ts). All 588 llm tests pass. Pre-existing web test failures unchanged.
+      Key design decision: onTraceEvent is per-invocation (not config-level) — adapters need per-request SSE/session contexts.
+
   - id: 36
     title: "Memory Contract — Formalize memory as identity component"
     date: 2026-03-20

@@ -20,7 +20,7 @@ import type { FeedbackEvent } from '@/lib/feedback';
 
 /** Events the web layer adds on top of LLM trace events. */
 export type WebSessionEvent =
-  | { type: 'session:start'; sessionId: string; parentSessionId?: string; timestamp: number }
+  | { type: 'session:start'; sessionId: string; parentSessionId?: string; interfaceId?: string; timestamp: number }
   | { type: 'session:complete'; sessionId: string; summary: SessionSummary; timestamp: number }
   | { type: 'rate-limit:status'; remaining: number; limit: number; activeConnections: number; concurrencyLimit: number; resetMs: number; timestamp: number }
   | { type: 'spend:status'; currentSpendUsd: number; dailyCapUsd: number; remainingUsd: number; percentUsed: number; resetAtUtc: string; timestamp: number }
