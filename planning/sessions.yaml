@@ -2,9 +2,41 @@
 # Each session is one Claude Code conversation (~1M token context).
 # Subagents stretch this further via parallel execution.
 
-planned: []
+planned:
+  - id: 32
+    title: "Tool Packages — Wrap all tools as ToolPackages"
+    milestone: tool-packages
+    goal: "Every tool exposed through ToolPackage with enriched metadata (intent, sideEffects, authRequired). route.ts assembles exclusively from ToolPackages."
+    phases:
+      - name: "Extend ToolPackage metadata type"
+        tasks: [tp-01]
+      - name: "Wrap resume, project, blog tools"
+        tasks: [tp-02, tp-03, tp-04]
+      - name: "Update memory packages + route.ts"
+        tasks: [tp-05, tp-06]
+      - name: "Contract tests + regression"
+        tasks: [tp-07, tp-08]
 
 completed:
+  - id: 31
+    title: "Planning — Tools-as-Ontology Milestones + Roadmap Reindex"
+    date: 2026-03-19
+    milestone: tool-packages
+    status: done
+    goal: "Create milestone files for the tools-as-ontology trajectory and reindex the roadmap to tell a coherent story."
+    phases:
+      - name: "Create 4 milestones (7 stories, 41 tasks) ✓"
+        tasks: []
+        status: done
+      - name: "Reindex ROADMAP.md ✓"
+        tasks: []
+        status: done
+    summary: |
+      Planning session — no code changes.
+      Created 4 milestones with full story JSONL: tool-packages (1 story, 8 tasks), derived-prompts (2 stories, 10 tasks), multi-interface (2 stories, 11 tasks), agent-arena (2 stories, 12 tasks).
+      Rewrote ROADMAP.md from scratch. Old roadmap had triple-repeated forward plan and flat chronological Done list. New roadmap: thesis statement as opening, trajectory table testing progressively stronger claims, Done grouped into 5 narrative phases showing the arc from substrate to thesis articulation. Removed stale Later items.
+      Key decision: roadmap now leads with the thesis ("an agent's identity is its tool composition, not its prompt") rather than a project description. Everything in the roadmap connects to this thesis.
+      Next session (32) is implementation: wrap all tools as ToolPackages with enriched metadata.
   - id: 30
     title: "Memory Packages — Embeddings + Admin API"
     date: 2026-03-19
