@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { execSync } from "child_process";
 
 const commitSha = process.env.NEXT_PUBLIC_BUILD_COMMIT
+  || process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7)
   || (() => { try { return execSync('git rev-parse --short HEAD').toString().trim(); } catch { return 'unknown'; } })();
 
 const nextConfig: NextConfig = {
