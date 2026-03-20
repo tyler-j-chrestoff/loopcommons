@@ -23,7 +23,7 @@ export type ChatSSEEvent =
   | { type: 'amygdala:threat-assess'; threat: { score: number; category: ThreatCategory; reasoning: string }; timestamp: number }
   | { type: 'amygdala:context-delegate'; plan: { historyIndices: number[]; contextSummary?: string; annotations: Array<{ key: string; value: string }> }; totalMessages: number; delegatedMessages: number; timestamp: number }
   // --- Orchestrator events (routing + context filtering) ---
-  | { type: 'orchestrator:route'; subagentId: string; subagentName: string; intent: AmygdalaIntent; threatOverride: boolean; threatScore: number; allowedTools: string[]; reasoning: string; timestamp: number }
+  | { type: 'orchestrator:route'; subagentId: string; subagentName: string; intent: AmygdalaIntent; threatOverride: boolean; threatScore: number; allowedTools: string[]; promptSource: 'static' | 'derived' | 'hybrid'; reasoning: string; timestamp: number }
   | { type: 'orchestrator:context-filter'; totalMessages: number; delegatedMessages: number; deliveredMessages: number; usedSummary: boolean; annotations: Array<{ key: string; value: string }>; timestamp: number }
   // --- Token budget events ---
   | { type: 'token-budget:update'; timestamp: number } & BudgetSnapshot
@@ -58,6 +58,7 @@ export type RoutingDecision = {
   subagentName: string;
   threatOverride: boolean;
   allowedTools: string[];
+  promptSource: 'static' | 'derived' | 'hybrid';
   reasoning: string;
   /** Context filtering stats */
   totalMessages: number;

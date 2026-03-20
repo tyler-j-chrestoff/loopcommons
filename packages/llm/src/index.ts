@@ -34,6 +34,7 @@ export type {
   OrchestratorTraceEvent,
   OrchestratorRouteEvent,
   OrchestratorContextFilterEvent,
+  PromptSource,
 } from './orchestrator';
 export { createOrchestrator } from './orchestrator';
 export type { OrchestratorConfig } from './orchestrator';

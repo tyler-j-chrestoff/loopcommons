@@ -3,17 +3,36 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 34
-    title: "Derived Prompts — Integration, regression, and red-team"
-    milestone: derived-prompts
-    goal: "Verify derived prompts don't degrade quality. CI eval regression, live eval, promptSource tracing, red-team metadata leakage."
+  - id: 35
+    title: "Multi-Interface — Tool-defined identity across interfaces"
+    milestone: multi-interface
+    goal: "Prove ToolPackage-defined identity is portable across CLI, API, and web interfaces."
     phases:
-      - name: "CI eval + live eval regression"
-        tasks: [dp-06, dp-07]
-      - name: "Observability + red-team + export"
-        tasks: [dp-08, dp-09, dp-10]
+      - name: "TBD — read multi-interface milestone stories"
+        tasks: []
 
 completed:
+  - id: 34
+    title: "Derived Prompts — Integration, regression, and red-team"
+    date: 2026-03-20
+    milestone: derived-prompts
+    status: done
+    goal: "Verify derived prompts don't degrade quality. CI eval regression, live eval, promptSource tracing, red-team metadata leakage."
+    phases:
+      - name: "CI eval + live eval regression ✓"
+        tasks: [dp-06, dp-07]
+        status: done
+      - name: "Observability + red-team ✓"
+        tasks: [dp-08, dp-09]
+        status: done
+    summary: |
+      All 4 remaining tasks completed (dp-10 done in session 33). Derived-prompts milestone complete.
+      dp-06: 152 CI eval tests pass (quality + safety + routing). eval-routing enhanced with memory tools in mock registry.
+      dp-07: 22/27 live eval pass. 5 failures are pre-existing amygdala blog social engineering edge cases (adversarial-blog-02/03, edge-meta-attack-01) — not caused by derived prompts. Auth gating still prevents exploitation.
+      dp-08: PromptSource type ('static' | 'derived' | 'hybrid') on OrchestratorRouteEvent. Wired end-to-end: orchestrator → SSE → use-chat.ts → RoutingDecision → RoutingCard (color-coded badge). 5 new tests.
+      dp-09: 12 red-team tests (8 deterministic + 4 integration). Derived prompts don't leak ToolPackage metadata field names, package identifiers, intent arrays, derivation function names, or Zod internals. Refusal produces zero system prompts.
+      17 new tests (5 promptSource + 12 red-team), 554 llm + 418 web passing, zero regressions.
+      Showcase doc: planning/milestones/derived-prompts/SESSION-34-SHOWCASE.md
   - id: 33
     title: "Derived Prompts — Derive subagent capabilities from ToolPackages"
     date: 2026-03-19

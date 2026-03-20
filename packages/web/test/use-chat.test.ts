@@ -404,6 +404,7 @@ describe('useChat', () => {
           threatOverride: false,
           threatScore: 0.1,
           allowedTools: ['get_resume'],
+          promptSource: 'derived',
           reasoning: 'Professional question routed to conversational agent',
           timestamp: Date.now(),
         },

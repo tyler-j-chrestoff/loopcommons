@@ -21,6 +21,14 @@ import type { TraceCollector } from '../trace';
  * Shows the routing decision logic: intent → subagent mapping,
  * threat-based override to refusal, confidence thresholds.
  */
+/**
+ * How the subagent's system prompt was assembled.
+ * - 'static'   — refusal path, hardcoded response, no prompt generated
+ * - 'derived'  — buildSystemPrompt with derived capability/boundary sections from tool metadata
+ * - 'hybrid'   — buildSystemPrompt with authored domain knowledge only (no tools to derive from)
+ */
+export type PromptSource = 'static' | 'derived' | 'hybrid';
+
 export type OrchestratorRouteEvent = {
   type: 'orchestrator:route';
   /** The subagent that was selected. */
@@ -36,6 +44,8 @@ export type OrchestratorRouteEvent = {
   allowedTools: string[];
   /** Whether auth gating affected the routing decision (e.g., blog-reader vs blog-writer). */
   authGated: boolean;
+  /** How the system prompt was assembled for this subagent. */
+  promptSource: PromptSource;
   /** Brief explanation of why this subagent was chosen. */
   reasoning: string;
   timestamp: number;

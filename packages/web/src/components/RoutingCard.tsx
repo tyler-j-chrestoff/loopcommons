@@ -14,6 +14,7 @@ export function RoutingCard({ routing }: RoutingCardProps) {
     subagentName,
     threatOverride,
     allowedTools,
+    promptSource,
     reasoning,
     totalMessages,
     delegatedMessages,
@@ -30,6 +31,15 @@ export function RoutingCard({ routing }: RoutingCardProps) {
         <span className="rounded-full bg-accent/20 px-2.5 py-0.5 font-medium text-accent">
           {subagentName}
         </span>
+        {promptSource && (
+          <span className={`rounded-full px-2.5 py-0.5 font-medium ${
+            promptSource === 'derived' ? 'bg-success/20 text-success' :
+            promptSource === 'hybrid' ? 'bg-warning/20 text-warning' :
+            'bg-text-muted/20 text-text-muted'
+          }`}>
+            {promptSource}
+          </span>
+        )}
         {threatOverride && (
           <span className="rounded-full bg-error/20 px-2.5 py-0.5 font-medium text-error">
             Threat Override

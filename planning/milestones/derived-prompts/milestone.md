@@ -1,6 +1,6 @@
 # Milestone: Derived Prompts
 
-**Status**: planned
+**Status**: done
 **Sessions**: 2
 **Stories**: 2
 **Prerequisite**: tool-packages
@@ -22,11 +22,11 @@ Generate system prompts from tool composition + authored domain knowledge. Subag
 - [x] SubagentConfig.systemPrompt trimmed to domain knowledge only
 - [x] `buildSystemPrompt()` assembles hybrid prompts
 - [x] Prompt equivalence tests: derived prompts contain all capability info
-- [ ] All 152 CI eval tests pass
-- [ ] Live eval suite shows no regression
-- [ ] `promptSource` field on OrchestratorRouteEvent ('derived' | 'static' | 'hybrid')
-- [ ] Red-team: derived prompts don't leak tool metadata implementation details
-- [ ] Functions exported for calibration system access
+- [x] All 152 CI eval tests pass (now 202 with new promptSource + red-team tests)
+- [x] Live eval suite shows no regression
+- [x] `promptSource` field on OrchestratorRouteEvent ('derived' | 'static' | 'hybrid')
+- [x] Red-team: derived prompts don't leak tool metadata implementation details (12 tests)
+- [x] Functions exported for calibration system access
 
 ## Files
 

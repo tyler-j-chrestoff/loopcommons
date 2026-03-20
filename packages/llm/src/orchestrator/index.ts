@@ -28,6 +28,7 @@ import type {
   OrchestratorTraceEvent,
   OrchestratorRouteEvent,
   OrchestratorContextFilterEvent,
+  PromptSource,
 } from './types';
 
 export type { OrchestratorInput, OrchestratorResult, OrchestratorFn } from './types';
@@ -35,6 +36,7 @@ export type {
   OrchestratorTraceEvent,
   OrchestratorRouteEvent,
   OrchestratorContextFilterEvent,
+  PromptSource,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -87,6 +89,14 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
     );
 
     const scopedRegistry = createScopedRegistry(toolRegistry, subagent.toolAllowlist);
+    const scopedToolNames = scopedRegistry.list();
+
+    // Determine how the system prompt will be assembled
+    const promptSource: PromptSource = subagent.id === 'refusal'
+      ? 'static'
+      : scopedToolNames.length > 0
+        ? 'derived'
+        : 'hybrid';
 
     const routeEvent: OrchestratorRouteEvent = {
       type: 'orchestrator:route',
@@ -95,8 +105,9 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
       intent: amygdalaResult.intent,
       threatOverride,
       threatScore: amygdalaResult.threat.score,
-      allowedTools: scopedRegistry.list(),
+      allowedTools: scopedToolNames,
       authGated,
+      promptSource,
       reasoning,
       timestamp: now,
     };

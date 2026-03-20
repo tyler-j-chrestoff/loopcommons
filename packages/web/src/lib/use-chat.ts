@@ -259,6 +259,7 @@ export function useChat(): UseChatReturn {
                 subagentName: event.subagentName,
                 threatOverride: event.threatOverride,
                 allowedTools: event.allowedTools,
+                promptSource: event.promptSource,
                 reasoning: event.reasoning,
               };
               setLiveRouting(routingData as RoutingDecision);
