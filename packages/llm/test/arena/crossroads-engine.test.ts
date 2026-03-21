@@ -226,4 +226,77 @@ describe('executeCrossroads', () => {
     expect(cp.decision.droppedTool).toBe('search');
     expect(cp.stateHash).toBe('hash-act-inspect');
   });
+
+  it('retries on invalid tool choice then succeeds', async () => {
+    let attempt = 0;
+    const state: RunState = {
+      tools: ['memory_recall', 'memory_remember'],
+      flexTools: [],
+      memoryState: '',
+      encounterOutputs: [],
+      choicePoints: [],
+      stateHash: 'h0',
+      chainHash: 'c0',
+      dead: false,
+    };
+
+    const cp = await executeCrossroads({
+      state,
+      offeredTools: ['inspect', 'act'],
+      mustDrop: false,
+      llmFn: async () => {
+        attempt++;
+        if (attempt === 1) {
+          // First attempt: invalid tool
+          return `<crossroads>
+<self_assessment>x</self_assessment>
+<acquisition_reasoning>y</acquisition_reasoning>
+<forward_model>z</forward_model>
+<decision tool="DECLINE" confidence="0.5"/>
+</crossroads>`;
+        }
+        // Second attempt: valid
+        return `<crossroads>
+<self_assessment>x</self_assessment>
+<acquisition_reasoning>ok fine</acquisition_reasoning>
+<forward_model>z</forward_model>
+<decision tool="inspect" confidence="0.4"/>
+</crossroads>`;
+      },
+      computeStateHash: (tools) => `hash-${tools.sort().join('-')}`,
+      computeChainHash: (parent, choice) => `${parent}+${choice}`,
+    });
+
+    expect(attempt).toBe(2);
+    expect(cp.decision.chosenTool).toBe('inspect');
+    expect(cp.decision.confidence).toBe(0.4);
+  });
+
+  it('throws CrossroadsRefusalError after max retries', async () => {
+    const state: RunState = {
+      tools: ['memory_recall', 'memory_remember'],
+      flexTools: [],
+      memoryState: '',
+      encounterOutputs: [],
+      choicePoints: [],
+      stateHash: 'h0',
+      chainHash: 'c0',
+      dead: false,
+    };
+
+    await expect(executeCrossroads({
+      state,
+      offeredTools: ['inspect'],
+      mustDrop: false,
+      llmFn: async () => `<crossroads>
+<self_assessment>I refuse</self_assessment>
+<acquisition_reasoning>No</acquisition_reasoning>
+<forward_model>None</forward_model>
+<decision tool="NONE" confidence="0.0"/>
+</crossroads>`,
+      computeStateHash: (tools) => `hash-${tools.sort().join('-')}`,
+      computeChainHash: (parent, choice) => `${parent}+${choice}`,
+      maxRetries: 2,
+    })).rejects.toThrow('refused crossroads after 2 attempts');
+  });
 });

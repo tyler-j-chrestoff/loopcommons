@@ -103,6 +103,8 @@ export type ChoicePoint = {
   memoryStateDump: string;
   stateHash: string;
   chainHash: string;
+  promptRendered?: string;
+  responseRaw?: string;
 };
 
 // ---------------------------------------------------------------------------

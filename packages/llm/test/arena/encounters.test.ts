@@ -142,18 +142,23 @@ describe('PATHS', () => {
     }
   });
 
-  it('paths 1&3 start with inspect, 2&4 start with act', () => {
-    expect(PATHS[0].toolSequence[0].offered).toContain('inspect');
-    expect(PATHS[1].toolSequence[0].offered).toContain('act');
-    expect(PATHS[2].toolSequence[0].offered).toContain('inspect');
-    expect(PATHS[3].toolSequence[0].offered).toContain('act');
+  it('each path starts with a different forced tool', () => {
+    const firstTools = PATHS.map(p => p.toolSequence[0].offered);
+    // Each path forces a single tool at the first crossroads
+    for (const offered of firstTools) {
+      expect(offered).toHaveLength(1);
+    }
+    // All 4 tools are represented as forced starts
+    const allFirst = new Set(firstTools.map(o => o[0]));
+    expect(allFirst.size).toBe(4);
   });
 
-  it('paths 1&2 use search as intermediate, 3&4 use model', () => {
-    expect(PATHS[0].toolSequence[1].offered).toContain('search');
-    expect(PATHS[1].toolSequence[1].offered).toContain('search');
-    expect(PATHS[2].toolSequence[1].offered).toContain('model');
-    expect(PATHS[3].toolSequence[1].offered).toContain('model');
+  it('third crossroads always offers a new tool (no duplicates)', () => {
+    for (const p of PATHS) {
+      const firstTool = p.toolSequence[0].offered[0];
+      const thirdTool = p.toolSequence[2].offered[0];
+      expect(thirdTool).not.toBe(firstTool);
+    }
   });
 });
 

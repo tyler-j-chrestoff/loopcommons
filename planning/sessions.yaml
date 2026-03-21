@@ -3,21 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 40
-    title: "Roguelike v1 — Trace storage, analysis, and experiment run"
-    milestone: roguelike-v1
-    goal: "Trace schema, analysis pipeline, pre-registration, pilot runs, full 150-run experiment, statistical analysis."
-    phases:
-      - name: "Trace schema + writer"
-        tasks: [rl-09, rl-10]
-      - name: "Analysis queries + pre-registration"
-        tasks: [rl-11, rl-12]
-      - name: "Run experiment (pilot → full)"
-        tasks: []
-      - name: "Analyze results → pass/fail/abort gate"
-        tasks: []
-    strategy: "Pre-register before running anything. Pilot 20 runs to check abort conditions. If clear, run full 150. Analyze. The gate result shapes session 41."
-
   - id: 41
     title: "Roguelike v1 — Viz, export, and arena planning"
     milestone: roguelike-v1
@@ -40,6 +25,45 @@ planned:
         tasks: []
 
 completed:
+  - id: 40
+    title: "Roguelike v1 — Trace storage, analysis, pilot, and experiment design iteration"
+    date: 2026-03-20
+    milestone: roguelike-v1
+    status: done
+    goal: "Trace schema, analysis pipeline, pre-registration, pilot runs, experiment design iteration."
+    phases:
+      - name: "Trace schema + writer ✓"
+        tasks: [rl-09, rl-10]
+        status: done
+      - name: "Analysis queries + pre-registration ✓"
+        tasks: [rl-11, rl-12]
+        status: done
+      - name: "Pilot runs + experiment design iteration ✓"
+        tasks: []
+        status: done
+      - name: "Terminal viz + trace debugger (bonus) ✓"
+        tasks: []
+        status: done
+    summary: |
+      All 4 planned tasks done (rl-09 through rl-12) plus significant bonus work.
+      New modules: trace-schema.ts, trace-writer.ts, analysis.ts, preregister.ts,
+      live-agent.ts, viz.ts, trace-debugger.ts.
+      4 CLI scripts: arena:preregister, arena:run, arena:viz, trace:debug.
+      Ran 3 pilot experiments (25 runs each). Discovered and fixed 4 critical design flaws:
+      (1) system prompt bias overriding path-dependence signal,
+      (2) empty tool output recording from AI SDK extraction,
+      (3) degenerate paths offering duplicate tools,
+      (4) approach classifier threshold too high for actual step counts.
+      Redesigned paths: forced single-tool first crossroads guarantees divergence.
+      Added crossroads retry logic with CrossroadsRefusalError → death.
+      Key finding: PATH DEPENDENCE IS REAL. Act-first agents die 40% at E1.
+      Search-first = most diverse. Model-first = most efficient (20% fewer steps).
+      Inspect-first indistinguishable from baseline.
+      Wrote arena-trace-viz.md design doc for session 41 web visualization.
+      213 arena tests (86 new), 839 total LLM package tests, 0 regressions.
+      Gate: CONDITIONAL PASS — signal in survival + tool diversity, not approach categories.
+      Full 150-run deferred. Unblocked: rl-13 through rl-18 for session 41.
+
   - id: 39
     title: "Roguelike v1 — Encounter design + arena harness"
     date: 2026-03-20

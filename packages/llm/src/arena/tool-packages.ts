@@ -2,7 +2,7 @@ import type { ToolPackage } from '../tool';
 import type { ArenaToolId, Sandbox } from './types';
 import { createSandboxTools } from './sandbox-tools';
 
-type ArenaToolConfig = {
+export type ArenaToolConfig = {
   derivedPromptFragment: string;
   intent: string[];
   sideEffects: boolean;

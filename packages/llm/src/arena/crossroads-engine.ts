@@ -7,6 +7,24 @@ import type {
 import { ARENA_TOOL_CONFIGS } from './tool-packages';
 
 // ---------------------------------------------------------------------------
+// Errors
+// ---------------------------------------------------------------------------
+
+export class CrossroadsParseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CrossroadsParseError';
+  }
+}
+
+export class CrossroadsRefusalError extends Error {
+  constructor(attempts: number, lastError: string) {
+    super(`Agent refused crossroads after ${attempts} attempts. Last error: ${lastError}`);
+    this.name = 'CrossroadsRefusalError';
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Crossroads prompt construction
 // ---------------------------------------------------------------------------
 
@@ -107,10 +125,14 @@ export function parseCrossroadsResponse(
 
   // Validate
   if (!offeredTools.includes(chosenTool)) {
-    throw new Error(`Chosen tool "${chosenTool}" not in offered tools: [${offeredTools.join(', ')}]`);
+    throw new CrossroadsParseError(
+      `Chosen tool "${chosenTool}" not in offered tools: [${offeredTools.join(', ')}]`,
+    );
   }
   if (droppedTool && !currentFlexTools.includes(droppedTool)) {
-    throw new Error(`Dropped tool "${droppedTool}" not in current flex tools: [${currentFlexTools.join(', ')}]`);
+    throw new CrossroadsParseError(
+      `Dropped tool "${droppedTool}" not in current flex tools: [${currentFlexTools.join(', ')}]`,
+    );
   }
 
   return {
@@ -138,10 +160,13 @@ export type ExecuteCrossroadsInput = {
   computeStateHash: (tools: ArenaToolId[]) => string;
   /** Compute chain hash from parent hash + choice. */
   computeChainHash: (parentHash: string, choice: string) => string;
+  /** Max parse/retry attempts before giving up (default: 3). */
+  maxRetries?: number;
 };
 
 export async function executeCrossroads(input: ExecuteCrossroadsInput): Promise<ChoicePoint> {
   const { state, offeredTools, mustDrop, llmFn, computeStateHash, computeChainHash } = input;
+  const maxRetries = input.maxRetries ?? 3;
 
   const encounterHistory = state.encounterOutputs
     .map(o => `${o.encounterId}: ${o.response.slice(0, 200)}`)
@@ -156,8 +181,33 @@ export async function executeCrossroads(input: ExecuteCrossroadsInput): Promise<
     stateHash: state.stateHash,
   });
 
-  const response = await llmFn(prompt);
-  const decision = parseCrossroadsResponse(response, offeredTools, state.flexTools);
+  let decision: CrossroadsDecision | null = null;
+  let lastError = '';
+  let lastResponse = '';
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const actualPrompt = attempt === 0
+      ? prompt
+      : `${prompt}\n\nIMPORTANT: You MUST choose one of the offered tools: [${offeredTools.join(', ')}]. You cannot decline. Respond with valid XML.`;
+
+    const response = await llmFn(actualPrompt);
+    lastResponse = response;
+
+    try {
+      decision = parseCrossroadsResponse(response, offeredTools, state.flexTools);
+      break;
+    } catch (err) {
+      if (err instanceof CrossroadsParseError) {
+        lastError = err.message;
+        continue;
+      }
+      throw err; // non-parse errors propagate immediately
+    }
+  }
+
+  if (!decision) {
+    throw new CrossroadsRefusalError(maxRetries, lastError);
+  }
 
   // Compute new tool set after the choice
   const newFlexTools = [...state.flexTools];
@@ -180,5 +230,7 @@ export async function executeCrossroads(input: ExecuteCrossroadsInput): Promise<
     memoryStateDump: state.memoryState,
     stateHash: newStateHash,
     chainHash: newChainHash,
+    promptRendered: prompt,
+    responseRaw: lastResponse,
   };
 }

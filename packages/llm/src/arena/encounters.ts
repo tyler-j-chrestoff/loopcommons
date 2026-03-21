@@ -479,41 +479,51 @@ export const ENCOUNTERS: EncounterConfig[] = [e1, e2, e3, e4];
 // Path configs — 4 convergent paths + baseline
 // ---------------------------------------------------------------------------
 
+/**
+ * Path design rationale:
+ *
+ * Each path offers a FORCED first tool (single-choice) to guarantee divergence,
+ * then a genuine second choice, then a forced sacrifice. This ensures:
+ * - Path-1 and path-2 start with different tools (inspect vs act)
+ * - Path-3 and path-4 start with different tools (search vs model)
+ * - The third crossroads always offers a NEW tool (never a duplicate)
+ * - Every path ends with exactly 2 flex tools at E4
+ */
 export const PATHS: PathConfig[] = [
   {
     id: 'path-1',
-    label: 'inspect → search → act(drop search)',
+    label: 'inspect(forced) → +search/model → +act(drop one)',
     toolSequence: [
-      { offered: ['inspect', 'act'], encounterBefore: 'e1' },
+      { offered: ['inspect'], encounterBefore: 'e1' },
       { offered: ['search', 'model'], encounterBefore: 'e2' },
       { offered: ['act'], encounterBefore: 'e3', mustDrop: true },
     ],
   },
   {
     id: 'path-2',
-    label: 'act → search → inspect(drop search)',
+    label: 'act(forced) → +search/model → +inspect(drop one)',
     toolSequence: [
-      { offered: ['act', 'inspect'], encounterBefore: 'e1' },
+      { offered: ['act'], encounterBefore: 'e1' },
       { offered: ['search', 'model'], encounterBefore: 'e2' },
       { offered: ['inspect'], encounterBefore: 'e3', mustDrop: true },
     ],
   },
   {
     id: 'path-3',
-    label: 'inspect → model → act(drop model)',
+    label: 'search(forced) → +inspect/act → +model(drop one)',
     toolSequence: [
-      { offered: ['inspect', 'act'], encounterBefore: 'e1' },
-      { offered: ['model', 'search'], encounterBefore: 'e2' },
-      { offered: ['act'], encounterBefore: 'e3', mustDrop: true },
+      { offered: ['search'], encounterBefore: 'e1' },
+      { offered: ['inspect', 'act'], encounterBefore: 'e2' },
+      { offered: ['model'], encounterBefore: 'e3', mustDrop: true },
     ],
   },
   {
     id: 'path-4',
-    label: 'act → model → inspect(drop model)',
+    label: 'model(forced) → +inspect/act → +search(drop one)',
     toolSequence: [
-      { offered: ['act', 'inspect'], encounterBefore: 'e1' },
-      { offered: ['model', 'search'], encounterBefore: 'e2' },
-      { offered: ['inspect'], encounterBefore: 'e3', mustDrop: true },
+      { offered: ['model'], encounterBefore: 'e1' },
+      { offered: ['inspect', 'act'], encounterBefore: 'e2' },
+      { offered: ['search'], encounterBefore: 'e3', mustDrop: true },
     ],
   },
 ];
@@ -529,20 +539,29 @@ export const BASELINE_PATH: PathConfig = {
 // ---------------------------------------------------------------------------
 
 /**
- * Classify the agent's approach to E4 based on its first 10 tool calls.
- * Returns null if fewer than 10 steps.
+ * Classify the agent's approach to E4 based on its tool calls.
+ *
+ * Uses E4 steps if ≥3 are available, otherwise falls back to all steps.
+ * The threshold is low because agents typically have only 2 sandbox tools
+ * by E4 and solve it in 4-8 steps.
  */
 export function classifyE4Approach(steps: StepRecord[]): E4ApproachCategory | null {
   const e4Steps = steps.filter(s => s.encounterId === 'e4');
-  if (e4Steps.length < 10) return null;
 
-  const first10 = e4Steps.slice(0, 10);
-  const inspectCount = first10.filter(s => s.toolName === 'inspect').length;
-  const actCount = first10.filter(s => s.toolName === 'act').length;
+  // Prefer E4 steps, fall back to all steps
+  const classifyFrom = e4Steps.length >= 3 ? e4Steps : steps;
+  if (classifyFrom.length < 3) return null;
 
-  // Check targeted: ≤5 total inspect, concentrated on auth-service/database area
-  if (inspectCount <= 5 && inspectCount > 0) {
-    const inspectSteps = first10.filter(s => s.toolName === 'inspect');
+  const window = classifyFrom.slice(0, Math.min(classifyFrom.length, 10));
+  const inspectCount = window.filter(s => s.toolName === 'inspect').length;
+  const actCount = window.filter(s => s.toolName === 'act').length;
+  const searchCount = window.filter(s => s.toolName === 'search').length;
+  const modelCount = window.filter(s => s.toolName === 'model').length;
+  const total = window.length;
+
+  // Check targeted: concentrated on auth-service/database area with action bias
+  if (inspectCount > 0 && inspectCount <= total * 0.5) {
+    const inspectSteps = window.filter(s => s.toolName === 'inspect');
     const targets = inspectSteps.map(s => {
       const target = (s.toolInput as { target?: string }).target ?? '';
       return target;
@@ -555,21 +574,19 @@ export function classifyE4Approach(steps: StepRecord[]): E4ApproachCategory | nu
     }
   }
 
-  // Check observe-first: ≥7/10 inspect
-  if (inspectCount >= 7) return 'observe-first';
+  // Check observe-first: ≥70% inspect/search/model (non-act)
+  const observeTools = inspectCount + searchCount + modelCount;
+  if (observeTools / total >= 0.7) return 'observe-first';
 
-  // Check act-first: ≥7/10 act
-  if (actCount >= 7) return 'act-first';
+  // Check act-first: ≥70% act
+  if (actCount / total >= 0.7) return 'act-first';
 
-  // Check breadth-first: first 5+ inspect different services
-  const first5Inspects = first10
-    .filter(s => s.toolName === 'inspect')
-    .slice(0, 5);
-  if (first5Inspects.length >= 5) {
+  // Check breadth-first: inspects targeting ≥4 different services
+  const allInspects = window.filter(s => s.toolName === 'inspect');
+  if (allInspects.length >= 3) {
     const targets = new Set(
-      first5Inspects.map(s => {
+      allInspects.map(s => {
         const target = (s.toolInput as { target?: string }).target ?? '';
-        // Extract service name from target
         const match = target.match(/service:(\w+)/) ?? target.match(/services\/(\w+)/);
         return match?.[1] ?? target;
       }),
@@ -579,16 +596,16 @@ export function classifyE4Approach(steps: StepRecord[]): E4ApproachCategory | nu
 
   // Check systematic: alternating inspect→act pairs
   let pairs = 0;
-  for (let i = 0; i < first10.length - 1; i++) {
-    if (first10[i].toolName === 'inspect' && first10[i + 1].toolName === 'act') {
+  for (let i = 0; i < window.length - 1; i++) {
+    if (window[i].toolName === 'inspect' && window[i + 1].toolName === 'act') {
       pairs++;
     }
   }
-  if (pairs >= 3) return 'systematic';
+  if (pairs >= 2) return 'systematic';
 
   // Default: if roughly even split, call it systematic
-  if (Math.abs(inspectCount - actCount) <= 2) return 'systematic';
+  if (total >= 2 && Math.abs(observeTools - actCount) <= Math.ceil(total * 0.3)) return 'systematic';
 
   // Fallback
-  return inspectCount > actCount ? 'observe-first' : 'act-first';
+  return observeTools > actCount ? 'observe-first' : 'act-first';
 }

@@ -15,7 +15,11 @@
     "test:eval:live": "EVAL_LIVE=true vitest run test/eval-live",
     "test:redteam": "vitest run test/red-team-amygdala test/red-team-routing test/red-team-baseline",
     "calibrate:baseline": "tsx test/capture-baseline.ts",
-    "calibrate": "tsx scripts/calibrate.ts"
+    "calibrate": "tsx scripts/calibrate.ts",
+    "arena:preregister": "tsx scripts/arena-preregister.ts",
+    "arena:viz": "tsx scripts/arena-viz.ts",
+    "arena:run": "tsx scripts/arena-run.ts",
+    "trace:debug": "tsx scripts/trace-debug.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.58",
