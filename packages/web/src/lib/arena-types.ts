@@ -80,6 +80,77 @@ export const TOOL_COLORS: Record<string, string> = {
   model: 'text-purple-600',
 };
 
+// ---------------------------------------------------------------------------
+// Tournament types
+// ---------------------------------------------------------------------------
+
+export type TournamentAgentSummary = {
+  id: string;
+  tools: string[];
+  origin: string;
+  parentIds: string[];
+  identity: string;
+};
+
+export type TournamentFitnessSummary = {
+  agentId: string;
+  fitnessScore: number;
+  metrics: {
+    completionRate: number;
+    meanScore: number;
+    meanSteps: number;
+    survivalRate: number;
+    totalCost: number;
+  };
+};
+
+export type TournamentGenerationSummary = {
+  type: 'generation';
+  generation: number;
+  populationSize: number;
+  agents: TournamentAgentSummary[];
+  fitness: TournamentFitnessSummary[];
+  survivors: string[];
+  mutations: Array<{
+    parentId: string;
+    childId: string;
+    type: string;
+    toolAdded: string | null;
+    toolRemoved: string | null;
+  }>;
+  crossovers: Array<{
+    parent1Id: string;
+    parent2Id: string;
+    childId: string;
+    memoryCounts: { parent1: number; parent2: number; merged: number };
+  }>;
+  durationMs: number;
+};
+
+export type TournamentCompleteSummary = {
+  type: 'tournament_complete';
+  tournamentId: string;
+  generationsRun: number;
+  bestFitness: number;
+  winnerId: string | null;
+  winnerTools: string[] | null;
+  winnerOrigin: string | null;
+  startedAt: string;
+  completedAt: string;
+};
+
+export type TournamentData = {
+  generations: TournamentGenerationSummary[];
+  complete: TournamentCompleteSummary | null;
+};
+
+export const TOOL_FILL_COLORS: Record<string, string> = {
+  inspect: '#0891b2',  // cyan-600
+  act: '#dc2626',      // red-600
+  search: '#ca8a04',   // yellow-600
+  model: '#9333ea',    // purple-600
+};
+
 export const EVENT_SHAPES: Record<string, { shape: string; color: string }> = {
   'run:header': { shape: 'circle', color: 'bg-green-500' },
   'run:complete': { shape: 'circle', color: 'bg-green-500' },

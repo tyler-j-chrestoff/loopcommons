@@ -3,21 +3,66 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 42
-    title: "Agent Arena — Roguelike-seeded evolution"
+  - id: 43
+    title: "Agent Arena — Live runs + results analysis"
     milestone: agent-arena
-    goal: "Two-phase evolution: roguelike seeding (diverse survivors) → tournament selection with memory crossover."
+    goal: "Run full tournament with live LLM agents, analyze results, verify thesis."
     phases:
-      - name: "Research: memory crossover + compute sandboxing"
+      - name: "Live tournament run (8 agents, 10 generations)"
         tasks: []
-      - name: "Tournament runner + population manager"
+      - name: "Results analysis + thesis verification"
         tasks: []
-      - name: "Task battery + generalization encounters"
-        tasks: []
-      - name: "Viz: generation fitness + tool frequency"
+      - name: "Pipeline export: composition-fitness pairs"
         tasks: []
 
 completed:
+  - id: 42
+    title: "Agent Arena — Roguelike-seeded evolution"
+    date: 2026-03-20
+    milestone: agent-arena
+    status: done
+    goal: "Two-phase evolution: roguelike seeding (diverse survivors) → tournament selection with memory crossover."
+    phases:
+      - name: "Research: memory crossover + compute sandboxing ✓"
+        tasks: []
+        status: done
+      - name: "Tournament runner + population manager ✓"
+        tasks: []
+        status: done
+      - name: "Task battery + generalization encounters ✓"
+        tasks: []
+        status: done
+      - name: "Viz: generation fitness + tool frequency ✓"
+        tasks: []
+        status: done
+    summary: |
+      All 4 phases complete. Built the full tournament evolutionary system.
+      Phase 1 (Research): Parallel research on memory crossover strategies (MemEvolve, SUPER,
+      cultural algorithms — Strategy A wins: fitness-weighted union + hippocampal consolidation)
+      and compute sandboxing (separate data dirs + timeouts for Phase 1-2, nsjail/E2B for
+      future code-gen phases). No new dependencies needed.
+      Phase 2 (Core): 8 tournament modules in packages/llm/src/arena/tournament/:
+      types.ts (TournamentConfig, TournamentAgent, AgentFitness, GenerationResult, TournamentTrace,
+      TournamentEvent), mutation.ts (add/remove/swap operators with pool constraints),
+      crossover.ts (fitness-weighted memory union with 2x cap + provenance tagging),
+      fitness.ts (4-dimension: completion 35%, score 25%, survival 20%, efficiency 20%),
+      population.ts (seed creation, mutation/crossover application, next-gen assembly),
+      runner.ts (evaluate→rank→select→mutate/crossover loop with convergence detection),
+      writer.ts (JSONL atomic append for generations + events), task-battery.ts (bridge
+      to encounter engine with tool scoping per agent composition).
+      Phase 3: 2 generalization encounters (E5: Monitoring Gap — diagnose from dashboards only,
+      E6: Capacity Planning — proactive scaling under constraints). 6 red-team sandbox tests
+      proving cross-agent isolation. CLI entrypoint: npm run arena:tournament (--mock, --pilot,
+      --generations N, --population N). Mock pilot verified: 3 gen, fitness 0.559→0.569.
+      Phase 4 (Viz): Tournament types in arena-types.ts. GET /api/metrics/arena-tournament
+      endpoint (auth-gated, cached). 3 components: FitnessChart (SVG line chart —
+      best/avg/worst per generation with band fill), ToolFrequency (per-tool survival frequency
+      bars across generations), TournamentHistory (collapsible panel — winner summary, charts,
+      generation timeline with detail inspector). Pattern matches CalibrationHistory.
+      58 new LLM tests (9 files), 9 new web tests (2 files). 897 LLM + 480 web, 0 regressions.
+      Pre-existing api-chat.test.ts failure unchanged.
+
+
   - id: 41
     title: "Roguelike v1 — Viz, export, and arena planning"
     date: 2026-03-20

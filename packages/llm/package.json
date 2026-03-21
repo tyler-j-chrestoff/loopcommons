@@ -19,7 +19,8 @@
     "arena:preregister": "tsx scripts/arena-preregister.ts",
     "arena:viz": "tsx scripts/arena-viz.ts",
     "arena:run": "tsx scripts/arena-run.ts",
-    "trace:debug": "tsx scripts/trace-debug.ts"
+    "trace:debug": "tsx scripts/trace-debug.ts",
+    "arena:tournament": "tsx scripts/arena-tournament.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.58",
