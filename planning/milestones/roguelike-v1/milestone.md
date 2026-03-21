@@ -1,7 +1,7 @@
 # Milestone: Roguelike v1 — Path Dependence Experiment
 
-**Status**: planned
-**Sessions**: 2-3
+**Status**: done (CONDITIONAL PASS)
+**Sessions**: 3 (39, 40, 41)
 **Stories**: 3
 **Prerequisite**: attested-lineage
 

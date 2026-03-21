@@ -3,28 +3,54 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 41
-    title: "Roguelike v1 — Viz, export, and arena planning"
-    milestone: roguelike-v1
-    goal: "Visualization components, training data export, and use results to plan agent-arena."
-    phases:
-      - name: "Arena API + viz components"
-        tasks: [rl-13, rl-14, rl-15, rl-16]
-      - name: "Pipeline consolidation + training data export"
-        tasks: [rl-17, rl-18]
-      - name: "Plan agent-arena based on gate results"
-        tasks: []
-    strategy: "If PASS: reshape agent-arena to evolve over acquisition sequences. If CONDITIONAL PASS: roguelike as diversity generator for population seeding. If FAIL: fall back to original agent-arena design (static composition evolution)."
-
   - id: 42
-    title: "Agent Arena — TBD (informed by roguelike results)"
+    title: "Agent Arena — Roguelike-seeded evolution"
     milestone: agent-arena
-    goal: "Evolution over attested tool compositions. Design informed by roguelike-v1 gate results."
+    goal: "Two-phase evolution: roguelike seeding (diverse survivors) → tournament selection with memory crossover."
     phases:
-      - name: "TBD — design depends on roguelike-v1 outcome"
+      - name: "Research: memory crossover + compute sandboxing"
+        tasks: []
+      - name: "Tournament runner + population manager"
+        tasks: []
+      - name: "Task battery + generalization encounters"
+        tasks: []
+      - name: "Viz: generation fitness + tool frequency"
         tasks: []
 
 completed:
+  - id: 41
+    title: "Roguelike v1 — Viz, export, and arena planning"
+    date: 2026-03-20
+    milestone: roguelike-v1
+    status: done
+    goal: "Visualization components, training data export, and use results to plan agent-arena."
+    phases:
+      - name: "Arena API + viz components ✓"
+        tasks: [rl-13, rl-14, rl-15, rl-16]
+        status: done
+      - name: "Pipeline consolidation + training data export ✓"
+        tasks: [rl-17, rl-18]
+        status: done
+      - name: "Plan agent-arena based on gate results ✓"
+        tasks: []
+        status: done
+    summary: |
+      All 6 planned tasks done (rl-13 through rl-18) plus arena planning.
+      Phase 1: Arena metrics API (GET /api/metrics/arena with experiment_id, run_id, path_id,
+      compare query params, auth-gated, cached). RunReplay component (timeline + event detail
+      with keyboard navigation). PathComparison component (approach distribution bars, death
+      rate, per-path stats). ChoicePointInspector (side-by-side crossroads reasoning with
+      confidence color coding). Shared arena-types.ts for all components.
+      Phase 2: Dagster arena_traces asset (JSONL → Parquet: runs table + choice_points table).
+      arena_training_export asset (two novel datasets: choice-point reasoning pairs and
+      approach-divergence pairs, versioned JSONL with SHA256 checksums).
+      Phase 3: Wrote roguelike-informed-design.md for agent-arena. Key decision: roguelike
+      as diversity generator for population seeding (CONDITIONAL PASS strategy). Two-phase
+      evolution: roguelike seeding → tournament selection with memory crossover.
+      29 new web tests (11 API + 18 component), 21 new pipeline tests. 0 regressions
+      across 839 LLM tests and 471 web tests. api-chat.test.ts pre-existing failure (mock issue).
+
+
   - id: 40
     title: "Roguelike v1 — Trace storage, analysis, pilot, and experiment design iteration"
     date: 2026-03-20

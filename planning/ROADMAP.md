@@ -6,7 +6,7 @@ This is "Consciousness as Variational Inference" applied to agent architecture. 
 
 Everything below serves this thesis. The platform generates open-source training data as a side effect of testing it.
 
-**Active milestone**: [roguelike-v1](milestones/roguelike-v1/)
+**Active milestone**: [agent-arena](milestones/agent-arena/)
 
 ---
 
@@ -21,7 +21,7 @@ Each milestone proves a stronger claim about the thesis. Each is independently u
 | 3 | [memory-contract](milestones/memory-contract/) | Memory is a required component of identity, not an optional tool | 1 |
 | 4 | [multi-interface](milestones/multi-interface/) | Tool-defined identity (incl. memory) is portable across interfaces | 2 ✓ |
 | 5 | [attested-lineage](milestones/attested-lineage/) | Identity derivations are content-addressed and carry ancestry | 1 ✓ |
-| 6 | [roguelike-v1](milestones/roguelike-v1/) | Tool acquisition order produces measurably different agents (path dependence) | 2-3 |
+| 6 | [roguelike-v1](milestones/roguelike-v1/) | Tool acquisition order produces measurably different agents (path dependence) | 3 ✓ |
 | 7 | [agent-arena](milestones/agent-arena/) | Evolution over attested compositions discovers identities that hand-design can't | 2-3 |
 
 ```
