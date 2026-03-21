@@ -9,11 +9,11 @@ planned:
     goal: "Run full tournament with live LLM agents, analyze results, verify thesis."
     phases:
       - name: "Live tournament run (8 agents, 10 generations)"
-        tasks: []
+        tasks: [ar-12]
       - name: "Results analysis + thesis verification"
-        tasks: []
+        tasks: [ar-12]
       - name: "Pipeline export: composition-fitness pairs"
-        tasks: []
+        tasks: [ar-11]
 
 completed:
   - id: 42
