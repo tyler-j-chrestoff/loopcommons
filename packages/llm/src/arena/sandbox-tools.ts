@@ -169,6 +169,19 @@ function traceDeps(graph: Record<string, string[]>, node: string, depth: number)
 }
 
 /**
+ * Create a terminal 'done' tool that signals encounter completion.
+ * Separate from createSandboxTools — appended by the agent harness.
+ */
+export function createDoneTool(): ToolDefinition {
+  return defineTool({
+    name: 'done',
+    description: 'Signal that the incident is resolved. Call this when you have finished fixing the problem.',
+    parameters: z.object({}),
+    execute: async () => 'done',
+  });
+}
+
+/**
  * Create the 4 arena sandbox tools backed by the given sandbox.
  * Returns [inspect, act, search, model] as ToolDefinition[].
  */

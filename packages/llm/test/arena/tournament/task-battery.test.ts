@@ -6,6 +6,7 @@ import {
 import type { EncounterConfig } from '../../../src/arena/types';
 import type { TournamentAgent } from '../../../src/arena/tournament/types';
 import type { AgentFn } from '../../../src/arena/encounter-engine';
+import type { ManaConfig } from '../../../src/arena/mana';
 
 const mockEncounter: EncounterConfig = {
   id: 'test-e1',
@@ -80,6 +81,48 @@ describe('task battery', () => {
       expect(results.length).toBe(2);
       expect(results[0].encounterId).toBe('test-e1');
       expect(results[1].encounterId).toBe('test-e2');
+    });
+
+    it('passes manaConfig through to encounter engine', async () => {
+      let receivedManaConfig: ManaConfig | undefined;
+
+      const captureAgentFn: AgentFn = async (input) => {
+        receivedManaConfig = input.manaConfig;
+        return { response: '', toolCalls: [] };
+      };
+
+      const mana: ManaConfig = {
+        explorationSlots: 3,
+        toolCosts: { inspect: 1, search: 1, model: 2, act: 0, done: 0 },
+      };
+
+      const battery = createTaskBattery({
+        encounters: [mockEncounter],
+        agentFnFactory: () => captureAgentFn,
+        maxStepsPerEncounter: 10,
+        manaConfig: mana,
+      });
+
+      await battery.evaluate(mockAgent);
+      expect(receivedManaConfig).toEqual(mana);
+    });
+
+    it('omits manaConfig when not provided (backward compat)', async () => {
+      let receivedManaConfig: ManaConfig | undefined = { explorationSlots: -1, toolCosts: {} };
+
+      const captureAgentFn: AgentFn = async (input) => {
+        receivedManaConfig = input.manaConfig;
+        return { response: '', toolCalls: [] };
+      };
+
+      const battery = createTaskBattery({
+        encounters: [mockEncounter],
+        agentFnFactory: () => captureAgentFn,
+        maxStepsPerEncounter: 10,
+      });
+
+      await battery.evaluate(mockAgent);
+      expect(receivedManaConfig).toBeUndefined();
     });
 
     it('isolates encounters (fresh sandbox per encounter)', async () => {

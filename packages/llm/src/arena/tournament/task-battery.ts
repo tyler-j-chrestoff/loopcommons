@@ -11,6 +11,7 @@ import type { AgentFn, ExecuteEncounterOutput } from '../encounter-engine';
 import { executeEncounter } from '../encounter-engine';
 import { createSandboxTools } from '../sandbox-tools';
 import type { TournamentAgent, TaskResult } from './types';
+import type { ManaConfig } from '../mana';
 
 export function encounterResultToTaskResult(
   encounterId: string,
@@ -38,6 +39,7 @@ type TaskBatteryConfig = {
   encounters: EncounterConfig[];
   agentFnFactory: (agent: TournamentAgent) => AgentFn;
   maxStepsPerEncounter: number;
+  manaConfig?: ManaConfig;
 };
 
 export type TaskBattery = {
@@ -69,6 +71,7 @@ export function createTaskBattery(config: TaskBatteryConfig): TaskBattery {
         tools: sandboxTools,
         agentFn,
         maxSteps: config.maxStepsPerEncounter,
+        manaConfig: config.manaConfig,
       });
       results.push(encounterResultToTaskResult(encounter.id, output));
     }

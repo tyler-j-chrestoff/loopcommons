@@ -19,7 +19,9 @@ export type {
   RunTrace,
 } from './types';
 
-export { createSandboxTools } from './sandbox-tools';
+export { createSandboxTools, createDoneTool } from './sandbox-tools';
+export { createManaState, prepareStep, consumeMana } from './mana';
+export type { ManaConfig, ManaState } from './mana';
 export { createArenaToolPackage, ARENA_TOOL_CONFIGS } from './tool-packages';
 export { ENCOUNTERS, PATHS, BASELINE_PATH, classifyE4Approach } from './encounters';
 export { executeEncounter, checkDeath } from './encounter-engine';

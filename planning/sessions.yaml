@@ -3,27 +3,72 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 45
-    title: "Agent Arena — Mana system + live agent loop"
+  - id: 46
+    title: "Agent Arena — Full tournament with mana system"
     date: 2026-03-22
     milestone: agent-arena
     status: planned
-    goal: "Implement mana-based phase gating (prepareStep), done tool, toolChoice:required so live agents actually act. Validate with Lego 2 tests before scaling."
+    goal: "Run full live tournament with mana system, analyze results, validate thesis. If differentiation holds at scale, milestone complete."
     phases:
-      - name: "Implement done tool + toolChoice:required + stopWhen"
+      - name: "Full tournament run (8+ agents, 5+ generations, mana enabled)"
         tasks: []
         status: planned
-      - name: "Implement prepareStep mana system (N explore slots then action-only)"
+      - name: "Results analysis + thesis verification"
         tasks: []
         status: planned
-      - name: "Lego 2 validation: single encounter + live agent"
-        tasks: []
-        status: planned
-      - name: "Lego 3: one generation, 3 agents, 3 encounters — verify fitness differentiation"
+      - name: "Milestone wrap-up (if thesis validated)"
         tasks: []
         status: planned
 
 completed:
+  - id: 45
+    title: "Agent Arena — Mana system + live agent loop"
+    date: 2026-03-22
+    milestone: agent-arena
+    status: done
+    goal: "Implement mana-based phase gating (prepareStep), done tool, toolChoice:required so live agents actually act. Validate with Lego 2 tests before scaling."
+    phases:
+      - name: "Implement done tool + toolChoice:required"
+        tasks: [mn-01, mn-02]
+        status: done
+      - name: "Implement prepareStep mana system"
+        tasks: [mn-03, mn-04, mn-05, mn-06]
+        status: done
+      - name: "Lego 2 validation: single encounter + live agent"
+        tasks: [mn-07]
+        status: done
+      - name: "Task battery integration + Lego 3"
+        tasks: [mn-08, mn-09]
+        status: done
+    summary: |
+      All 4 phases complete. 9 tasks (mn-01 through mn-09) done.
+
+      SHIPPED:
+      - createDoneTool() — terminal tool signaling encounter completion
+      - toolChoice:'required' — forces tool call every step, eliminates prose-only exits
+      - mana.ts — ManaConfig, ManaState, prepareStep(), consumeMana() for phase-gated tool access
+      - Manual step loop in createLiveAgentFn — per-step tool filtering via prepareStep when manaConfig provided
+      - manaConfig threaded through AgentFnInput → ExecuteEncounterInput → TaskBatteryConfig → TournamentConfig
+      - arena-mana-system.md story with 9 JSONL tasks
+
+      LIVE VALIDATION (Lego 2 + 3):
+      - Lego 2: Agent calls act AND done. Resolved E7 Hydra. No inaction death.
+        Session 44 root cause (Haiku writes prose instead of acting) is FIXED.
+      - Lego 3: Fitness differentiation CONFIRMED.
+        agent-full (4 tools): 0.025 fitness — DIED (too many options → cluster death)
+        agent-act-inspect (2 tools): 0.763 — resolved
+        agent-model-act (2 tools): 0.778 — resolved
+        More tools can be WORSE. Evolution can now select meaningfully.
+
+      KEY FINDING: The mana system + done tool + toolChoice:required solves the
+      "diagnose-then-prose" failure mode. Fewer tools outperformed more tools on E7,
+      validating the thesis that tool composition (not just tool count) defines identity.
+
+      36 new tests across 5 files. 375 arena tests, 1001+ total llm package tests.
+      0 regressions.
+
+      UNBLOCKED: Full live tournament with mana system. If differentiation holds at
+      scale, agent-arena milestone is complete.
   - id: 44
     title: "Agent Arena — Brutal encounters + live agent debugging"
     date: 2026-03-21

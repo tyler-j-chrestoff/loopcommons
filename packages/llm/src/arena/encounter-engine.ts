@@ -23,6 +23,7 @@ export type AgentFnInput = {
   prompt: string;
   tools: ToolDefinition[];
   sandbox: Sandbox;
+  manaConfig?: import('./mana').ManaConfig;
 };
 
 export type AgentFnResult = {
@@ -42,6 +43,7 @@ export type ExecuteEncounterInput = {
   agentFn: AgentFn;
   maxSteps: number;
   priorOutputs?: PriorOutput[];
+  manaConfig?: import('./mana').ManaConfig;
 };
 
 export type ExecuteEncounterOutput = {
@@ -52,13 +54,13 @@ export type ExecuteEncounterOutput = {
 };
 
 export async function executeEncounter(input: ExecuteEncounterInput): Promise<ExecuteEncounterOutput> {
-  const { encounter, tools, agentFn, maxSteps, priorOutputs } = input;
+  const { encounter, tools, agentFn, maxSteps, priorOutputs, manaConfig } = input;
   const startTime = Date.now();
 
   const sandbox = encounter.setup();
   const prompt = encounter.getPrompt(priorOutputs);
 
-  const agentResult = await agentFn({ prompt, tools, sandbox });
+  const agentResult = await agentFn({ prompt, tools, sandbox, manaConfig });
 
   // Convert agent tool calls to StepRecords, truncating at maxSteps
   const steps: StepRecord[] = agentResult.toolCalls

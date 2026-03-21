@@ -8,6 +8,7 @@
 
 import type { ArenaToolId, EncounterConfig, RunTrace } from '../types';
 import type { AgentIdentity, LineageRecord } from '../../identity';
+import type { ManaConfig } from '../mana';
 
 // ---------------------------------------------------------------------------
 // Agent representation
@@ -141,6 +142,8 @@ export type TournamentConfig = {
   convergenceWindow: number;
   /** Git commit SHA for identity hashing. */
   commitSha: string;
+  /** Optional mana config for phase-gated tool access. */
+  manaConfig?: ManaConfig;
 };
 
 // ---------------------------------------------------------------------------

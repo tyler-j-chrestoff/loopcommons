@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createSandboxTools } from '../../src/arena/sandbox-tools';
+import { createSandboxTools, createDoneTool } from '../../src/arena/sandbox-tools';
 import type { Sandbox } from '../../src/arena/types';
 
 function makeSandbox(overrides?: Partial<Sandbox>): Sandbox {
@@ -218,6 +218,31 @@ describe('createSandboxTools', () => {
         expect(tool.parameters).toBeDefined();
         expect(tool.description).toBeTruthy();
       }
+    });
+  });
+
+  describe('done tool', () => {
+    it('returns a completion signal string', async () => {
+      const done = createDoneTool();
+      const result = await done.execute({});
+      expect(result).toContain('done');
+    });
+
+    it('has name "done"', () => {
+      const done = createDoneTool();
+      expect(done.name).toBe('done');
+    });
+
+    it('has Zod parameters', () => {
+      const done = createDoneTool();
+      expect(done.parameters).toBeDefined();
+      expect(done.description).toBeTruthy();
+    });
+
+    it('is not included in createSandboxTools (separate factory)', () => {
+      const sandbox = makeSandbox();
+      const tools = createSandboxTools(sandbox);
+      expect(tools.find(t => t.name === 'done')).toBeUndefined();
     });
   });
 });
