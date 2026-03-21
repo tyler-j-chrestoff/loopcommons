@@ -15,6 +15,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { ENCOUNTERS } from '../src/arena/encounters';
+import { BRUTAL_ENCOUNTERS } from '../src/arena/brutal-encounters';
 import { GENERALIZATION_ENCOUNTERS } from '../src/arena/tournament/generalization-encounters';
 import { createTournament } from '../src/arena/tournament/runner';
 import { createTournamentWriter } from '../src/arena/tournament/writer';
@@ -98,12 +99,9 @@ function createMockAgentFn(_agent: TournamentAgent): AgentFn {
 // Live agent function factory (requires API key)
 // ---------------------------------------------------------------------------
 
-async function createLiveAgentFnFactory(agent: TournamentAgent): Promise<AgentFn> {
+async function createLiveAgentFnFactory(_agent: TournamentAgent): Promise<AgentFn> {
   const { createLiveAgentFn } = await import('../src/arena/live-agent');
-  return createLiveAgentFn({
-    model: 'claude-haiku-4-5',
-    temperature: 0.3,
-  });
+  return createLiveAgentFn();
 }
 
 // ---------------------------------------------------------------------------
@@ -114,8 +112,8 @@ async function main() {
   const outputDir = path.resolve(import.meta.dirname, '../data/arena/tournament');
   const writer = createTournamentWriter(outputDir);
 
-  // Task battery: roguelike encounters + generalization encounters
-  const allEncounters = [...ENCOUNTERS, ...GENERALIZATION_ENCOUNTERS];
+  // Task battery: roguelike + brutal + generalization encounters
+  const allEncounters = [...ENCOUNTERS, ...BRUTAL_ENCOUNTERS, ...GENERALIZATION_ENCOUNTERS];
 
   const battery = createTaskBattery({
     encounters: allEncounters,
@@ -152,7 +150,7 @@ async function main() {
 
   console.log(`\n  Arena Tournament${isPilot ? ' (pilot)' : ''}${isMock ? ' (mock)' : ''}`);
   console.log(`  Population: ${populationSize} | Generations: ${maxGenerations}`);
-  console.log(`  Encounters: ${allEncounters.length} (${ENCOUNTERS.length} roguelike + ${GENERALIZATION_ENCOUNTERS.length} generalization)`);
+  console.log(`  Encounters: ${allEncounters.length} (${ENCOUNTERS.length} roguelike + ${BRUTAL_ENCOUNTERS.length} brutal + ${GENERALIZATION_ENCOUNTERS.length} generalization)`);
   console.log(`  Survivors: ${config.survivorCount} | Mutations: ${config.mutationCount} | Crossovers: ${config.crossoverCount}`);
   console.log();
 

@@ -16,6 +16,13 @@ export function encounterResultToTaskResult(
   encounterId: string,
   output: ExecuteEncounterOutput,
 ): TaskResult {
+  // Collateral: wrong actions that caused damage (death with score 0 = max collateral)
+  const collateral = output.death.dead && output.encounterResult.score === 0
+    ? 1.0
+    : output.death.dead
+      ? 0.5
+      : 0;
+
   return {
     encounterId,
     resolved: output.encounterResult.resolved,
@@ -23,6 +30,7 @@ export function encounterResultToTaskResult(
     stepCount: output.steps.length,
     died: output.death.dead,
     costEstimate: output.steps.length * 0.0005,
+    collateral,
   };
 }
 

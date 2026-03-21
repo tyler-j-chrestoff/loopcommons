@@ -48,6 +48,8 @@ export type TaskResult = {
   stepCount: number;
   died: boolean;
   costEstimate: number;
+  /** Collateral damage score (0 = clean, higher = more damage). Optional for backward compat. */
+  collateral?: number;
 };
 
 export type AgentFitness = {
@@ -67,6 +69,8 @@ export type AgentFitness = {
     survivalRate: number;
     /** Total estimated cost across all tasks. */
     totalCost: number;
+    /** Mean collateral damage (0 = clean, 1 = max damage). */
+    meanCollateral: number;
   };
 };
 

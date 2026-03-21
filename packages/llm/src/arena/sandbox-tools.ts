@@ -6,11 +6,23 @@ import type { Sandbox } from './types';
 function createInspectTool(sandbox: Sandbox): ToolDefinition {
   return defineTool({
     name: 'inspect',
-    description: 'Read system state: files, configs, logs, metrics. Read-only — never modifies state. Use target formats: file path, "service:<name>", "metrics:<name>", "logs:<name>".',
+    description: 'Read system state: files, configs, logs, metrics. Read-only — never modifies state. Use target formats: "ls" (list all files), "services" (list services), file path, "service:<name>", "metrics:<name>", "logs:<name>".',
     parameters: z.object({
-      target: z.string().describe('What to inspect: file path, service:<name>, metrics:<name>, or logs:<name>'),
+      target: z.string().describe('What to inspect: "ls" for file listing, "services" for service listing, file path, service:<name>, metrics:<name>, or logs:<name>'),
     }),
     execute: async ({ target }) => {
+      // List all files
+      if (target === 'ls' || target === 'files') {
+        return Array.from(sandbox.files.keys()).sort().join('\n');
+      }
+
+      // List all services
+      if (target === 'services') {
+        return Array.from(sandbox.services.entries())
+          .map(([name, svc]) => `${name}: ${svc.status}`)
+          .join('\n');
+      }
+
       // Service state
       if (target.startsWith('service:')) {
         const name = target.slice('service:'.length);

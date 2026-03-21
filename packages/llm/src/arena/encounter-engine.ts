@@ -1,6 +1,7 @@
 import type {
   EncounterConfig,
   EncounterResult,
+  DeathCause,
   DeathResult,
   StepRecord,
   Sandbox,
@@ -82,7 +83,12 @@ export async function executeEncounter(input: ExecuteEncounterInput): Promise<Ex
 
   const encounterResult = encounter.evaluate(sandbox, steps);
 
-  return { encounterResult, steps, response: agentResult.response, death };
+  // Evaluator-signaled death overrides structural death detection
+  const finalDeath = encounterResult.dead
+    ? { dead: true, cause: 'state_corruption' as DeathCause, details: encounterResult.details }
+    : death;
+
+  return { encounterResult, steps, response: agentResult.response, death: finalDeath };
 }
 
 // ---------------------------------------------------------------------------

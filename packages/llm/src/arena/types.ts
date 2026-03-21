@@ -53,6 +53,8 @@ export type EncounterResult = {
   partial: boolean;
   score: number;
   details: string;
+  /** Evaluator-signaled death (traps, state corruption, inaction). */
+  dead?: boolean;
 };
 
 export type EncounterConfig = {
@@ -73,7 +75,8 @@ export type DeathCause =
   | 'error_loop'
   | 'capitulated'
   | 'defensive'
-  | 'incomplete';
+  | 'incomplete'
+  | 'state_corruption';
 
 export type DeathResult = {
   dead: boolean;

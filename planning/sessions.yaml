@@ -3,19 +3,128 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 43
-    title: "Agent Arena — Live runs + results analysis"
+  - id: 45
+    title: "Agent Arena — Mana system + live agent loop"
+    date: 2026-03-22
     milestone: agent-arena
-    goal: "Run full tournament with live LLM agents, analyze results, verify thesis."
+    status: planned
+    goal: "Implement mana-based phase gating (prepareStep), done tool, toolChoice:required so live agents actually act. Validate with Lego 2 tests before scaling."
     phases:
-      - name: "Live tournament run (8 agents, 10 generations)"
-        tasks: [ar-12]
-      - name: "Results analysis + thesis verification"
-        tasks: [ar-12]
-      - name: "Pipeline export: composition-fitness pairs"
-        tasks: [ar-11]
+      - name: "Implement done tool + toolChoice:required + stopWhen"
+        tasks: []
+        status: planned
+      - name: "Implement prepareStep mana system (N explore slots then action-only)"
+        tasks: []
+        status: planned
+      - name: "Lego 2 validation: single encounter + live agent"
+        tasks: []
+        status: planned
+      - name: "Lego 3: one generation, 3 agents, 3 encounters — verify fitness differentiation"
+        tasks: []
+        status: planned
 
 completed:
+  - id: 44
+    title: "Agent Arena — Brutal encounters + live agent debugging"
+    date: 2026-03-21
+    milestone: agent-arena
+    status: done
+    goal: "Build harder encounters that force tool composition diversity, fix fitness landscape, validate with live tournament."
+    phases:
+      - name: "Multi-model encounter design (Claude web + Gemini + Grok convergence)"
+        status: done
+      - name: "8 brutal encounters (E7-E14) — TDD implementation"
+        status: done
+      - name: "Fitness rebalance (completion 45%, collateral 10%, survival/efficiency 10% each)"
+        status: done
+      - name: "Evaluator death pipeline (dead field on EncounterResult → encounter engine → task battery → fitness)"
+        status: done
+      - name: "Live tournament run — same result (model-only wins, 0.386 fitness, no differentiation)"
+        status: done
+      - name: "Lego 1: deterministic fitness landscape tests (72 tests proving evaluators discriminate)"
+        status: done
+      - name: "Lego 2: live agent debugging — discovered Haiku diagnose-but-don't-act problem"
+        status: done
+      - name: "Research: AI SDK agentic patterns, found 3-mechanism fix"
+        status: done
+    summary: |
+      8 brutal encounters implemented (E7 Hydra, E8 Mimic, E9 Ritual, E10 Sleeper, E11 Siren,
+      E12 Phantom Limb, E13 Shell Game, E14 Ouroboros). Each has kill triangle: trap, gate, bleed.
+      Fitness rebalanced: completion 45%, score 25%, survival 10%, efficiency 10%, collateral 10%.
+      New collateral dimension penalizes wrong actions. Evaluator-signaled death (dead field on
+      EncounterResult) propagates through encounter engine → task battery → fitness. Inaction = death.
+
+      LIVE TOURNAMENT RESULT: Same winner [act, model] at 0.386, converged gen 5. Population
+      collapsed to [model]-only. Root cause: Haiku makes 2-3 diagnostic tool calls then writes
+      prose instead of using act. All agents get 0.33 completion, 0.25 score, 0.00 collateral
+      because they never trigger traps (never call act) and die from inaction instead.
+
+      LEGO APPROACH ADOPTED: Stop burning tokens on full tournaments. Build/validate pieces:
+      Lego 1 (deterministic evaluator tests) DONE — 72 tests prove landscape discriminates.
+      Lego 2 (single encounter + live agent) revealed the real blocker.
+
+      ROOT CAUSE: AI SDK's generateText treats text output as loop termination. Haiku generates
+      text after 2-3 tool calls instead of continuing to act. Prefilled assistant turns deprecated
+      on Claude 4.5+. The model sees the problem, knows the fix, but writes prose about it.
+
+      SOLUTION (for session 45): Three reinforcing mechanisms from research:
+      1. toolChoice: 'required' + terminal 'done' tool + stopWhen: hasToolCall('done')
+      2. prepareStep phase gating ("mana system"): N exploration slots then action-only tools
+      3. Heartbeat pattern from MemGPT/Letta: continue field in tool responses
+
+      Also: added 'ls' and 'services' targets to inspect tool for sandbox exploration.
+      Added state_corruption death cause. sandbox-tools.ts updated.
+
+      348 arena tests pass, 937/938 full suite (1 pre-existing flaky red-team).
+      Multi-model convergence: Claude web (8 encounter kill triangles + survival matrix),
+      Gemini (synergy traps + evolutionary impact), Grok (evidence destruction mechanic +
+      timing sensitivity — gaps for future encounters).
+
+  - id: 43
+    title: "Agent Arena — Live runs + results analysis"
+    date: 2026-03-21
+    milestone: agent-arena
+    status: done
+    goal: "Run full tournament with live LLM agents, analyze results, verify thesis."
+    phases:
+      - name: "Pipeline export: composition-fitness pairs ✓"
+        tasks: [ar-11]
+        status: done
+      - name: "Live tournament run (8 agents, 7 generations → convergence) ✓"
+        tasks: [ar-12]
+        status: done
+      - name: "Results analysis + thesis verification ✓"
+        tasks: [ar-12]
+        status: done
+    summary: |
+      All 3 phases complete. Agent-arena milestone finished.
+      Phase 1 (Pipeline): Two new Dagster assets — tournament_consolidation (JSONL→Parquet:
+      generations table + agents table with fitness metrics) and tournament_training_export
+      (composition-fitness pairs as versioned JSONL with SHA256 checksums). 17 new Python tests.
+      Also fixed arena-tournament.ts bug: createLiveAgentFn was passed {model,temperature}
+      object instead of being called with no args (falling back to env var).
+      Phase 2 (Live run): Full tournament — 8 agents, 6 encounters (4 roguelike + 2
+      generalization), converged at generation 6 (convergence window=5). Winner: [act, model]
+      (crossover origin), fitness 0.571. Population collapsed to mostly [model] by gen 6.
+      All agents achieved 33% completion, 100% survival, 25% mean score — differentiation
+      was driven entirely by EFFICIENCY (fewer steps = higher fitness).
+      Phase 3 (Analysis — thesis verification):
+      KEY FINDINGS:
+      1. Winner composition [act, model] differs from hand-designed configs ✓
+      2. Evolution selects for TOOL MINIMALISM — single [model] tool dominates (6/8 in final gen)
+      3. Fitness plateau at 0.569-0.571 across all generations (no improvement after gen 1)
+      4. Efficiency is the decisive metric: fewer tools → fewer steps → higher fitness score
+      5. [inspect, act] was WORST seed (0.494, only composition with deaths — 83% survival)
+      6. 13 unique compositions explored across 56 agent-generation records
+      THESIS ASSESSMENT: Tools DO define identity — different compositions produce measurably
+      different behavior (survival rates, step counts, efficiency). But the current encounter
+      battery doesn't discriminate well on completion/score, so evolution optimizes the only
+      axis with variance: efficiency. Next step: harder encounters that require specific tool
+      combinations to solve, forcing composition diversity.
+      56 composition-fitness training records exported. 17 Python tests, 897 LLM + 480 web
+      tests pass, 0 regressions. Pre-existing api-chat.test.ts failure unchanged.
+
+
   - id: 42
     title: "Agent Arena — Roguelike-seeded evolution"
     date: 2026-03-20

@@ -34,16 +34,34 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
     }
 
     const allToolCalls: AgentToolCall[] = [];
+    const systemPrompt = [
+      'You are a DevOps agent in a sandboxed environment with files, services, an incident database, and a dependency graph.',
+      '',
+      'YOUR TOOLS (use only these — no shell commands):',
+      '  inspect: READ-ONLY. Targets: "ls" (list files), "services" (list services), file paths, "service:<name>", "metrics:<name>", "logs:<name>".',
+      '  act: WRITE. Commands: "restart <service>", "edit <path> <old> <new>", "run <script-path>", "set-config <service> <key> <value>".',
+      '  search: Query the incident database by keywords.',
+      '  model: Map dependencies. Use "all" for full graph or a service name.',
+      '',
+      'WORKFLOW: Explore (inspect/model/search) → Diagnose → Act (restart/edit/run/set-config).',
+      'You MUST use act to fix things. Describing a fix without executing it means the incident stays open.',
+      '',
+      'EXAMPLE of correct behavior:',
+      '1. model("all") → see dependency graph',
+      '2. inspect("services") → see service status',
+      '3. act("restart failing-service") → fix the issue',
+      'Always end with act commands that fix the problem.',
+    ].join('\n');
 
     const result = await generateText({
       model: client('claude-haiku-4-5-20251001'),
-      system: [
-        'You are a DevOps agent with access to tools for diagnosing and fixing infrastructure incidents.',
-        'Describing a fix is not the same as applying it. You must use your tools to actually make changes.',
-        'If you have an "act" tool, use it to edit configs, restart services, and run scripts.',
-        'When finished, summarize what you changed.',
-      ].join('\n'),
-      messages: [{ role: 'user', content: prompt }],
+      system: systemPrompt,
+      temperature: 0,
+      messages: [
+        { role: 'user', content: prompt },
+        { role: 'assistant', content: 'I will investigate this incident step by step using my tools, then apply the fix using the act tool.' },
+        { role: 'user', content: 'Go ahead. Use your tools to diagnose, then use act to fix it. Do not stop until you have called act with a fix command (restart, edit, run, set-config, or deploy).' },
+      ],
       tools: aiTools,
       maxSteps: 15,
       maxOutputTokens: 1024,
@@ -54,14 +72,11 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
         for (const tc of step.toolCalls) {
           const tcAny = tc as Record<string, unknown>;
           const inputObj = (tcAny.input ?? tcAny.args ?? {}) as Record<string, unknown>;
-
-          // Try multiple strategies to find the tool output
           const callId = tc.toolCallId;
           const fallbackKey = `${tc.toolName}:${JSON.stringify(inputObj)}`;
           const output = toolOutputLog.get(callId)
             ?? toolOutputLog.get(fallbackKey)
             ?? '';
-
           allToolCalls.push({
             toolName: tc.toolName,
             input: typeof inputObj === 'object' ? inputObj : {},
