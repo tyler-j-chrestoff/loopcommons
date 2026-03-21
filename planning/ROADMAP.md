@@ -23,6 +23,7 @@ Each milestone proves a stronger claim about the thesis. Each is independently u
 | 5 | [attested-lineage](milestones/attested-lineage/) | Identity derivations are content-addressed and carry ancestry | 1 ✓ |
 | 6 | [roguelike-v1](milestones/roguelike-v1/) | Tool acquisition order produces measurably different agents (path dependence) | 3 ✓ |
 | 7 | [agent-arena](milestones/agent-arena/) | Evolution over attested compositions discovers identities that hand-design can't | 2-3 |
+| 8 | [arena-platform](milestones/arena-platform/) | A research platform with co-evolving agents, encounters, and evaluators | 2-3 |
 
 ```
 derived-prompts (done) → memory-contract (done)
@@ -38,6 +39,8 @@ derived-prompts (done) → memory-contract (done)
                         roguelike-v1
                               ↓
                     agent-arena (informed by results)
+                              ↓
+                    arena-platform (co-evolution)
 ```
 
 Memory-contract formalizes memory as a construction-time invariant before core extraction. Attested-lineage needs core extraction (the canonical derivation path must be clean before you hash it) but not CLI. CLI doesn't need lineage chains. Roguelike-v1 needs attested lineage (identity hashes at every state transition). Its results determine what kind of arena to build: if path dependence is real, evolution operates over acquisition sequences; if not, standard population-based selection is sufficient. See `planning/memos/MOBIUS_PRINCIPLE.md`.

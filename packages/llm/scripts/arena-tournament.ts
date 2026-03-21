@@ -23,6 +23,22 @@ import { createTaskBattery } from '../src/arena/tournament/task-battery';
 import type { TournamentConfig, TournamentAgent, TournamentEvent } from '../src/arena/tournament/types';
 import type { ArenaToolId } from '../src/arena/types';
 import type { AgentFn } from '../src/arena/encounter-engine';
+import type { ManaConfig } from '../src/arena/mana';
+
+// ---------------------------------------------------------------------------
+// Mana config — exploration-then-action phase gating
+// ---------------------------------------------------------------------------
+
+const manaConfig: ManaConfig = {
+  explorationSlots: 3,
+  toolCosts: {
+    inspect: 1,
+    search: 1,
+    model: 1,
+    act: 0,
+    done: 0,
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Load API key
@@ -130,6 +146,7 @@ async function main() {
           };
         },
     maxStepsPerEncounter: 10,
+    manaConfig,
   });
 
   const config: TournamentConfig = {
@@ -146,12 +163,14 @@ async function main() {
     maxStepsPerEncounter: 10,
     convergenceWindow: 5,
     commitSha: 'arena-tournament',
+    manaConfig,
   };
 
   console.log(`\n  Arena Tournament${isPilot ? ' (pilot)' : ''}${isMock ? ' (mock)' : ''}`);
   console.log(`  Population: ${populationSize} | Generations: ${maxGenerations}`);
   console.log(`  Encounters: ${allEncounters.length} (${ENCOUNTERS.length} roguelike + ${BRUTAL_ENCOUNTERS.length} brutal + ${GENERALIZATION_ENCOUNTERS.length} generalization)`);
   console.log(`  Survivors: ${config.survivorCount} | Mutations: ${config.mutationCount} | Crossovers: ${config.crossoverCount}`);
+  console.log(`  Mana: ${manaConfig.explorationSlots} exploration slots (inspect/search/model cost 1, act/done free)`);
   console.log();
 
   // Seed population: diverse starting compositions

@@ -3,24 +3,110 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 46
-    title: "Agent Arena — Full tournament with mana system"
-    date: 2026-03-22
+  - id: 47
+    title: "Agent Arena — Evaluator redesign + thesis revalidation"
     milestone: agent-arena
     status: planned
-    goal: "Run full live tournament with mana system, analyze results, validate thesis. If differentiation holds at scale, milestone complete."
+    goal: "Implement epistemic keying + tripwires from 3-model convergence. Re-run tournament. Validate all 4 tools are load-bearing. Close milestone."
     phases:
-      - name: "Full tournament run (8+ agents, 5+ generations, mana enabled)"
+      - name: "Audit encounters + implement epistemic keying (E1-E4)"
+        tasks: [ev-01, ev-02]
+        status: planned
+      - name: "Implement tripwires (E7+) + cascade scoring + graph-distance"
+        tasks: [ev-03, ev-04, ev-05]
+        status: planned
+      - name: "Tests + pilot validation"
+        tasks: [ev-06, ev-07]
+        status: planned
+      - name: "Full tournament + milestone close"
+        tasks: [ev-08]
+        status: planned
+  - id: 48
+    title: "Arena Platform — Real-time API + encounter DSL"
+    milestone: arena-platform
+    status: planned
+    goal: "SSE tournament streaming, queryArena agent tool, YAML encounter DSL. The arena becomes a platform."
+    phases:
+      - name: "SSE tournament streaming endpoint"
         tasks: []
         status: planned
-      - name: "Results analysis + thesis verification"
+      - name: "queryArena ToolPackage"
         tasks: []
         status: planned
-      - name: "Milestone wrap-up (if thesis validated)"
+      - name: "Encounter DSL (YAML → EncounterConfig)"
+        tasks: []
+        status: planned
+  - id: 49
+    title: "Arena Platform — Encounter families + user tournaments"
+    milestone: arena-platform
+    status: planned
+    goal: "Encounter family generation, consistency scoring, user-created tournament API."
+    phases:
+      - name: "Encounter family generator + consistency scoring"
+        tasks: []
+        status: planned
+      - name: "User-created tournament API (POST config, SSE watch)"
+        tasks: []
+        status: planned
+      - name: "Live tournament dashboard component"
         tasks: []
         status: planned
 
 completed:
+  - id: 46
+    title: "Agent Arena — Full tournament with mana system"
+    date: 2026-03-22
+    milestone: agent-arena
+    status: done
+    goal: "Run full live tournament with mana system, analyze results, validate thesis. If differentiation holds at scale, milestone complete."
+    phases:
+      - name: "Wire mana + pilot tournament"
+        tasks: [ft-01, ft-02]
+        status: done
+      - name: "Full tournament run (8 agents, 5+ gens, mana enabled)"
+        tasks: [ft-03]
+        status: done
+      - name: "Results analysis + thesis verification"
+        tasks: [ft-04]
+        status: done
+      - name: "Session planning (evaluator redesign + arena platform)"
+        tasks: [ft-05]
+        status: done
+    summary: |
+      All phases complete. 5 tasks (ft-01 through ft-05) done.
+
+      SHIPPED:
+      - Mana config wired into tournament script (was missing from session 45)
+      - Done tool added to task battery (was missing, caused empty-tools API errors)
+      - Empty text content block fix in live-agent.ts (AI SDK + Anthropic API compat)
+      - arena-full-tournament.md story with 5 JSONL tasks
+      - arena-platform.md design doc (real-time API + user-created tournaments)
+      - arena-evaluator-redesign.md story with 8 JSONL tasks
+      - arena-platform milestone created with README + 5 planned stories
+
+      TOURNAMENT RESULTS (8 agents, 5 generations, 14 encounters, mana enabled):
+      - Winner: [inspect, act] (crossover), fitness 0.321
+      - Gen 0 spread: 0.164–0.267. Gen 2 crossover broke plateau to 0.321.
+      - Population converged to [inspect, act] by Gen 4 (5 of 8 agents)
+      - [inspect, act, search, model] (all 4 tools) scored LOWEST (0.164)
+      - Memory crossover drove the fitness improvement, not tool mutation
+
+      KEY FINDING: Evaluator bias — all 14 evaluators only check commandLog/files
+      (act tool output). search and model are evolutionarily dead because the
+      fitness function is blind to their value. Tool composition differentiates
+      fitness, but only across the 2 tools the evaluators can see.
+
+      THREE-MODEL CONVERGENCE (Claude web + Gemini + Grok, 2 rounds):
+      - Unanimous: make correct action unreachable without search/model output
+      - Unanimous: score system-level consequences, not action checklists
+      - Unanimous: evaluators should co-evolve (meta-fitness = composition variance)
+      - Synthesis: diagnosis-as-action-input (act requires structured args encoding understanding)
+      - Blueprint: epistemic keying → tripwires → cascade scoring → encounter families → co-evolution
+
+      UNBLOCKED: Session 47 implements evaluator redesign Phase 1 (keying + tripwires).
+      If all 4 tools become load-bearing, agent-arena milestone closes.
+      Session 48-49: arena-platform milestone (SSE streaming, encounter DSL, families).
+
   - id: 45
     title: "Agent Arena — Mana system + live agent loop"
     date: 2026-03-22

@@ -9,7 +9,7 @@
 import type { EncounterConfig } from '../types';
 import type { AgentFn, ExecuteEncounterOutput } from '../encounter-engine';
 import { executeEncounter } from '../encounter-engine';
-import { createSandboxTools } from '../sandbox-tools';
+import { createSandboxTools, createDoneTool } from '../sandbox-tools';
 import type { TournamentAgent, TaskResult } from './types';
 import type { ManaConfig } from '../mana';
 
@@ -60,8 +60,10 @@ export function createTaskBattery(config: TaskBatteryConfig): TaskBattery {
     for (const encounter of config.encounters) {
       // Create sandbox and scope tools to agent's composition
       const sandbox = encounter.setup();
-      const sandboxTools = createSandboxTools(sandbox)
-        .filter(t => agent.tools.includes(t.name as any));
+      const sandboxTools = [
+        ...createSandboxTools(sandbox).filter(t => agent.tools.includes(t.name as any)),
+        createDoneTool(),
+      ];
 
       const output = await executeEncounter({
         encounter: {

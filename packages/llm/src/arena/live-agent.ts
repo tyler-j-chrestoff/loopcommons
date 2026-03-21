@@ -132,8 +132,18 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
         // Check for done tool — exit
         if (stepCalls.some(tc => tc.toolName === 'done')) break;
 
-        // Append AI SDK-formatted response messages for next step's context
-        messages = [...messages, ...result.response.messages];
+        // Append AI SDK-formatted response messages for next step's context.
+        // Filter out empty text content blocks — Anthropic API rejects them.
+        const cleaned = result.response.messages.map((msg: any) => {
+          if (Array.isArray(msg.content)) {
+            const filtered = msg.content.filter((block: any) =>
+              block.type !== 'text' || (block.text && block.text.length > 0),
+            );
+            return { ...msg, content: filtered.length > 0 ? filtered : msg.content };
+          }
+          return msg;
+        });
+        messages = [...messages, ...cleaned];
       }
 
       return { response: '', toolCalls: allToolCalls };
