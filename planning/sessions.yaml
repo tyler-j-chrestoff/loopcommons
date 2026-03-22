@@ -4,21 +4,6 @@
 
 planned:
   # --- arena-observatory milestone (the microscope) ---
-  - id: 49
-    title: "Observatory — Capture step traces"
-    milestone: arena-observatory
-    status: planned
-    goal: "Persist per-agent per-encounter step traces via executeEncounter callback. Every tool call hits disk. The data foundation for everything visual."
-    phases:
-      - name: "Research + callback design"
-        tasks: [st-01]
-        status: planned
-      - name: "executeEncounter callback + trace writer"
-        tasks: [st-02, st-03]
-        status: planned
-      - name: "Wire into tournament runner + tests"
-        tasks: [st-04, st-05]
-        status: planned
   - id: 50
     title: "Observatory — Tournament browser"
     milestone: arena-observatory
@@ -130,6 +115,46 @@ planned:
         status: planned
 
 completed:
+  - id: 49
+    title: "Observatory — Capture step traces"
+    date: 2026-03-22
+    milestone: arena-observatory
+    status: done
+    goal: "Persist per-agent per-encounter step traces via executeEncounter callback. Every tool call hits disk. The data foundation for everything visual."
+    phases:
+      - name: "Research + callback design"
+        tasks: [st-01]
+        status: done
+      - name: "executeEncounter callback + trace writer"
+        tasks: [st-02, st-03]
+        status: done
+      - name: "Wire into tournament runner + tests"
+        tasks: [st-04, st-05]
+        status: done
+    summary: |
+      All 5 tasks done across 3 phases.
+
+      SHIPPED:
+      - TraceWriter module: createTraceWriter(tournamentDir) writes per-agent per-encounter JSONL
+      - Trace format: metadata header (resolved, score, death info, response) + one line per step
+      - onEncounterComplete callback on TaskBatteryConfig — fires after each encounter with full ExecuteEncounterOutput
+      - Web tournament-runner.ts wired: every tournament encounter now persists step traces to disk
+      - Directory: data/arena/tournaments/{id}/traces/{agentId}/{encounterId}.jsonl
+      - Exported from @loopcommons/llm/arena/tournament: createTraceWriter, TraceWriter, OnEncounterComplete
+      - 8 new tests (5 trace-writer, 2 task-battery callback, 1 integration wiring)
+      - All 68 tournament tests pass, zero new type errors
+
+      KEY DECISIONS:
+      - Callback lives at task battery level (not executeEncounter) because it needs agentId context
+      - Keeps executeEncounter unchanged — zero impact on existing callers
+      - Synchronous write (not async) since encounter execution is already sequential per agent
+      - Metadata header line + step lines (not nested JSON) for streaming/grep friendliness
+
+      UNBLOCKED:
+      - Session 50 (tournament browser) can now read trace files from disk
+      - Session 51 (encounter replay) has step-level data to render
+      - Session 52 (graveyard) can score death interestingness from trace metadata
+
   - id: 48
     title: "Arena Platform — Real-time API + encounter DSL"
     date: 2026-03-21

@@ -32,3 +32,5 @@ export {
 } from './population';
 export { createTournamentWriter } from './writer';
 export type { TournamentWriter } from './writer';
+export { createTraceWriter } from './trace-writer';
+export type { TraceWriter, OnEncounterComplete } from './trace-writer';

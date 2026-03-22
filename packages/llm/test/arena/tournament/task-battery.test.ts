@@ -125,6 +125,44 @@ describe('task battery', () => {
       expect(receivedManaConfig).toBeUndefined();
     });
 
+    it('calls onEncounterComplete for each encounter when provided', async () => {
+      const completions: Array<{ agentId: string; encounterId: string }> = [];
+
+      const battery = createTaskBattery({
+        encounters: [mockEncounter, { ...mockEncounter, id: 'test-e2' }],
+        agentFnFactory: () => vi.fn().mockResolvedValue({
+          response: 'Fixed.',
+          toolCalls: [
+            { toolName: 'inspect', input: { target: 'x' }, output: 'ok' },
+          ],
+        }),
+        maxStepsPerEncounter: 10,
+        onEncounterComplete: (agentId, encounterId, output) => {
+          completions.push({ agentId, encounterId });
+          expect(output.steps).toBeDefined();
+          expect(output.encounterResult).toBeDefined();
+          expect(output.death).toBeDefined();
+        },
+      });
+
+      await battery.evaluate(mockAgent);
+
+      expect(completions).toHaveLength(2);
+      expect(completions[0]).toEqual({ agentId: 'agent-1', encounterId: 'test-e1' });
+      expect(completions[1]).toEqual({ agentId: 'agent-1', encounterId: 'test-e2' });
+    });
+
+    it('works without onEncounterComplete (backward compat)', async () => {
+      const battery = createTaskBattery({
+        encounters: [mockEncounter],
+        agentFnFactory: () => vi.fn().mockResolvedValue({ response: '', toolCalls: [] }),
+        maxStepsPerEncounter: 10,
+      });
+
+      const results = await battery.evaluate(mockAgent);
+      expect(results.length).toBe(1);
+    });
+
     it('isolates encounters (fresh sandbox per encounter)', async () => {
       const setups: number[] = [];
       const encounter: EncounterConfig = {

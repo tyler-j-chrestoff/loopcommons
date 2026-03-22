@@ -58,11 +58,25 @@ export async function runTournamentAsync(opts: RunTournamentOptions): Promise<vo
       ? (agent: TournamentAgent) => createMockAgentFn(agent)
       : await createLiveAgentFnFactory();
 
+    // Persist every event + step traces to disk — traces are the primary artifact
+    const { createTournamentWriter, createTraceWriter } = await import('@loopcommons/llm/arena/tournament');
+    const dataDir = resolve(
+      process.env.SESSION_DATA_DIR ?? process.cwd(),
+      'data/arena/tournaments',
+      opts.tournamentId,
+    );
+    const writer = createTournamentWriter(dataDir);
+    const eventSink = writer.createEventSink();
+    const traceWriter = createTraceWriter(dataDir);
+
     const battery = createTaskBattery({
       encounters: allEncounters,
       agentFnFactory,
       maxStepsPerEncounter: 10,
       manaConfig,
+      onEncounterComplete: (agentId, encounterId, output) => {
+        traceWriter.writeTrace(agentId, encounterId, output);
+      },
     });
 
     const config: TournamentConfig = {
@@ -97,16 +111,6 @@ export async function runTournamentAsync(opts: RunTournamentOptions): Promise<vo
       tools: seedCompositions[i % seedCompositions.length],
       memoryState: '[]',
     }));
-
-    // Persist every event to disk — tournament traces are the primary artifact
-    const { createTournamentWriter } = await import('@loopcommons/llm/arena/tournament');
-    const dataDir = resolve(
-      process.env.SESSION_DATA_DIR ?? process.cwd(),
-      'data/arena/tournaments',
-      opts.tournamentId,
-    );
-    const writer = createTournamentWriter(dataDir);
-    const eventSink = writer.createEventSink();
 
     const tournament = createTournament(config, {
       evaluateAgent: (agent) => battery.evaluate(agent),
