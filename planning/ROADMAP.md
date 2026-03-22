@@ -6,7 +6,7 @@ This is "Consciousness as Variational Inference" applied to agent architecture. 
 
 Everything below serves this thesis. The platform generates open-source training data as a side effect of testing it.
 
-**Active milestone**: [arena-platform](milestones/arena-platform/)
+**Active milestone**: [arena-observatory](milestones/arena-observatory/)
 
 ---
 
@@ -23,7 +23,9 @@ Each milestone proves a stronger claim about the thesis. Each is independently u
 | 5 | [attested-lineage](milestones/attested-lineage/) | Identity derivations are content-addressed and carry ancestry | 1 ✓ |
 | 6 | [roguelike-v1](milestones/roguelike-v1/) | Tool acquisition order produces measurably different agents (path dependence) | 3 ✓ |
 | 7 | [agent-arena](milestones/agent-arena/) | Evolution over attested compositions discovers identities that hand-design can't | 2-3 ✓ |
-| 8 | [arena-platform](milestones/arena-platform/) | Co-evolving communities of agents, encounters, and evaluators — the community is the unit of evolution | 3-4 |
+| 8a | [arena-platform](milestones/arena-platform/) (infra) | SSE streaming, agent tooling, encounter DSL — the arena becomes composable | 1 ✓ |
+| 8b | [arena-observatory](milestones/arena-observatory/) | The data is self-explanatory — traces, replays, and failures visible to any visitor | 3-5 |
+| 8c | [arena-platform](milestones/arena-platform/) (science) | Co-evolving communities of agents, encounters, and evaluators | 3 |
 
 ```
 derived-prompts (done) → memory-contract (done)
@@ -40,7 +42,11 @@ derived-prompts (done) → memory-contract (done)
                               ↓
                     agent-arena (informed by results)
                               ↓
-                    arena-platform (co-evolution)
+                    arena-platform infra (SSE, DSL, tooling)
+                              ↓
+                    arena-observatory (the microscope)
+                              ↓
+                    arena-platform science (co-evolution)
 ```
 
 Memory-contract formalizes memory as a construction-time invariant before core extraction. Attested-lineage needs core extraction (the canonical derivation path must be clean before you hash it) but not CLI. CLI doesn't need lineage chains. Roguelike-v1 needs attested lineage (identity hashes at every state transition). Its results determine what kind of arena to build: if path dependence is real, evolution operates over acquisition sequences; if not, standard population-based selection is sufficient. See `planning/memos/MOBIUS_PRINCIPLE.md`.

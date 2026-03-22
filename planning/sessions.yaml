@@ -3,7 +3,84 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
+  # --- arena-observatory milestone (the microscope) ---
   - id: 49
+    title: "Observatory — Capture step traces"
+    milestone: arena-observatory
+    status: planned
+    goal: "Persist per-agent per-encounter step traces via executeEncounter callback. Every tool call hits disk. The data foundation for everything visual."
+    phases:
+      - name: "Research + callback design"
+        tasks: [st-01]
+        status: planned
+      - name: "executeEncounter callback + trace writer"
+        tasks: [st-02, st-03]
+        status: planned
+      - name: "Wire into tournament runner + tests"
+        tasks: [st-04, st-05]
+        status: planned
+  - id: 50
+    title: "Observatory — Tournament browser"
+    milestone: arena-observatory
+    status: planned
+    goal: "Visitor lands on /arena, sees the latest tournament results. Heatmap, featured death, past tournaments. No explainer text — the data is the explanation."
+    phases:
+      - name: "Tournament data loader + API endpoints"
+        tasks: [tb-01, tb-02, tb-03]
+        status: planned
+      - name: "Results-first /arena redesign"
+        tasks: [tb-04, tb-05, tb-06]
+        status: planned
+      - name: "Tests"
+        tasks: [tb-07]
+        status: planned
+  - id: 51
+    title: "Observatory — Encounter replay"
+    milestone: arena-observatory
+    status: planned
+    goal: "Click a heatmap cell, watch the agent think step by step. Tool calls, inputs, outputs, death moment. This is where the 'aha' happens."
+    phases:
+      - name: "Trace API endpoint"
+        tasks: [er-01]
+        status: planned
+      - name: "Replay timeline + death marker"
+        tasks: [er-02, er-03]
+        status: planned
+      - name: "Wire into heatmap + tests"
+        tasks: [er-04, er-05]
+        status: planned
+  - id: 52
+    title: "Observatory — The graveyard"
+    milestone: arena-observatory
+    status: planned
+    goal: "Dead agents as first-class content. Sorted by most interesting death. Epitaphs. Shareable cards. Failure is the hero."
+    phases:
+      - name: "Interestingness scoring + epitaph generator"
+        tasks: [gy-01, gy-02]
+        status: planned
+      - name: "Graveyard API + death card component"
+        tasks: [gy-03, gy-04]
+        status: planned
+      - name: "Tests"
+        tasks: [gy-05]
+        status: planned
+  - id: 53
+    title: "Observatory — Chat traces (deferred)"
+    milestone: arena-observatory
+    status: planned
+    goal: "Chat sessions appear alongside tournament traces. Same replay component. Unified trace format. Ships after tournament format is proven."
+    phases:
+      - name: "Research unified trace schema"
+        tasks: [ct-01]
+        status: planned
+      - name: "Chat adapter + UI integration"
+        tasks: [ct-02, ct-03]
+        status: planned
+      - name: "Tests"
+        tasks: [ct-04]
+        status: planned
+  # --- arena-platform science resumes ---
+  - id: 54
     title: "Arena Platform — Encounter families + anchor protocol"
     milestone: arena-platform
     status: planned
@@ -18,7 +95,7 @@ planned:
       - name: "Tests + validation"
         tasks: [ef-05]
         status: planned
-  - id: 50
+  - id: 55
     title: "Arena Platform — Community fitness"
     milestone: arena-platform
     status: planned
@@ -33,7 +110,7 @@ planned:
       - name: "Museum of beautiful failures + pilot"
         tasks: [cf-05, cf-06, cf-07]
         status: planned
-  - id: 51
+  - id: 56
     title: "Arena Platform — Evaluator co-evolution + skeptic lineage"
     milestone: arena-platform
     status: planned
