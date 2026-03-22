@@ -95,6 +95,14 @@ export type TournamentAgentSummary = {
 export type TournamentFitnessSummary = {
   agentId: string;
   fitnessScore: number;
+  taskResults?: Array<{
+    encounterId: string;
+    resolved: boolean;
+    score: number;
+    stepCount: number;
+    died: boolean;
+    costEstimate: number;
+  }>;
   metrics: {
     completionRate: number;
     meanScore: number;

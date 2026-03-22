@@ -21,44 +21,50 @@ class MockEventSource {
 describe('ArenaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: no active tournament
-    mockFetch.mockResolvedValue({ ok: false, status: 404, json: async () => ({ active: false }) });
-  });
-
-  it('renders arena heading after loading', async () => {
-    render(<ArenaPage />);
-    await waitFor(() => {
-      expect(screen.getByText('Arena Tournament')).toBeInTheDocument();
+    // Default: no active tournament, no past tournaments
+    mockFetch.mockImplementation(async (url: string) => {
+      if (url.includes('/current')) {
+        return { ok: false, status: 404, json: async () => ({ active: false }) };
+      }
+      if (url === '/api/arena/tournaments') {
+        return { ok: true, json: async () => [] };
+      }
+      return { ok: false, status: 404, json: async () => ({}) };
     });
   });
 
-  it('shows start and mock buttons', async () => {
+  it('shows empty state with start buttons when no tournaments', async () => {
     render(<ArenaPage />);
     await waitFor(() => {
-      expect(screen.getByText('Live Tournament')).toBeInTheDocument();
+      expect(screen.getByText(/no tournaments yet/i)).toBeInTheDocument();
+      expect(screen.getByText('Run Tournament')).toBeInTheDocument();
       expect(screen.getByText('Mock Tournament')).toBeInTheDocument();
     });
   });
 
   it('reconnects to existing tournament on load', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ active: true, tournamentId: 't-existing', status: 'running' }),
-    });
-    // Subsequent fetches for TournamentLive component
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        tournamentId: 't-existing',
-        status: 'running',
-        generation: 0,
-        population: [],
-        fitness: [],
-        bestFitness: 0,
-        bestAgent: null,
-        startedAt: '2026-01-01',
-        error: null,
-      }),
+    mockFetch.mockImplementation(async (url: string) => {
+      if (url.includes('/current')) {
+        return { ok: true, json: async () => ({ active: true, tournamentId: 't-existing', status: 'running' }) };
+      }
+      if (url === '/api/arena/tournaments') {
+        return { ok: true, json: async () => [] };
+      }
+      // TournamentLive state fetch
+      return {
+        ok: true,
+        json: async () => ({
+          tournamentId: 't-existing',
+          status: 'running',
+          generation: 0,
+          population: [],
+          fitness: [],
+          bestFitness: 0,
+          bestAgent: null,
+          startedAt: '2026-01-01',
+          error: null,
+        }),
+      };
     });
 
     render(<ArenaPage />);
