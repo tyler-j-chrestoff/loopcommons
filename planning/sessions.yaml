@@ -3,25 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- system validation (shake the whole tree) ---
-  - id: 53
-    title: "System validation — shake the whole tree"
-    milestone: arena-observatory
-    status: planned
-    goal: "End-to-end audit of loopcommons as deployed. Every API, every route, every agent capability. Produce a findings list: what works, what's dark, what's broken."
-    phases:
-      - name: "Inventory"
-        tasks: [sv-01, sv-02]
-        status: planned
-      - name: "Live walkthrough"
-        tasks: [sv-03, sv-04, sv-05]
-        status: planned
-      - name: "Security + pipeline + CLI"
-        tasks: [sv-06, sv-07, sv-08]
-        status: planned
-      - name: "Findings report"
-        tasks: [sv-09]
-        status: planned
   # --- arena-observatory milestone (deferred) ---
   - id: 54
     title: "Observatory — Chat traces (deferred)"
@@ -89,6 +70,35 @@ planned:
         status: planned
 
 completed:
+  - id: 53
+    title: "System validation — shake the whole tree"
+    date: 2026-03-22
+    milestone: arena-observatory
+    status: done
+    goal: "End-to-end audit of loopcommons as deployed. Every API, every route, every agent capability. Produce a findings list: what works, what's dark, what's broken."
+    summary: |
+      Full system audit completed. No fixes — findings only.
+
+      FINDINGS:
+      - 21 API endpoints (5 dark), 6 routes (1 unlinked), 20 agent tools, 7 subagents, ~1877 tests
+      - 20 confirmed working flows (SSE, amygdala, routing, auth, memory gating, pipeline, arena lifecycle)
+      - 2 broken: heatmap empty on cold start (taskResults not persisted), api-chat.test.ts mock mismatch
+      - 9 dark features: health endpoint, memory API, legacy metrics, encounter CRUD endpoints, arena query tools missing from CLI
+      - 10 surprising behaviors: CLI lacks rate limiting/sanitization/streaming, raw errors to disk, injection-as-quote bypass
+
+      DECISIONS:
+      - Heatmap rehydration is highest priority fix (hero component broken for historical tournaments)
+      - CLI is a dev tool, not production — parity gaps acceptable for now
+      - All 6 security claims verified correct
+      - Pipeline is clean end-to-end with checksummed exports
+
+      SHIPPED:
+      - system-validation-findings.md (categorized findings report)
+
+      UNBLOCKED:
+      - Session 54 (chat traces) ready
+      - Sessions 55-57 (arena-platform science) ready
+      - Heatmap rehydration can be a targeted fix session
   - id: 52.5
     title: "Session planning — system validation"
     date: 2026-03-22
