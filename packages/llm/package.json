@@ -5,7 +5,9 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./blog/types": "./src/blog/types.ts"
+    "./blog/types": "./src/blog/types.ts",
+    "./arena": "./src/arena/index.ts",
+    "./arena/tournament": "./src/arena/tournament/index.ts"
   },
   "scripts": {
     "build": "tsc",

@@ -3,21 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 48
-    title: "Arena Platform — Real-time API + encounter DSL"
-    milestone: arena-platform
-    status: planned
-    goal: "SSE tournament streaming, queryArena agent tool, YAML encounter DSL. The arena becomes observable and composable."
-    phases:
-      - name: "SSE tournament streaming endpoint"
-        tasks: [rt-01, rt-02, rt-03, rt-04, rt-05, rt-06]
-        status: planned
-      - name: "queryArena ToolPackage"
-        tasks: [at-01, at-02, at-03]
-        status: planned
-      - name: "Encounter DSL (YAML → EncounterConfig)"
-        tasks: [dsl-01, dsl-02, dsl-03, dsl-04, dsl-05]
-        status: planned
   - id: 49
     title: "Arena Platform — Encounter families + anchor protocol"
     milestone: arena-platform
@@ -68,6 +53,58 @@ planned:
         status: planned
 
 completed:
+  - id: 48
+    title: "Arena Platform — Real-time API + encounter DSL"
+    date: 2026-03-21
+    milestone: arena-platform
+    status: done
+    goal: "SSE tournament streaming, queryArena agent tool, YAML encounter DSL. The arena becomes observable and composable."
+    phases:
+      - name: "SSE tournament streaming endpoint"
+        tasks: [rt-01, rt-02, rt-03, rt-04, rt-05, rt-06]
+        status: done
+      - name: "queryArena ToolPackage"
+        tasks: [at-01, at-02, at-03]
+        status: done
+      - name: "Encounter DSL (YAML → EncounterConfig)"
+        tasks: [dsl-01, dsl-02, dsl-03, dsl-04, dsl-05]
+        status: done
+    summary: |
+      All 14 tasks done across 3 stories. 3 phases complete.
+
+      SHIPPED:
+      - Tournament manager singleton: server-side state management with SSE pub/sub, one-at-a-time concurrency
+      - POST /api/arena/tournament: start tournament (live or mock), returns tournamentId
+      - GET /api/arena/tournament/:id/stream: SSE event stream of TournamentEvents
+      - GET /api/arena/tournament/:id/state: JSON snapshot (generation, population, fitness, best agent)
+      - GET /api/arena/tournament/current: reconnect after page reload
+      - TournamentLive component: fitness chart, population grid, encounter results heatmap, event log
+      - /arena page: start/mock buttons, streaming indicator, reconnect-on-reload
+      - Tournament persistence: every event fsync'd to data/arena/tournaments/{id}/ via TournamentWriter
+      - Disk rehydration: manager loads most recent tournament from JSONL on cold start
+      - queryArena ToolPackage: 3 read-only tools (queryTournament, listTournaments, compareFitness)
+      - Wired into agent core in route.ts
+      - Encounter DSL: Zod schema, YAML → EncounterConfig compiler, safe condition evaluator
+      - E1 equivalence test: YAML-compiled E1 matches hand-coded across all 4 scoring tiers
+      - GET/POST /api/arena/encounters: list and create YAML encounters
+      - @loopcommons/llm package.json: added ./arena and ./arena/tournament export paths
+
+      BUGS FOUND + FIXED:
+      - Live tournament button froze site: createLiveAgentFn triggered heavy import chain + missing API key caused slow cascade. Fixed with fail-fast API key check.
+      - Page reload lost tournament state: added /current endpoint + disk rehydration from JSONL
+      - Per-encounter results grid missing from original component: added heatmap table
+
+      KEY DECISIONS:
+      - JSONL over SQLite: SQLite native bindings break Next.js build (same as DuckDB). JSONL is the pipeline interchange format by design.
+      - Tournament data is the primary artifact (not ephemeral state). Dead agent traces are more informative than winners.
+      - Per-tournament directories: data/arena/tournaments/{id}/ with events.jsonl + generations.jsonl
+
+      OPEN ITEM:
+      - Tournament history browser UI needed. Users of the site should be able to browse all past tournaments, drill into agents, see dead lineages. This is the museum of beautiful failures made visible.
+
+      TESTS: 51 new web tests (8 files), 26 new llm tests (2 files). Total: 77 new tests.
+      Web: 527 passing (1 pre-existing failure). LLM: 1114 passing.
+
   - id: 47
     title: "Agent Arena — Evaluator redesign + thesis revalidation"
     date: 2026-03-21

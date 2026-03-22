@@ -54,6 +54,8 @@ export type { ArenaToolConfig } from './tool-packages';
 export { createLiveAgentFn, createLiveLlmFn } from './live-agent';
 export { computeSystemHealth } from './cascade-scoring';
 export type { SystemHealthVector, CouplingPoint, ConfigCoherenceCheck } from './cascade-scoring';
+export { parseEncounterYaml, compileEncounter, compileEncounterFromYaml } from './encounter-dsl';
+export type { EncounterYaml } from './encounter-dsl';
 export {
   formatRunTable,
   formatApproachDistribution,

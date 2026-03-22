@@ -11,6 +11,8 @@ import { createKeywordMemoryPackage } from '@loopcommons/memory/keyword';
 import { createResumePackage } from '@/tools/resume';
 import { createProjectPackage } from '@/tools/project';
 import { createBlogToolPackage } from '@/tools/blog';
+import { createArenaQueryPackage } from '@/tools/arena-query';
+import { getTournamentManager } from '@/lib/tournament-manager';
 import { checkRateLimit, acquireConnection, releaseConnection, getClientIp, getRateLimitStatus } from '@/lib/rate-limit';
 import { sanitizeInput, containsRoleSpoofing } from '@/lib/sanitize';
 import { canSpend, recordSpend, getSpendStatus } from '@/lib/spend-tracker';
@@ -45,7 +47,13 @@ const memoryPackage = createKeywordMemoryPackage({
   getThreatScore: () => currentRequestThreatScore,
 });
 
-const toolPackages = [resumePackage, projectPackage, blogPackage, memoryPackage];
+const arenaManager = getTournamentManager();
+const arenaPackage = createArenaQueryPackage({
+  getSnapshot: () => arenaManager.getSnapshot(),
+  getStatus: () => arenaManager.getStatus(),
+});
+
+const toolPackages = [resumePackage, projectPackage, blogPackage, memoryPackage, arenaPackage];
 
 const agentCore = createAgentCore({
   toolPackages,
