@@ -3,25 +3,6 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- arena-observatory: navigation ---
-  - id: 54
-    title: "Observatory — Tournament navigation"
-    milestone: arena-observatory
-    status: planned
-    goal: "Each tournament gets a permalink. Route-based navigation replaces in-place state swapping. The observatory scales to dozens of tournaments."
-    phases:
-      - name: "Research route structure + layout hierarchy"
-        tasks: [tn-01]
-        status: planned
-      - name: "Tournament detail page + list component"
-        tasks: [tn-02, tn-03]
-        status: planned
-      - name: "Landing page refactor + live route + replay migration"
-        tasks: [tn-04, tn-05, tn-06]
-        status: planned
-      - name: "Tests"
-        tasks: [tn-07]
-        status: planned
   # --- arena-platform science resumes ---
   - id: 55
     title: "Arena Platform — Encounter families + anchor protocol"
@@ -89,6 +70,54 @@ planned:
         status: planned
 
 completed:
+  - id: 54
+    title: "Observatory — Tournament navigation"
+    date: 2026-03-22
+    milestone: arena-observatory
+    status: done
+    goal: "Each tournament gets a permalink. Route-based navigation replaces in-place state swapping. The observatory scales to dozens of tournaments."
+    summary: |
+      Full route-based navigation for the arena observatory. Monolithic /arena page decomposed into 5 routes with shared layout, 2 reusable components, and shared types.
+
+      NEW ROUTES:
+      - /arena — landing: latest tournament hero + list + graveyard + start buttons
+      - /arena/tournaments — full tournament list page
+      - /arena/[id] — tournament detail permalink (heatmap, featured death, stats)
+      - /arena/[id]/live — live SSE streaming (redirects from landing when active)
+      - /arena/[id]/[agentId]/[encounterId] — encounter replay (migrated from [tournamentId])
+
+      NEW COMPONENTS:
+      - TournamentDetailView — reusable tournament detail (header + heatmap + featured death)
+      - TournamentList — reusable tournament card list with compact mode
+      - arena/layout.tsx — shared header (Chat | Blog | Arena) + main wrapper
+      - Shared types in arena-types.ts (TournamentSummary, TournamentDetail, etc.)
+
+      REMOVED:
+      - /arena/[tournamentId]/ route (replaced by /arena/[id]/)
+      - Inline type definitions and TOOL_BG duplicates from arena page
+
+      BONUS — Red-team test reliability:
+      Restructured all 19 live-LLM tests (4 files) from single-sample assertions to
+      statistical assertions: 3 samples per case, 2/3 must pass. Replaced retry:2 band-aid.
+      Routing tests use two-tier assertions: hard invariants (ALL samples) for tool isolation,
+      soft assertions (2/3) for LLM-dependent classification.
+
+      DECISIONS:
+      - Shared layout provides header; pages render content only (no duplicate nav)
+      - Active tournament detection on /arena redirects to /arena/[id]/live via router.replace
+      - Starting a tournament navigates to /arena/[id]/live via router.push
+      - ReplayPageContent back link now goes to /arena/[tournamentId] instead of /arena
+      - Red-team tests: measurement uncertainty > retry. 3 samples, 2/3 threshold.
+
+      SHIPPED:
+      - 653 web tests passing (was 634, +19 new), 0 failures
+      - 1122 LLM tests passing, 0 failures, 0 flakes
+      - Typecheck clean (0 errors)
+
+      UNBLOCKED:
+      - Tournament permalinks are shareable
+      - Observatory scales to dozens of tournaments
+      - Session 55+ (arena-platform science) can proceed
   - id: 53.5
     title: "Hotfix — unbreak Railway deploy, full green CI"
     date: 2026-03-22

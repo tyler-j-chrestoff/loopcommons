@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 
+const mockReplace = vi.fn();
+const mockPush = vi.fn();
+
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace, back: vi.fn() }),
 }));
 
 import ArenaPage from '@/app/arena/page';
@@ -14,19 +17,9 @@ afterEach(() => {
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Mock EventSource
-class MockEventSource {
-  onmessage: ((msg: { data: string }) => void) | null = null;
-  onerror: (() => void) | null = null;
-  close = vi.fn();
-  constructor(public url: string) {}
-}
-(global as any).EventSource = MockEventSource;
-
 describe('ArenaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: no active tournament, no past tournaments
     mockFetch.mockImplementation(async (url: string) => {
       if (url.includes('/current')) {
         return { ok: false, status: 404, json: async () => ({ active: false }) };
@@ -47,7 +40,7 @@ describe('ArenaPage', () => {
     });
   });
 
-  it('reconnects to existing tournament on load', async () => {
+  it('redirects to live route when active tournament detected', async () => {
     mockFetch.mockImplementation(async (url: string) => {
       if (url.includes('/current')) {
         return { ok: true, json: async () => ({ active: true, tournamentId: 't-existing', status: 'running' }) };
@@ -55,35 +48,91 @@ describe('ArenaPage', () => {
       if (url === '/api/arena/tournaments') {
         return { ok: true, json: async () => [] };
       }
-      // TournamentLive state fetch
-      return {
-        ok: true,
-        json: async () => ({
-          tournamentId: 't-existing',
-          status: 'running',
-          generation: 0,
-          population: [],
-          fitness: [],
-          bestFitness: 0,
-          bestAgent: null,
-          startedAt: '2026-01-01',
-          error: null,
-        }),
-      };
+      return { ok: false, status: 404, json: async () => ({}) };
     });
 
     render(<ArenaPage />);
     await waitFor(() => {
-      expect(screen.getByText(/Tournament t-existi/)).toBeInTheDocument();
+      expect(mockReplace).toHaveBeenCalledWith('/arena/t-existing/live');
     });
   });
 
-  it('has navigation links', async () => {
+  it('loads latest tournament detail as hero', async () => {
+    const mockDetail = {
+      id: 'latest-123',
+      generations: [{
+        generation: 0,
+        populationSize: 4,
+        agents: [{ id: 'a1', tools: ['inspect'] }],
+        fitness: [{
+          agentId: 'a1',
+          fitnessScore: 0.8,
+          taskResults: [{ encounterId: 'e1', resolved: true, score: 0.8, stepCount: 3, died: false, costEstimate: 0.01 }],
+        }],
+      }],
+      complete: { bestFitness: 0.8, winnerId: 'a1', winnerTools: ['inspect'] },
+    };
+
+    mockFetch.mockImplementation(async (url: string) => {
+      if (url.includes('/current')) {
+        return { ok: false, status: 404, json: async () => ({ active: false }) };
+      }
+      if (url === '/api/arena/tournaments') {
+        return {
+          ok: true,
+          json: async () => [{
+            id: 'latest-123', status: 'complete', generationCount: 1, agentCount: 4,
+            bestFitness: 0.8, winnerId: 'a1', winnerTools: ['inspect'],
+            startedAt: '2026-03-20T10:00:00Z', completedAt: '2026-03-20T10:05:00Z',
+          }],
+        };
+      }
+      if (url === '/api/arena/tournaments/latest-123') {
+        return { ok: true, json: async () => mockDetail };
+      }
+      return { ok: false, status: 404, json: async () => ({}) };
+    });
+
     render(<ArenaPage />);
     await waitFor(() => {
-      expect(screen.getByText('Chat')).toBeInTheDocument();
-      expect(screen.getByText('Blog')).toBeInTheDocument();
-      expect(screen.getByText('Arena')).toBeInTheDocument();
+      expect(screen.getByText(/latest-1/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows past tournaments list when more than one', async () => {
+    const mockDetail = {
+      id: 'latest-123',
+      generations: [{
+        generation: 0, populationSize: 2,
+        agents: [{ id: 'a1', tools: ['act'] }],
+        fitness: [{ agentId: 'a1', fitnessScore: 0.5, taskResults: [] }],
+      }],
+      complete: { bestFitness: 0.5, winnerId: 'a1', winnerTools: ['act'] },
+    };
+
+    mockFetch.mockImplementation(async (url: string) => {
+      if (url.includes('/current')) {
+        return { ok: false, status: 404, json: async () => ({ active: false }) };
+      }
+      if (url === '/api/arena/tournaments') {
+        return {
+          ok: true,
+          json: async () => [
+            { id: 'latest-123', status: 'complete', generationCount: 1, agentCount: 2, bestFitness: 0.5, winnerId: 'a1', winnerTools: ['act'], startedAt: null, completedAt: null },
+            { id: 'older-456', status: 'complete', generationCount: 3, agentCount: 4, bestFitness: 0.7, winnerId: 'a2', winnerTools: ['search'], startedAt: null, completedAt: null },
+          ],
+        };
+      }
+      if (url.includes('/api/arena/tournaments/latest-123')) {
+        return { ok: true, json: async () => mockDetail };
+      }
+      return { ok: false, status: 404, json: async () => ({}) };
+    });
+
+    render(<ArenaPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/Past Tournaments/)).toBeInTheDocument();
+      expect(screen.getByText(/older-45/)).toBeInTheDocument();
     });
   });
 });

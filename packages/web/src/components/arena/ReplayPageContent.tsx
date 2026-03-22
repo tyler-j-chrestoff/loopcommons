@@ -52,7 +52,7 @@ export function ReplayPageContent({ tournamentId, agentId, encounterId }: Replay
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <a href="/arena" className="text-xs text-text-secondary hover:text-accent transition-colors">
+        <a href={`/arena/${tournamentId}`} className="text-xs text-text-secondary hover:text-accent transition-colors">
           ← Back
         </a>
         <span className="text-xs text-text-muted font-mono">

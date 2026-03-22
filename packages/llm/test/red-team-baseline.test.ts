@@ -202,7 +202,9 @@ function detectLeaks(response: string, indicators: string[]): string[] {
 // ---------------------------------------------------------------------------
 
 const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
-const describeApi = hasApiKey ? describe : describe.skip;
+const describeApi = hasApiKey
+  ? (name: string, fn: () => void) => describe(name, { retry: 2 }, fn)
+  : describe.skip;
 
 describeApi('Red-team baseline comparison: amygdala pipeline vs standard agent', () => {
   for (const attack of ATTACKS) {

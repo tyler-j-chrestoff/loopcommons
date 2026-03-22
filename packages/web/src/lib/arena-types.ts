@@ -169,3 +169,60 @@ export const EVENT_SHAPES: Record<string, { shape: string; color: string }> = {
   'encounter:step': { shape: 'dot', color: 'bg-cyan-500' },
   'agent:response': { shape: 'dot', color: 'bg-green-400' },
 };
+
+// ---------------------------------------------------------------------------
+// Arena page component types
+// ---------------------------------------------------------------------------
+
+export type TournamentSummary = {
+  id: string;
+  status: string;
+  generationCount: number;
+  agentCount: number;
+  bestFitness: number;
+  winnerId: string | null;
+  winnerTools: string[] | null;
+  startedAt: string | null;
+  completedAt: string | null;
+};
+
+export type TaskResult = {
+  encounterId: string;
+  resolved: boolean;
+  score: number;
+  stepCount: number;
+  died: boolean;
+  costEstimate: number;
+};
+
+export type AgentSummary = { id: string; tools: string[] };
+
+export type FitnessResult = {
+  agentId: string;
+  fitnessScore: number;
+  taskResults: TaskResult[];
+};
+
+export type GenerationData = {
+  generation: number;
+  populationSize: number;
+  agents: AgentSummary[];
+  fitness: FitnessResult[];
+};
+
+export type TournamentDetail = {
+  id: string;
+  generations: GenerationData[];
+  complete: {
+    bestFitness: number;
+    winnerId: string | null;
+    winnerTools: string[] | null;
+  } | null;
+};
+
+export const TOOL_BG: Record<string, string> = {
+  inspect: 'bg-cyan-100 text-cyan-700',
+  act: 'bg-red-100 text-red-700',
+  search: 'bg-yellow-100 text-yellow-700',
+  model: 'bg-purple-100 text-purple-700',
+};

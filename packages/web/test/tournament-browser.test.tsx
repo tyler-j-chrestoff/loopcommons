@@ -209,15 +209,15 @@ describe('ArenaPage (results-first)', () => {
     });
   });
 
-  it('has navigation links', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: false, status: 404, json: async () => ({ active: false }) });
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
-
-    render(<ArenaPage />);
-    await waitFor(() => {
-      expect(screen.getByText('Chat')).toBeInTheDocument();
-      expect(screen.getByText('Blog')).toBeInTheDocument();
-      expect(screen.getByText('Arena')).toBeInTheDocument();
-    });
+  it('has navigation links via layout', async () => {
+    const ArenaLayout = (await import('@/app/arena/layout')).default;
+    render(
+      <ArenaLayout>
+        <div>child</div>
+      </ArenaLayout>,
+    );
+    expect(screen.getByText('Chat')).toBeInTheDocument();
+    expect(screen.getByText('Blog')).toBeInTheDocument();
+    expect(screen.getByText('Arena')).toBeInTheDocument();
   });
 });
