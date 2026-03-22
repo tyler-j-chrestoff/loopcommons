@@ -101,6 +101,8 @@ describe('updatePost', () => {
     const original = await store.createDraft('update-me', 'Original', 'Old content');
     const originalCreatedAt = original.createdAt;
 
+    // Ensure updatedAt differs from createdAt (ISO timestamps have ms resolution)
+    await new Promise(r => setTimeout(r, 10));
     const updated = await store.updatePost('update-me', { content: 'New content' });
     expect(updated.content).toBe('New content');
     expect(updated.title).toBe('Original');

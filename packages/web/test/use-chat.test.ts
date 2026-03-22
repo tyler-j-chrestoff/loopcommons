@@ -452,7 +452,7 @@ describe('useChat', () => {
   // 11. stop() aborts the request
   it('stop() aborts the in-flight request and sets isLoading false', async () => {
     // Create a stream that never closes, so we can abort it
-    let streamController: ReadableStreamDefaultController | null = null;
+    let streamController: ReadableStreamDefaultController<Uint8Array> | null = null;
     const stream = new ReadableStream({
       start(controller) {
         streamController = controller;
@@ -497,7 +497,7 @@ describe('useChat', () => {
 
     // Clean up the stream controller
     try {
-      streamController?.close();
+      (streamController as ReadableStreamDefaultController<Uint8Array> | null)?.close();
     } catch {
       // stream may already be errored from abort
     }

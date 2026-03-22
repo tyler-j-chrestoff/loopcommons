@@ -50,7 +50,7 @@ export function RunReplay({ events }: RunReplayProps) {
             {death.cause as string}
           </span>
         )}
-        {complete?.isVictory && (
+        {Boolean(complete?.isVictory) && (
           <span className="text-green-600 font-medium">Victory</span>
         )}
       </div>
@@ -240,8 +240,8 @@ function DeathDetail({ event }: { event: ArenaEvent }) {
   return (
     <div className="rounded-lg bg-bg-surface p-3 text-xs space-y-1">
       <div className="font-medium text-red-600">Death: {event.cause as string}</div>
-      {event.details && <div className="text-text-secondary">{event.details as string}</div>}
-      {event.lastEncounterId && <div>Last encounter: {event.lastEncounterId as string}</div>}
+      {event.details ? <div className="text-text-secondary">{event.details as string}</div> : null}
+      {event.lastEncounterId ? <div>Last encounter: {event.lastEncounterId as string}</div> : null}
     </div>
   );
 }
@@ -252,8 +252,8 @@ function CompleteDetail({ event }: { event: ArenaEvent }) {
       <div className="font-medium text-green-600">
         {event.isVictory ? 'Victory' : 'Completed'}
       </div>
-      {event.finalScore != null && <div>Score: {event.finalScore as number}</div>}
-      {event.e4ApproachCategory && <div>Approach: {event.e4ApproachCategory as string}</div>}
+      {event.finalScore != null ? <div>Score: {event.finalScore as number}</div> : null}
+      {event.e4ApproachCategory ? <div>Approach: {event.e4ApproachCategory as string}</div> : null}
     </div>
   );
 }
@@ -265,8 +265,8 @@ function ResultDetail({ event }: { event: ArenaEvent }) {
       <div className={`font-medium ${resolved ? 'text-green-600' : 'text-red-600'}`}>
         {resolved ? 'Resolved' : event.partial ? 'Partial' : 'Failed'}
       </div>
-      {event.score != null && <div>Score: {event.score as number}</div>}
-      {event.details && <div className="text-text-secondary">{event.details as string}</div>}
+      {event.score != null ? <div>Score: {event.score as number}</div> : null}
+      {event.details ? <div className="text-text-secondary">{event.details as string}</div> : null}
     </div>
   );
 }

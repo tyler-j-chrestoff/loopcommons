@@ -76,7 +76,11 @@ export type Experience = z.infer<typeof ExperienceSchema>;
 // Input types (without auto-generated fields)
 // ---------------------------------------------------------------------------
 
-export type MemoryInput = Omit<CalibrationMemoryEntry, 'id' | 'createdAt'>;
+export type MemoryInput =
+  | Omit<Observation, 'id' | 'createdAt'>
+  | Omit<Learning, 'id' | 'createdAt'>
+  | Omit<Reflection, 'id' | 'createdAt'>
+  | Omit<Experience, 'id' | 'createdAt'>;
 
 // ---------------------------------------------------------------------------
 // Recall filters

@@ -6,7 +6,7 @@
  * evolution overfit to the training encounters.
  */
 
-import type { EncounterConfig } from '../types';
+import type { EncounterConfig, ServiceState } from '../types';
 
 // ---------------------------------------------------------------------------
 // E5: The Monitoring Gap — diagnose without direct service access
@@ -49,7 +49,7 @@ export const e5: EncounterConfig = {
         { service: 'cdn-config', version: '1.0.3', timestamp: '2026-03-20T13:45:00Z', deployer: 'ops-team', note: 'Updated cache rules for new asset paths' },
       ], null, 2)],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['checkout', {
         status: 'degraded',
         config: { frontend_version: '4.2.1', cdn_endpoint: 'cdn.example.com/v4' },
@@ -143,7 +143,7 @@ export const e6: EncounterConfig = {
         '- Cache hit rate: > 85%',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['api', {
         status: 'running',
         config: { servers: '6', max_servers: '8' },

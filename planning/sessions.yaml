@@ -70,6 +70,44 @@ planned:
         status: planned
 
 completed:
+  - id: 53.5
+    title: "Hotfix — unbreak Railway deploy, full green CI"
+    date: 2026-03-22
+    milestone: arena-observatory
+    status: done
+    goal: "Fix broken Railway production deploy (2 days down) and eliminate all CI failures including flaky tests."
+    summary: |
+      Production deploy broken by TypeScript strictness drift — dependency updates (AI SDK v6, Next.js 16 / React 19 types) made previously-passing code fail typechecking. No source logic changed; types got stricter under it.
+
+      FIXES (16 files):
+      - encounters.ts, brutal-encounters.ts, generalization-encounters.ts: Map<string, ServiceState> type annotations (11 instances)
+      - live-agent.ts: maxSteps → stopWhen(stepCountIs(15)) for AI SDK v6, ReturnType<typeof aiTool> → any
+      - sandbox-tools.ts: ToolDefinition → ToolDefinition<any> return types
+      - trace-writer.ts: missing pathLabel, promptRendered, responseRaw fields
+      - calibration/memory.ts: MemoryInput union type preserved discriminated fields
+      - route.ts (metrics/arena): duplicate runId property in spread
+      - RunReplay.tsx: unknown && <JSX> → ternary patterns (React 19 strictness)
+      - api-chat.test.ts: rewrote mocks for createAgentCore API (was mocking old 3-function API)
+      - arena-tools.test.ts: added taskResults, fixed mock types
+      - components-amygdala.test.tsx: added missing promptSource field
+      - use-chat.test.ts: fixed never-narrowing on streamController
+      - blog-store.test.ts: fixed flaky timestamp test (10ms delay for ISO resolution)
+
+      ROOT CAUSE: npm ci on Railway resolves ^-ranged deps to latest minor/patch. AI SDK and TypeScript type changes accumulated silently because local node_modules was stale.
+
+      DECISIONS:
+      - Used stopWhen(stepCountIs(N)) as AI SDK v6 replacement for maxSteps
+      - Used any-typing for AI SDK tool wrappers (SDK's generic variance too strict for our ToolDefinition interface)
+      - Flaky blog-store test was timestamp resolution (same-millisecond create+update), not a race condition
+
+      SHIPPED:
+      - Railway deploy unblocked (build passes)
+      - All 5 CI jobs green: typecheck (0 errors), test-llm (1122), test-web (634), eval (152), build-web (success)
+      - 2049 total tests passing, 0 failures, 0 flakes
+
+      UNBLOCKED:
+      - Production deploy will succeed on next push
+      - Session 54+ can proceed without build debt
   - id: 53
     title: "System validation — shake the whole tree"
     date: 2026-03-22

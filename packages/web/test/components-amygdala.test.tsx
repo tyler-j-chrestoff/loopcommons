@@ -23,6 +23,7 @@ const mockRouting: RoutingDecision = {
   subagentName: 'Conversational',
   threatOverride: false,
   allowedTools: ['get_resume', 'get_project'],
+  promptSource: 'derived',
   reasoning: 'Friendly greeting routed to conversational subagent.',
   totalMessages: 10,
   delegatedMessages: 8,

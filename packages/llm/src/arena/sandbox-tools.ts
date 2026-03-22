@@ -3,7 +3,7 @@ import { defineTool } from '../tool';
 import type { ToolDefinition } from '../tool';
 import type { Sandbox } from './types';
 
-function createInspectTool(sandbox: Sandbox): ToolDefinition {
+function createInspectTool(sandbox: Sandbox): ToolDefinition<any> {
   return defineTool({
     name: 'inspect',
     description: 'Read system state: files, configs, logs, metrics. Read-only — never modifies state. Use target formats: "ls" (list all files), "services" (list services), file path, "service:<name>", "metrics:<name>", "logs:<name>".',
@@ -55,7 +55,7 @@ function createInspectTool(sandbox: Sandbox): ToolDefinition {
   });
 }
 
-function createActTool(sandbox: Sandbox): ToolDefinition {
+function createActTool(sandbox: Sandbox): ToolDefinition<any> {
   return defineTool({
     name: 'act',
     description: 'Execute commands against the system: "edit <path> <old> <new>", "restart <service>", "run <script-path>", "set-config <service> <key> <value>".',
@@ -108,7 +108,7 @@ function createActTool(sandbox: Sandbox): ToolDefinition {
   });
 }
 
-function createSearchTool(sandbox: Sandbox): ToolDefinition {
+function createSearchTool(sandbox: Sandbox): ToolDefinition<any> {
   return defineTool({
     name: 'search',
     description: 'Search the incident database and runbooks for relevant precedents. Returns matching records with outcomes.',
@@ -133,7 +133,7 @@ function createSearchTool(sandbox: Sandbox): ToolDefinition {
   });
 }
 
-function createModelTool(sandbox: Sandbox): ToolDefinition {
+function createModelTool(sandbox: Sandbox): ToolDefinition<any> {
   return defineTool({
     name: 'model',
     description: 'Map dependency graphs and trace causal chains. Returns structural descriptions of system relationships.',
@@ -172,7 +172,7 @@ function traceDeps(graph: Record<string, string[]>, node: string, depth: number)
  * Create a terminal 'done' tool that signals encounter completion.
  * Separate from createSandboxTools — appended by the agent harness.
  */
-export function createDoneTool(): ToolDefinition {
+export function createDoneTool(): ToolDefinition<any> {
   return defineTool({
     name: 'done',
     description: 'Signal that the incident is resolved. Call this when you have finished fixing the problem.',

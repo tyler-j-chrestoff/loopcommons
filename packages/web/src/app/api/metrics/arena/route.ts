@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
       const filePath = join(experimentDir, `${id}.jsonl`);
       if (!existsSync(filePath)) return { runId: id, events: [] };
       const events = parseEvents(readFileSync(filePath, 'utf-8'));
-      return { runId: id, events, ...summarizeRun(events) };
+      return { ...summarizeRun(events), runId: id, events };
     });
     return NextResponse.json({ runs }, { headers: CACHE_HEADERS });
   }

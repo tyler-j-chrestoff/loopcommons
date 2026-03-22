@@ -1,4 +1,4 @@
-import type { EncounterConfig, PathConfig, StepRecord, E4ApproachCategory } from './types';
+import type { EncounterConfig, PathConfig, StepRecord, E4ApproachCategory, ServiceState } from './types';
 import { computeSystemHealth } from './cascade-scoring';
 import type { CouplingPoint } from './cascade-scoring';
 
@@ -60,7 +60,7 @@ const e1: EncounterConfig = {
         '- Added fallback_source option',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['data-ingest', {
         status: 'running',
         config: { port: '8080', version: '2.4.0' },
@@ -173,7 +173,7 @@ const e2: EncounterConfig = {
         '- Total new connection demand: 8 × 10 = 80 (was 2 × 10 = 20)',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['order-processor', {
         status: 'running',
         config: { replicas: '8', db_pool_size: '10' },
@@ -427,7 +427,7 @@ const e4: EncounterConfig = {
         '2026-03-20T06:02:01Z INFO: All users indexed with email_verified=false',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['auth-service', {
         status: 'running',
         config: { version: '3.1.0', schema_version: '3' },

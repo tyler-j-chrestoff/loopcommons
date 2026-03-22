@@ -12,6 +12,7 @@ import type { Sandbox } from '../../src/arena/types';
 vi.mock('ai', () => ({
   generateText: vi.fn(),
   tool: vi.fn((config: any) => config),
+  stepCountIs: vi.fn((n: number) => ({ type: 'stepCount', count: n })),
 }));
 
 vi.mock('@ai-sdk/anthropic', () => ({

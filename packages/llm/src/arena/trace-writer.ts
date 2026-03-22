@@ -163,6 +163,7 @@ export function createArenaTraceWriter(options?: { basePath?: string }): ArenaTr
         pathId: trace.pathId,
         startedAt: trace.startedAt,
         startingStateHash: trace.stateHashes[0] ?? 'genesis',
+        pathLabel: trace.pathId,
       });
 
       // Choice points
@@ -182,6 +183,8 @@ export function createArenaTraceWriter(options?: { basePath?: string }): ArenaTr
           memoryStateDump: cp.memoryStateDump,
           stateHash: cp.stateHash,
           chainHash: cp.chainHash,
+          promptRendered: '',
+          responseRaw: '',
         });
       }
 

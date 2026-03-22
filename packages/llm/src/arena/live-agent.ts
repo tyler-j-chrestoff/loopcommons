@@ -6,19 +6,19 @@
  */
 
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { generateText, tool as aiTool } from 'ai';
+import { generateText, tool as aiTool, stepCountIs } from 'ai';
 import type { AgentFn, AgentToolCall } from './encounter-engine';
 import { createManaState, prepareStep, consumeMana, type ManaConfig } from './mana';
 
 function buildAiTools(
   tools: import('../tool').ToolDefinition[],
   toolOutputLog: Map<string, string>,
-): Record<string, ReturnType<typeof aiTool>> {
-  const aiTools: Record<string, ReturnType<typeof aiTool>> = {};
+): Record<string, any> {
+  const aiTools: Record<string, any> = {};
   for (const t of tools) {
     aiTools[t.name] = aiTool({
       description: t.description,
-      inputSchema: t.parameters,
+      inputSchema: t.parameters as any,
       execute: async (args: any, context: any) => {
         const result = await t.execute(args);
         const key = context?.toolCallId ?? `${t.name}:${JSON.stringify(args)}`;
@@ -105,7 +105,7 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
       const maxSteps = 15;
       for (let step = 0; step < maxSteps; step++) {
         const availableNames = prepareStep(manaState, Object.keys(allAiTools), manaConfig);
-        const stepTools: Record<string, ReturnType<typeof aiTool>> = {};
+        const stepTools: Record<string, any> = {};
         for (const name of availableNames) {
           if (allAiTools[name]) stepTools[name] = allAiTools[name];
         }
@@ -117,7 +117,6 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
           messages,
           tools: stepTools,
           toolChoice: 'required',
-          maxSteps: 1,
           maxOutputTokens: 1024,
         });
 
@@ -161,7 +160,7 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
       ],
       tools: allAiTools,
       toolChoice: 'required',
-      maxSteps: 15,
+      stopWhen: stepCountIs(15),
       maxOutputTokens: 1024,
     });
 

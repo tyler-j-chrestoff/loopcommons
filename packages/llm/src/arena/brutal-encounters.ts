@@ -10,7 +10,7 @@
  * is required by at least one. Wrong actions cause state corruption.
  */
 
-import type { EncounterConfig } from './types';
+import type { EncounterConfig, ServiceState } from './types';
 import { computeSystemHealth } from './cascade-scoring';
 import type { CouplingPoint } from './cascade-scoring';
 
@@ -64,7 +64,7 @@ export const e7: EncounterConfig = {
         'causes the others to attempt reconnection, increasing load.',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['service-a', {
         status: 'degraded',
         config: { port: '8080', depends_on: 'service-b' },
@@ -216,7 +216,7 @@ export const e8: EncounterConfig = {
         '3. If CPU > 95%, trigger failover to standby',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['database-primary', {
         status: 'running',
         config: { replicas: '1', mode: 'primary' },
@@ -323,7 +323,7 @@ export const e9: EncounterConfig = {
         ],
       }, null, 2)],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['orders-api', {
         status: 'degraded',
         config: { database: 'orders-primary' },
@@ -494,7 +494,7 @@ export const e10: EncounterConfig = {
         'echo "Clearing logs..."',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['app-server', {
         status: 'running',
         config: { version: '3.5.1', log_level: 'debug' },
@@ -595,7 +595,7 @@ export const e11: EncounterConfig = {
         'infrastructure_version: v3',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['api-gateway', {
         status: 'degraded',
         config: { infrastructure_version: 'v3', tls: '1.3' },
@@ -745,7 +745,7 @@ export const e12: EncounterConfig = {
         '2026-03-20T14:00:00Z INFO: Query load elevated — cache miss fallback traffic',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['user-service', {
         status: 'degraded',
         config: { cache_endpoint: 'cache:6379' },
@@ -869,7 +869,7 @@ export const e13: EncounterConfig = {
         '2026-03-20T16:00:01Z ERROR: Upstream timeout',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['api-gateway', {
         status: 'degraded',
         config: { env_label: 'production', instance_id: 'uuid-a1b2c3d4-staging' },
@@ -1006,7 +1006,7 @@ export const e14: EncounterConfig = {
         '2026-03-20T16:00:00Z WARN: Metric spike detected — app memory 502MB',
       ].join('\n')],
     ]),
-    services: new Map([
+    services: new Map<string, ServiceState>([
       ['autoscaler', {
         status: 'running',
         config: { cooldown: '30', min: '2', max: '10' },

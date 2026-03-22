@@ -12,8 +12,8 @@ function makeSnapshot(overrides?: Partial<TournamentSnapshot>): TournamentSnapsh
       { id: 'a2', tools: ['search', 'model'] },
     ],
     fitness: [
-      { agentId: 'a1', fitnessScore: 0.75 },
-      { agentId: 'a2', fitnessScore: 0.6 },
+      { agentId: 'a1', fitnessScore: 0.75, taskResults: [] },
+      { agentId: 'a2', fitnessScore: 0.6, taskResults: [] },
     ],
     bestFitness: 0.75,
     bestAgent: { id: 'a1', tools: ['inspect', 'act'] },
@@ -33,7 +33,7 @@ describe('createArenaQueryPackage', () => {
   });
 
   it('creates a ToolPackage with 3 tools', () => {
-    const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+    const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
     expect(pkg.tools).toHaveLength(3);
     expect(pkg.tools.map(t => t.name)).toEqual([
       'queryTournament',
@@ -43,14 +43,14 @@ describe('createArenaQueryPackage', () => {
   });
 
   it('has correct metadata', () => {
-    const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+    const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
     expect(pkg.metadata.name).toBe('arena-query');
     expect(pkg.metadata.sideEffects).toBe(false);
   });
 
   describe('queryTournament', () => {
     it('returns current tournament state', async () => {
-      const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+      const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
       const tool = pkg.tools.find(t => t.name === 'queryTournament')!;
       const result = await tool.execute({});
       const data = JSON.parse(result);
@@ -60,7 +60,7 @@ describe('createArenaQueryPackage', () => {
     });
 
     it('returns leaderboard sorted by fitness', async () => {
-      const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+      const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
       const tool = pkg.tools.find(t => t.name === 'queryTournament')!;
       const result = await tool.execute({ view: 'leaderboard' });
       const data = JSON.parse(result);
@@ -71,7 +71,7 @@ describe('createArenaQueryPackage', () => {
     it('reports idle when no tournament', async () => {
       getStatus.mockReturnValue('idle');
       getSnapshot.mockReturnValue({ ...makeSnapshot(), tournamentId: null, status: 'idle' });
-      const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+      const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
       const tool = pkg.tools.find(t => t.name === 'queryTournament')!;
       const result = await tool.execute({});
       const data = JSON.parse(result);
@@ -81,7 +81,7 @@ describe('createArenaQueryPackage', () => {
 
   describe('listTournaments', () => {
     it('returns current tournament info', async () => {
-      const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+      const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
       const tool = pkg.tools.find(t => t.name === 'listTournaments')!;
       const result = await tool.execute({});
       const data = JSON.parse(result);
@@ -92,7 +92,7 @@ describe('createArenaQueryPackage', () => {
     it('returns empty list when idle', async () => {
       getStatus.mockReturnValue('idle');
       getSnapshot.mockReturnValue({ ...makeSnapshot(), tournamentId: null, status: 'idle' });
-      const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+      const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
       const tool = pkg.tools.find(t => t.name === 'listTournaments')!;
       const result = await tool.execute({});
       const data = JSON.parse(result);
@@ -102,7 +102,7 @@ describe('createArenaQueryPackage', () => {
 
   describe('compareFitness', () => {
     it('compares two compositions', async () => {
-      const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+      const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
       const tool = pkg.tools.find(t => t.name === 'compareFitness')!;
       const result = await tool.execute({
         composition1: ['inspect', 'act'],
@@ -115,7 +115,7 @@ describe('createArenaQueryPackage', () => {
     });
 
     it('handles missing compositions', async () => {
-      const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+      const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
       const tool = pkg.tools.find(t => t.name === 'compareFitness')!;
       const result = await tool.execute({
         composition1: ['inspect'],
@@ -127,7 +127,7 @@ describe('createArenaQueryPackage', () => {
   });
 
   it('formatContext returns arena summary', () => {
-    const pkg = createArenaQueryPackage({ getSnapshot, getStatus });
+    const pkg = createArenaQueryPackage({ getSnapshot, getStatus } as any);
     const ctx = pkg.formatContext();
     expect(ctx).toContain('Arena');
     expect(ctx).toContain('running');
