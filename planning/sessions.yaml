@@ -4,21 +4,6 @@
 
 planned:
   # --- arena-observatory milestone (the microscope) ---
-  - id: 50
-    title: "Observatory — Tournament browser"
-    milestone: arena-observatory
-    status: planned
-    goal: "Visitor lands on /arena, sees the latest tournament results. Heatmap, featured death, past tournaments. No explainer text — the data is the explanation."
-    phases:
-      - name: "Tournament data loader + API endpoints"
-        tasks: [tb-01, tb-02, tb-03]
-        status: planned
-      - name: "Results-first /arena redesign"
-        tasks: [tb-04, tb-05, tb-06]
-        status: planned
-      - name: "Tests"
-        tasks: [tb-07]
-        status: planned
   - id: 51
     title: "Observatory — Encounter replay"
     milestone: arena-observatory
@@ -115,6 +100,47 @@ planned:
         status: planned
 
 completed:
+  - id: 50
+    title: "Observatory — Tournament browser"
+    date: 2026-03-22
+    milestone: arena-observatory
+    status: done
+    goal: "Visitor lands on /arena, sees the latest tournament results. Heatmap, featured death, past tournaments. No explainer text — the data is the explanation."
+    phases:
+      - name: "Tournament data loader + API endpoints"
+        tasks: [tb-01, tb-02, tb-03]
+        status: done
+      - name: "Results-first /arena redesign"
+        tasks: [tb-04, tb-05, tb-06]
+        status: done
+      - name: "Tests"
+        tasks: [tb-07]
+        status: done
+    summary: |
+      All 7 tasks done across 3 phases.
+
+      SHIPPED:
+      - tournament-loader.ts: listTournaments(), loadTournamentDetail(), loadEncounterTraces() — reads persisted JSONL from disk
+      - GET /api/arena/tournaments — list all tournaments with summary (id, status, generationCount, bestFitness, winnerTools)
+      - GET /api/arena/tournaments/:id — full tournament detail with all generations, fitness, taskResults
+      - EncounterHeatmap component — agent × encounter grid, color-coded scores, skull emoji for deaths, sorted by fitness
+      - FeaturedDeath component — auto-selects most interesting death (interestingness = steps × (1 - score)), generates epitaph
+      - /arena page redesigned: results-first layout, heatmap hero, featured death card, past tournaments list, start buttons below fold
+      - TournamentFitnessSummary type extended with taskResults for heatmap data
+      - 30 new tests (11 loader, 5 API, 11 component/integration, 3 updated page tests)
+      - All 557 web tests pass, zero new type errors
+
+      KEY DECISIONS:
+      - Separate tournament-loader module (not inline in routes) for reuse across list/detail/future trace endpoints
+      - Start buttons not behind auth — pushed below fold instead. Auth on the POST endpoint is sufficient.
+      - Heatmap cells are clickable (onCellClick prop) — wired for encounter replay in session 51
+      - FeaturedDeath interestingness formula: steps × (1 - score) — rewards long struggles that ended badly
+
+      UNBLOCKED:
+      - Session 51 (encounter replay) can wire into heatmap cell clicks
+      - Session 52 (graveyard) can extend FeaturedDeath interestingness scoring
+      - loadEncounterTraces() ready for trace replay endpoints
+
   - id: 49
     title: "Observatory — Capture step traces"
     date: 2026-03-22
