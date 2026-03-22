@@ -4,21 +4,6 @@
 
 planned:
   # --- arena-observatory milestone (the microscope) ---
-  - id: 51
-    title: "Observatory — Encounter replay"
-    milestone: arena-observatory
-    status: planned
-    goal: "Click a heatmap cell, watch the agent think step by step. Tool calls, inputs, outputs, death moment. This is where the 'aha' happens."
-    phases:
-      - name: "Trace API endpoint"
-        tasks: [er-01]
-        status: planned
-      - name: "Replay timeline + death marker"
-        tasks: [er-02, er-03]
-        status: planned
-      - name: "Wire into heatmap + tests"
-        tasks: [er-04, er-05]
-        status: planned
   - id: 52
     title: "Observatory — The graveyard"
     milestone: arena-observatory
@@ -100,6 +85,44 @@ planned:
         status: planned
 
 completed:
+  - id: 51
+    title: "Observatory — Encounter replay"
+    date: 2026-03-22
+    milestone: arena-observatory
+    status: done
+    goal: "Click a heatmap cell, watch the agent think step by step. Tool calls, inputs, outputs, death moment. This is where the 'aha' happens."
+    phases:
+      - name: "Trace API endpoint"
+        tasks: [er-01]
+        status: done
+      - name: "Replay timeline + death marker"
+        tasks: [er-02, er-03]
+        status: done
+      - name: "Wire into heatmap + tests"
+        tasks: [er-04, er-05]
+        status: done
+    summary: |
+      All 5 tasks done across 3 phases.
+
+      SHIPPED:
+      - loadEncounterTrace() in tournament-loader.ts: reads full JSONL trace (meta + steps) from disk. New types: EncounterTraceStep, EncounterTraceData.
+      - GET /api/arena/tournaments/:id/traces/:agentId/:encounterId — returns {meta, steps}, 404 if missing, auth-gated
+      - EncounterReplay component: vertical step timeline with tool-colored names, collapsible I/O, duration badges, death marker (red panel), encounter context header (ID, score, details), empty state
+      - ReplayPageContent client component + /arena/[tournamentId]/[agentId]/[encounterId] page route — fetches trace, renders replay, back link, breadcrumb
+      - Heatmap onCellClick wired via router.push() to shareable replay URL
+      - 16 new tests (3 loader, 2 API, 7 component, 1 heatmap click, 3 replay page)
+      - Fixed next/navigation mock in 2 existing test files (arena-page, tournament-browser)
+      - All 573 web tests pass, zero new type errors
+
+      KEY DECISIONS:
+      - Reused EncounterTraceMeta type from existing loader; added EncounterTraceStep as new exported type
+      - EncounterReplay is a standalone component (not extending RunReplay) — simpler, encounter-focused, collapsible steps vs RunReplay's horizontal dot timeline
+      - ReplayPageContent as separate client component from the server page (Next.js 16 pattern)
+      - Death marker renders after steps (chronological) rather than inline, for visual clarity
+
+      UNBLOCKED:
+      - Session 52 (graveyard) can link death cards to replay URLs
+      - Replay component reusable for chat traces in session 53
   - id: 50
     title: "Observatory — Tournament browser"
     date: 2026-03-22

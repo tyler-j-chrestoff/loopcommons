@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { TournamentLive } from '@/components/TournamentLive';
 import { EncounterHeatmap } from '@/components/EncounterHeatmap';
 import { FeaturedDeath } from '@/components/FeaturedDeath';
@@ -44,6 +45,7 @@ const TOOL_BG: Record<string, string> = {
 };
 
 export default function ArenaPage() {
+  const router = useRouter();
   const [liveTournamentId, setLiveTournamentId] = useState<string | null>(null);
   const [tournaments, setTournaments] = useState<TournamentSummary[]>([]);
   const [selectedDetail, setSelectedDetail] = useState<TournamentDetail | null>(null);
@@ -200,7 +202,13 @@ export default function ArenaPage() {
 
             {/* Heatmap — the hero */}
             {lastGen && (
-              <EncounterHeatmap agents={lastGen.agents} fitness={lastGen.fitness} />
+              <EncounterHeatmap
+                agents={lastGen.agents}
+                fitness={lastGen.fitness}
+                onCellClick={(agentId, encounterId) =>
+                  router.push(`/arena/${selectedDetail!.id}/${agentId}/${encounterId}`)
+                }
+              />
             )}
 
             {/* Featured Death */}

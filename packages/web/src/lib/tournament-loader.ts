@@ -130,6 +130,42 @@ export function loadTournamentDetail(tournamentsDir: string, tournamentId: strin
   return { id: tournamentId, ...data };
 }
 
+export type EncounterTraceStep = {
+  encounterId: string;
+  stepIndex: number;
+  toolName: string;
+  toolInput: Record<string, unknown>;
+  toolOutput: string;
+  durationMs: number;
+};
+
+export type EncounterTraceData = {
+  meta: EncounterTraceMeta;
+  steps: EncounterTraceStep[];
+};
+
+export function loadEncounterTrace(
+  tournamentsDir: string,
+  tournamentId: string,
+  agentId: string,
+  encounterId: string,
+): EncounterTraceData | null {
+  const filePath = join(tournamentsDir, tournamentId, 'traces', agentId, `${encounterId}.jsonl`);
+  if (!existsSync(filePath)) return null;
+
+  const content = readFileSync(filePath, 'utf-8');
+  const lines = content.split('\n').filter(l => l.trim().length > 0);
+  if (lines.length === 0) return null;
+
+  const meta = JSON.parse(lines[0]) as EncounterTraceMeta;
+  const steps: EncounterTraceStep[] = lines
+    .slice(1)
+    .map(l => JSON.parse(l))
+    .filter((e): e is EncounterTraceStep => e.type === 'step');
+
+  return { meta, steps };
+}
+
 export function loadEncounterTraces(tournamentsDir: string, tournamentId: string, agentId: string): EncounterTraceMeta[] {
   const tracesDir = join(tournamentsDir, tournamentId, 'traces', agentId);
   if (!existsSync(tracesDir)) return [];
