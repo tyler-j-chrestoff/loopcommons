@@ -3,21 +3,24 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- arena-observatory milestone (deferred) ---
+  # --- arena-observatory: navigation ---
   - id: 54
-    title: "Observatory — Chat traces (deferred)"
+    title: "Observatory — Tournament navigation"
     milestone: arena-observatory
     status: planned
-    goal: "Chat sessions appear alongside tournament traces. Same replay component. Unified trace format. Ships after tournament format is proven."
+    goal: "Each tournament gets a permalink. Route-based navigation replaces in-place state swapping. The observatory scales to dozens of tournaments."
     phases:
-      - name: "Research unified trace schema"
-        tasks: [ct-01]
+      - name: "Research route structure + layout hierarchy"
+        tasks: [tn-01]
         status: planned
-      - name: "Chat adapter + UI integration"
-        tasks: [ct-02, ct-03]
+      - name: "Tournament detail page + list component"
+        tasks: [tn-02, tn-03]
+        status: planned
+      - name: "Landing page refactor + live route + replay migration"
+        tasks: [tn-04, tn-05, tn-06]
         status: planned
       - name: "Tests"
-        tasks: [ct-04]
+        tasks: [tn-07]
         status: planned
   # --- arena-platform science resumes ---
   - id: 55
@@ -67,6 +70,22 @@ planned:
         status: planned
       - name: "Tests + full co-evolutionary run"
         tasks: [ec-07, ec-08]
+        status: planned
+  # --- deferred ---
+  - id: 58
+    title: "Observatory — Chat traces (deferred)"
+    milestone: arena-observatory
+    status: planned
+    goal: "Chat sessions appear alongside tournament traces. Same replay component. Unified trace format. Ships after tournament format is proven."
+    phases:
+      - name: "Research unified trace schema"
+        tasks: [ct-01]
+        status: planned
+      - name: "Chat adapter + UI integration"
+        tasks: [ct-02, ct-03]
+        status: planned
+      - name: "Tests"
+        tasks: [ct-04]
         status: planned
 
 completed:
