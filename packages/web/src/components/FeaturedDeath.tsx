@@ -25,7 +25,7 @@ function findMostInterestingDeath(agents: Agent[], fitness: Fitness[]): DeathCan
   let best: DeathCandidate | null = null;
 
   for (const f of fitness) {
-    for (const tr of f.taskResults) {
+    for (const tr of f.taskResults ?? []) {
       if (!tr.died) continue;
       const interestingness = tr.stepCount * (1 - tr.score);
       const agent = agentMap.get(f.agentId);

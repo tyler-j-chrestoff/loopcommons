@@ -107,7 +107,7 @@ function EncounterResultsGrid({ population, fitness }: {
   population: Array<{ id: string; tools: string[] }>;
   fitness: Array<{ agentId: string; fitnessScore: number; taskResults: TaskResultSummary[] }>;
 }) {
-  if (fitness.length === 0 || fitness[0].taskResults.length === 0) return null;
+  if (fitness.length === 0 || !fitness[0].taskResults?.length) return null;
 
   const encounterIds = fitness[0].taskResults.map(tr => tr.encounterId);
   const fitnessMap = new Map(fitness.map(f => [f.agentId, f]));
@@ -149,7 +149,7 @@ function EncounterResultsGrid({ population, fitness }: {
                   </div>
                 </td>
                 {encounterIds.map(eid => {
-                  const tr = f?.taskResults.find(t => t.encounterId === eid);
+                  const tr = f?.taskResults?.find(t => t.encounterId === eid);
                   const score = tr?.score ?? 0;
                   return (
                     <td key={eid} className={`p-1 border-b border-current/5 text-center ${scoreColor(score)}`}>
@@ -312,7 +312,7 @@ export function TournamentLive({ tournamentId }: { tournamentId: string }) {
       )}
 
       {/* Encounter results grid */}
-      {snapshot && snapshot.fitness.length > 0 && snapshot.fitness[0].taskResults.length > 0 && (
+      {snapshot && snapshot.fitness.length > 0 && (snapshot.fitness[0].taskResults?.length ?? 0) > 0 && (
         <div>
           <h3 className="text-sm font-semibold mb-1 opacity-70">Encounter Results (Gen {snapshot.generation})</h3>
           <EncounterResultsGrid population={snapshot.population} fitness={snapshot.fitness} />

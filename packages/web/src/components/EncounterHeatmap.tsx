@@ -32,7 +32,7 @@ export function EncounterHeatmap({
   }
 
   const fitnessMap = new Map(fitness.map(f => [f.agentId, f]));
-  const encounterIds = fitness[0]?.taskResults.map(tr => tr.encounterId) ?? [];
+  const encounterIds = fitness[0]?.taskResults?.map(tr => tr.encounterId) ?? [];
 
   const sorted = [...agents].sort((a, b) =>
     (fitnessMap.get(b.id)?.fitnessScore ?? 0) - (fitnessMap.get(a.id)?.fitnessScore ?? 0),
@@ -65,7 +65,7 @@ export function EncounterHeatmap({
                   </div>
                 </td>
                 {encounterIds.map(eid => {
-                  const tr = f?.taskResults.find(t => t.encounterId === eid);
+                  const tr = f?.taskResults?.find(t => t.encounterId === eid);
                   const score = tr?.score ?? 0;
                   const died = tr?.died ?? false;
                   return (
