@@ -6,7 +6,7 @@ This is "Consciousness as Variational Inference" applied to agent architecture. 
 
 Everything below serves this thesis. The platform generates open-source training data as a side effect of testing it.
 
-**Active milestone**: [agent-arena](milestones/agent-arena/)
+**Active milestone**: [arena-platform](milestones/arena-platform/)
 
 ---
 
@@ -22,8 +22,8 @@ Each milestone proves a stronger claim about the thesis. Each is independently u
 | 4 | [multi-interface](milestones/multi-interface/) | Tool-defined identity (incl. memory) is portable across interfaces | 2 ✓ |
 | 5 | [attested-lineage](milestones/attested-lineage/) | Identity derivations are content-addressed and carry ancestry | 1 ✓ |
 | 6 | [roguelike-v1](milestones/roguelike-v1/) | Tool acquisition order produces measurably different agents (path dependence) | 3 ✓ |
-| 7 | [agent-arena](milestones/agent-arena/) | Evolution over attested compositions discovers identities that hand-design can't | 2-3 |
-| 8 | [arena-platform](milestones/arena-platform/) | A research platform with co-evolving agents, encounters, and evaluators | 2-3 |
+| 7 | [agent-arena](milestones/agent-arena/) | Evolution over attested compositions discovers identities that hand-design can't | 2-3 ✓ |
+| 8 | [arena-platform](milestones/arena-platform/) | Co-evolving communities of agents, encounters, and evaluators — the community is the unit of evolution | 3-4 |
 
 ```
 derived-prompts (done) → memory-contract (done)

@@ -3,56 +3,117 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  - id: 47
-    title: "Agent Arena — Evaluator redesign + thesis revalidation"
-    milestone: agent-arena
-    status: planned
-    goal: "Implement epistemic keying + tripwires from 3-model convergence. Re-run tournament. Validate all 4 tools are load-bearing. Close milestone."
-    phases:
-      - name: "Audit encounters + implement epistemic keying (E1-E4)"
-        tasks: [ev-01, ev-02]
-        status: planned
-      - name: "Implement tripwires (E7+) + cascade scoring + graph-distance"
-        tasks: [ev-03, ev-04, ev-05]
-        status: planned
-      - name: "Tests + pilot validation"
-        tasks: [ev-06, ev-07]
-        status: planned
-      - name: "Full tournament + milestone close"
-        tasks: [ev-08]
-        status: planned
   - id: 48
     title: "Arena Platform — Real-time API + encounter DSL"
     milestone: arena-platform
     status: planned
-    goal: "SSE tournament streaming, queryArena agent tool, YAML encounter DSL. The arena becomes a platform."
+    goal: "SSE tournament streaming, queryArena agent tool, YAML encounter DSL. The arena becomes observable and composable."
     phases:
       - name: "SSE tournament streaming endpoint"
-        tasks: []
+        tasks: [rt-01, rt-02, rt-03, rt-04, rt-05, rt-06]
         status: planned
       - name: "queryArena ToolPackage"
-        tasks: []
+        tasks: [at-01, at-02, at-03]
         status: planned
       - name: "Encounter DSL (YAML → EncounterConfig)"
-        tasks: []
+        tasks: [dsl-01, dsl-02, dsl-03, dsl-04, dsl-05]
         status: planned
   - id: 49
-    title: "Arena Platform — Encounter families + user tournaments"
+    title: "Arena Platform — Encounter families + anchor protocol"
     milestone: arena-platform
     status: planned
-    goal: "Encounter family generation, consistency scoring, user-created tournament API."
+    goal: "Surface variants for generalization pressure. Frozen validation battery as anchor to reality. Transfer pressure in fitness."
     phases:
-      - name: "Encounter family generator + consistency scoring"
-        tasks: []
+      - name: "Encounter variance research + family generator"
+        tasks: [ef-01, ef-02]
         status: planned
-      - name: "User-created tournament API (POST config, SSE watch)"
-        tasks: []
+      - name: "Consistency scoring + anchor protocol"
+        tasks: [ef-03, ef-04]
         status: planned
-      - name: "Live tournament dashboard component"
-        tasks: []
+      - name: "Tests + validation"
+        tasks: [ef-05]
+        status: planned
+  - id: 50
+    title: "Arena Platform — Community fitness"
+    milestone: arena-platform
+    status: planned
+    goal: "Selection for collective coverage. Niche preservation. The community is the unit of evolution, not the individual."
+    phases:
+      - name: "Research QD algorithms + marginal contribution"
+        tasks: [cf-01, cf-02]
+        status: planned
+      - name: "Niche-preserving selection + population health"
+        tasks: [cf-03, cf-04]
+        status: planned
+      - name: "Museum of beautiful failures + pilot"
+        tasks: [cf-05, cf-06, cf-07]
+        status: planned
+  - id: 51
+    title: "Arena Platform — Evaluator co-evolution + skeptic lineage"
+    milestone: arena-platform
+    status: planned
+    goal: "Three populations co-evolving. Skeptic lineage keeps the community honest. Collusion detection anchors fitness in reality."
+    phases:
+      - name: "Research co-evolution + evaluator genome"
+        tasks: [ec-01, ec-02]
+        status: planned
+      - name: "Three-population runner + evaluator fitness"
+        tasks: [ec-03, ec-04]
+        status: planned
+      - name: "Skeptic lineage + collusion detection"
+        tasks: [ec-05, ec-06]
+        status: planned
+      - name: "Tests + full co-evolutionary run"
+        tasks: [ec-07, ec-08]
         status: planned
 
 completed:
+  - id: 47
+    title: "Agent Arena — Evaluator redesign + thesis revalidation"
+    date: 2026-03-21
+    milestone: agent-arena
+    status: done
+    goal: "Implement epistemic keying + tripwires from 3-model convergence. Re-run tournament. Validate all 4 tools are load-bearing. Close milestone."
+    phases:
+      - name: "Audit encounters + implement epistemic keying (E1-E4)"
+        tasks: [ev-01, ev-02]
+        status: done
+      - name: "Implement tripwires (E7+) + cascade scoring + graph-distance"
+        tasks: [ev-03, ev-04, ev-05]
+        status: done
+      - name: "Tests + pilot validation"
+        tasks: [ev-06, ev-07]
+        status: done
+      - name: "Full tournament + milestone close"
+        tasks: [ev-08]
+        status: done
+    summary: |
+      All 8 tasks (ev-01 through ev-08) done. 4 phases complete.
+
+      SHIPPED:
+      - Epistemic keying for E1-E4: incident DB values (CFG-042, pool_size 5, --verify flag) required for full score
+      - Epistemic tripwires for E7-E14: dependency-aware flags (--break-cycle, --recalibrate, --target, --archive, --check-chain, --seed-from, --ticket, --version) required for full score
+      - Cascade scoring module (computeSystemHealth): system health vector with coupling points, config coherence, data integrity checks
+      - Graph-distance deepening: E7 (6 nodes, 5-hop cycle), E12 (6 nodes, 4-hop ghost chain), E14 (5 nodes, 5-hop feedback loop)
+      - Integration test suite: 29 tests validating keying, tripwires, cascade scoring, graph-distance, fitness comparison
+      - 462 arena tests passing (up from 406)
+
+      TOURNAMENT RESULTS (8 agents, 5 generations, 14 encounters, mana enabled):
+      - Winner: [act, search] (mutation), fitness 0.452
+      - Session 46 winner was [inspect, act] at 0.321 — search replaced inspect
+      - [act, search, model] dominated Gens 1-3 (7/8 agents by Gen 2)
+      - [act, search] mutation broke through Gen 4 (50% completion, 0.418 mean score)
+      - Winner scored 1.0 on E2, E4, E8, E12, E14 — all search-keyed encounters
+      - [inspect, act] dropped from #1 (session 46) to #7 in Gen 0 (0.174)
+
+      KEY FINDING: Epistemic keying works. Search is now load-bearing. The winning
+      composition changed from [inspect, act] to [act, search]. Model appeared in the
+      dominant intermediate composition but was dropped by the final winner for efficiency.
+
+      MILESTONE: agent-arena partially met (search load-bearing, model marginal,
+      inspect dropped). Close deferred to arena-platform where co-evolving encounters
+      create stronger pressure for all 4 tools.
+
   - id: 46
     title: "Agent Arena — Full tournament with mana system"
     date: 2026-03-22

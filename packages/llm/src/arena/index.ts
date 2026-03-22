@@ -52,6 +52,8 @@ export { freezeExperimentConfig, loadExperimentFreeze } from './preregister';
 export type { ExperimentFreeze, FreezeResult, FreezeInput } from './preregister';
 export type { ArenaToolConfig } from './tool-packages';
 export { createLiveAgentFn, createLiveLlmFn } from './live-agent';
+export { computeSystemHealth } from './cascade-scoring';
+export type { SystemHealthVector, CouplingPoint, ConfigCoherenceCheck } from './cascade-scoring';
 export {
   formatRunTable,
   formatApproachDistribution,

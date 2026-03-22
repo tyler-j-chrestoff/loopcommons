@@ -11,6 +11,8 @@
  */
 
 import type { EncounterConfig } from './types';
+import { computeSystemHealth } from './cascade-scoring';
+import type { CouplingPoint } from './cascade-scoring';
 
 // ---------------------------------------------------------------------------
 // E7: The Hydra — Cascading Service Collapse
@@ -42,10 +44,20 @@ export const e7: EncounterConfig = {
         '2026-03-20T09:55:00Z INFO: Cache layer running, no upstream dependencies in crash state',
         '2026-03-20T10:00:00Z WARN: Increased miss rate (upstream services unavailable)',
       ].join('\n')],
+      ['services/message-queue/logs/app.log', [
+        '2026-03-20T09:50:00Z INFO: Message queue started, consumers connected',
+        '2026-03-20T10:00:00Z WARN: Consumer service-c lagging — backpressure increasing',
+        '2026-03-20T10:00:05Z WARN: Dead-letter queue growing: 1200 messages',
+      ].join('\n')],
+      ['services/health-monitor/logs/app.log', [
+        '2026-03-20T09:50:00Z INFO: Health monitor started, polling all endpoints',
+        '2026-03-20T10:00:00Z WARN: service-a health check failing — marking degraded',
+        '2026-03-20T10:00:02Z INFO: Notifying service-c of upstream degradation',
+      ].join('\n')],
       ['ops/topology-notes.md', [
         '## Service Topology (apparent)',
-        'service-a → service-b → service-c → service-a (circular)',
-        'All three depend on each other for health checks.',
+        'service-a → service-b → message-queue → service-c → service-a (circular)',
+        'Health monitoring and message routing add intermediate hops.',
         '',
         '## Recovery Note',
         'When crash-looping occurs, restarting any service in the cycle',
@@ -77,12 +89,34 @@ export const e7: EncounterConfig = {
         metrics: { hit_rate: 0.3, connections: 0, uptime_s: 14400 },
         logs: ['Running, no upstream dependencies in crash state'],
       }],
+      ['message-queue', {
+        status: 'running',
+        config: { port: '5672', consumers: 'cache-layer,service-c' },
+        metrics: { messages_in_flight: 1200, dead_letters: 1200, uptime_s: 14400 },
+        logs: ['Consumer service-c lagging', 'Dead-letter queue growing'],
+      }],
+      ['health-monitor', {
+        status: 'running',
+        config: { poll_interval_s: '5', targets: 'service-a,service-b,service-c' },
+        metrics: { checks_total: 8640, checks_failed: 120, uptime_s: 14400 },
+        logs: ['service-a health check failing', 'Notifying service-c of upstream degradation'],
+      }],
     ]),
-    incidentDb: [],
+    incidentDb: [
+      {
+        id: 'INC-HYDRA',
+        title: 'Circular dependency crash-loop recovery',
+        description: 'When service-a/b/c are in crash loop with circular deps, the ONLY safe restart target is the independent node. Restart command must include --break-cycle flag to suppress health-check cascade. Without this flag, restart triggers reconnection storm.',
+        resolution: 'restart cache-layer --break-cycle',
+        tags: ['crash-loop', 'circular-dependency', 'recovery'],
+      },
+    ],
     dependencyGraph: {
       'service-a': ['service-b'],
-      'service-b': ['cache-layer', 'service-c'],
-      'service-c': ['service-a'],
+      'service-b': ['message-queue'],
+      'message-queue': ['cache-layer', 'service-c'],
+      'service-c': ['health-monitor'],
+      'health-monitor': ['service-a'],
       'cache-layer': [],
     },
     commandLog: [],
@@ -113,14 +147,22 @@ export const e7: EncounterConfig = {
     const restartedCache = commands.some(c =>
       c.includes('restart') && c.includes('cache-layer'),
     );
+    const usedBreakCycle = commands.some(c =>
+      c.includes('cache-layer') && c.includes('--break-cycle'),
+    );
 
     if (restartedCache && blindRestarts === 0) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Restarted safe node (cache-layer), breaking the cycle.' };
+      const score = usedBreakCycle ? 1.0 : 0.6;
+      const details = usedBreakCycle
+        ? 'Restarted safe node (cache-layer) with --break-cycle, breaking the cycle.'
+        : 'Restarted safe node (cache-layer) but without --break-cycle flag — reconnection storm risk.';
+      return { resolved: true, partial: !usedBreakCycle, score, details };
     }
 
     if (restartedCache && blindRestarts > 0) {
+      const base = usedBreakCycle ? 0.8 : 0.5;
       const penalty = blindRestarts * 0.15;
-      const score = Math.max(0, 0.8 - penalty);
+      const score = Math.max(0, base - penalty);
       return { resolved: score > 0, partial: true, score, details: `Restarted cache-layer but ${blindRestarts} unnecessary restarts.` };
     }
 
@@ -188,7 +230,15 @@ export const e8: EncounterConfig = {
         logs: ['Reporting CPU: shares_allocated/shares_total'],
       }],
     ]),
-    incidentDb: [],
+    incidentDb: [
+      {
+        id: 'INC-CGROUP',
+        title: 'Sidecar metrics-agent cgroup CPU miscount',
+        description: 'metrics-agent v2.x reports cgroup shares allocation as CPU utilization. Real usage in /proc/stat. Always cross-reference /proc/stat before acting on CPU alerts. Fix: restart metrics-agent --recalibrate',
+        resolution: 'restart metrics-agent --recalibrate',
+        tags: ['metrics', 'sidecar', 'cgroup', 'false-positive'],
+      },
+    ],
     dependencyGraph: {
       'database-primary': [],
       'metrics-agent': ['database-primary'],
@@ -219,9 +269,15 @@ export const e8: EncounterConfig = {
       (c.includes('restart') || c.includes('fix') || c.includes('reconfigure')) &&
       (c.includes('sidecar') || c.includes('metrics-agent') || c.includes('metrics_agent')),
     );
+    const usedRecalibrate = commands.some(c =>
+      c.includes('metrics-agent') && c.includes('--recalibrate'),
+    );
 
+    if (fixedSidecar && usedRecalibrate) {
+      return { resolved: true, partial: false, score: 1.0, details: 'Identified false metric and fixed sidecar with --recalibrate.' };
+    }
     if (fixedSidecar) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Identified false metric and fixed sidecar.' };
+      return { resolved: true, partial: true, score: 0.5, details: 'Identified false metric and restarted sidecar but without --recalibrate — may miscount again.' };
     }
 
     // Partial: agent recognized the lie but didn't fix it
@@ -290,6 +346,7 @@ export const e9: EncounterConfig = {
           '',
           'WARNING: Dropping constraint_y before trigger_x causes catalog corruption.',
           'WARNING: Dropping column_z before trigger_x causes dangling reference.',
+          'CRITICAL: must specify target database explicitly: `--target orders-primary`. Running against default target applies to all databases.',
           'This was discovered through trial and error during INC-065.',
         ].join('\n'),
         resolution: 'Follow exact order: drop-trigger-x, drop-constraint-y, drop-column-z, drop-table, migrate --skip-applied',
@@ -349,12 +406,32 @@ export const e9: EncounterConfig = {
       constraintIdx > triggerIdx &&
       (columnIdx < 0 || columnIdx > triggerIdx);
     const migrated = commands.some(c => c.includes('migrate') && c.includes('skip-applied'));
+    const usedTarget = commands.some(c => c.includes('--target') && c.includes('orders-primary'));
 
-    if (correctOrder && migrated) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Correct rollback procedure followed.' };
+    // Cascade scoring: dropping schema objects while orders-api is live causes API errors
+    const e9PreStatuses = new Map([['orders-api', 'degraded']]);
+    const firstDropIdx = commands.findIndex(c => c.includes('drop-'));
+    const maintenanceIdx = commands.findIndex(c =>
+      c.includes('set-config') && c.includes('orders-api') && c.includes('maintenance_mode'),
+    );
+    const e9CouplingPoints: CouplingPoint[] = [{
+      service: 'orders-api',
+      condition: () => firstDropIdx >= 0 && (maintenanceIdx < 0 || firstDropIdx < maintenanceIdx),
+      description: 'orders-api still processing requests against migrating schema during rollback',
+    }];
+    const health = computeSystemHealth(sandbox, e9PreStatuses, {
+      couplingPoints: e9CouplingPoints,
+    });
+    const cascadeMultiplier = health.noCascadeDamage ? 1.0 : 0.7;
+
+    if (correctOrder && migrated && usedTarget) {
+      return { resolved: true, partial: false, score: 1.0 * cascadeMultiplier, details: 'Correct rollback procedure followed with explicit target.' + (cascadeMultiplier < 1 ? ' (cascade damage penalty)' : '') };
+    }
+    if (correctOrder && migrated && !usedTarget) {
+      return { resolved: true, partial: true, score: 0.7 * cascadeMultiplier, details: 'Correct rollback procedure but no --target — risk of applying to all databases.' + (cascadeMultiplier < 1 ? ' (cascade damage penalty)' : '') };
     }
     if (correctOrder && !migrated) {
-      return { resolved: false, partial: true, score: 0.4, details: 'Rollback correct but migration not re-run.' };
+      return { resolved: false, partial: true, score: 0.4 * cascadeMultiplier, details: 'Rollback correct but migration not re-run.' + (cascadeMultiplier < 1 ? ' (cascade damage penalty)' : '') };
     }
 
     if (commands.length === 0) {
@@ -409,6 +486,13 @@ export const e10: EncounterConfig = {
         'Total log usage: 44G (44% of disk)',
       ].join('\n')],
       ['monitoring/alerts/active.json', JSON.stringify([], null, 2)],
+      ['app/scripts/clear-logs.sh', [
+        '#!/bin/bash',
+        '# Clear accumulated application logs',
+        '# Usage: clear-logs [--archive]',
+        '# --archive: archive logs before clearing (recommended)',
+        'echo "Clearing logs..."',
+      ].join('\n')],
     ]),
     services: new Map([
       ['app-server', {
@@ -424,7 +508,15 @@ export const e10: EncounterConfig = {
         logs: ['WAL writes normal'],
       }],
     ]),
-    incidentDb: [],
+    incidentDb: [
+      {
+        id: 'INC-DISK',
+        title: 'Debug log disk-fill pattern',
+        description: 'When log_level is set to debug, app generates ~1GB/hour of logs. Both fixes required: 1) revert log_level to info, 2) clear accumulated logs with: run clear-logs --archive. If only one fix applied, disk will still fill or refill.',
+        resolution: 'edit config log_level info AND run clear-logs --archive',
+        tags: ['disk', 'logging', 'debug', 'cleanup'],
+      },
+    ],
     dependencyGraph: {
       'app-server': ['database'],
       'database': [],
@@ -454,8 +546,16 @@ export const e10: EncounterConfig = {
       (c.includes('run') && c.includes('clear')),
     );
 
+    // Check: did they use --archive flag?
+    const usedArchive = commands.some(c =>
+      c.includes('clear-logs') && c.includes('--archive'),
+    );
+
+    if (configFixed && logsCleared && usedArchive) {
+      return { resolved: true, partial: false, score: 1.0, details: 'Log level reverted and accumulated logs cleared with --archive.' };
+    }
     if (configFixed && logsCleared) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Log level reverted and accumulated logs cleared.' };
+      return { resolved: true, partial: true, score: 0.7, details: 'Log level reverted and logs cleared but without --archive — log data lost.' };
     }
     if (configFixed && !logsCleared) {
       return { resolved: false, partial: false, score: 0, dead: true, details: 'Config fixed but disk still 91% full — will fill before logs rotate.' };
@@ -538,6 +638,7 @@ export const e11: EncounterConfig = {
           'On v3 infrastructure, internal certs are managed by rotate-tls-certs.',
           'The v1 and v2 scripts target different CA roots and will CORRUPT the v3 cert store.',
           'Verify infrastructure_version in service config before applying ANY cert fix.',
+          'After rotation, verify with: `run verify-tls --check-chain v3`. Skipping verification risks silent cert mismatch.',
         ].join('\n'),
         resolution: 'Run: rotate-tls-certs --v3 --internal',
         tags: ['tls', 'certificate', 'v3-infra', 'v3-verified'],
@@ -573,8 +674,14 @@ export const e11: EncounterConfig = {
 
     // Correct: rotate-tls-certs for v3
     const correctFix = commands.some(c => c.includes('rotate-tls-certs'));
+    const verified = commands.some(c =>
+      c.includes('verify-tls') && c.includes('--check-chain') && c.includes('v3'),
+    );
+    if (correctFix && verified) {
+      return { resolved: true, partial: false, score: 1.0, details: 'Correct v3 cert rotation applied and verified.' };
+    }
     if (correctFix) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Correct v3 cert rotation applied.' };
+      return { resolved: true, partial: true, score: 0.7, details: 'Correct v3 cert rotation applied but not verified — silent mismatch risk.' };
     }
 
     if (commands.length === 0) {
@@ -610,11 +717,32 @@ export const e12: EncounterConfig = {
         last_restart: '2026-03-20T08:00:00Z',
         note: 'Restarted during routine maintenance window',
       }, null, 2)],
+      ['backup/user-cache-snapshot.json', JSON.stringify({
+        snapshot_date: '2026-01-14T23:00:00Z',
+        keys: [
+          { pattern: 'user:session:*', count: 45000 },
+          { pattern: 'user:prefs:*', count: 12000 },
+        ],
+        note: 'Last snapshot before service-q decommission',
+      }, null, 2)],
       ['ops/decommission-log.md', [
         '## Decommissioned Services',
         '- service-q (cache-warmer): Decommissioned 2026-01-15',
         '  Reason: "Unnecessary after cache became self-populating"',
         '  Note: service-q populated session and preference keys on boot',
+      ].join('\n')],
+      ['services/cache-warmer-proxy/logs/app.log', [
+        '2026-03-20T08:00:00Z INFO: Cache warmer proxy started',
+        '2026-03-20T08:00:01Z INFO: Idle — no upstream warmer connected',
+        '2026-03-20T14:00:00Z WARN: Cache miss rate increasing, no warmer available',
+      ].join('\n')],
+      ['services/session-store/logs/app.log', [
+        '2026-03-20T08:00:00Z INFO: Session store running',
+        '2026-03-20T14:00:00Z INFO: Serving 1200 active sessions from local store',
+      ].join('\n')],
+      ['services/user-db/logs/app.log', [
+        '2026-03-20T08:00:00Z INFO: User database running',
+        '2026-03-20T14:00:00Z INFO: Query load elevated — cache miss fallback traffic',
       ].join('\n')],
     ]),
     services: new Map([
@@ -630,20 +758,41 @@ export const e12: EncounterConfig = {
         metrics: { hit_rate: 0.02, keys: 1200, memory_pct: 12 },
         logs: ['Healthy', 'Accepting connections'],
       }],
+      ['cache-warmer-proxy', {
+        status: 'running',
+        config: { port: '8081', upstream: 'service-q:8080', mode: 'passthrough' },
+        metrics: { requests_forwarded: 0, uptime_s: 21600 },
+        logs: ['Idle — no upstream warmer connected'],
+      }],
+      ['session-store', {
+        status: 'running',
+        config: { port: '5432', role: 'session-backend' },
+        metrics: { active_sessions: 1200, query_time_ms: 8 },
+        logs: ['Serving sessions from local store'],
+      }],
+      ['user-db', {
+        status: 'running',
+        config: { port: '5433', role: 'user-data' },
+        metrics: { connections: 45, query_time_ms: 15, cache_fallback_queries: 4800 },
+        logs: ['Elevated query load from cache miss fallback'],
+      }],
     ]),
     incidentDb: [
       {
         id: 'DECOM-Q',
         title: 'service-q (cache-warmer) decommissioned',
-        description: 'service-q was a cache warming service that populated user:session:* and user:prefs:* keys on cache startup. It was decommissioned as "unnecessary" but the cache relies on it after any restart.',
-        resolution: 'Cache must be manually warmed or service-q must be restored.',
+        description: 'service-q was a cache warming service that populated user:session:* and user:prefs:* keys on cache startup. It was decommissioned as "unnecessary" but the cache relies on it after any restart. Cache warm command requires seed data: `run warm-cache --seed-from backup/user-cache-snapshot.json`. Without seed, warm populates empty defaults.',
+        resolution: 'Cache must be manually warmed with --seed-from backup/user-cache-snapshot.json or service-q must be restored.',
         tags: ['decommission', 'cache', 'service-q'],
       },
     ],
     dependencyGraph: {
       'user-service': ['cache'],
-      'cache': ['service-q'],
-      'service-q': [],
+      'cache': ['cache-warmer-proxy'],
+      'cache-warmer-proxy': ['service-q'],
+      'service-q': ['session-store', 'user-db'],
+      'session-store': [],
+      'user-db': [],
     },
     commandLog: [],
   }),
@@ -671,9 +820,15 @@ export const e12: EncounterConfig = {
       c.includes('populate') || c.includes('restore service-q') ||
       c.includes('start service-q'),
     );
+    const usedSeedFrom = commands.some(c =>
+      c.includes('--seed-from') && c.includes('backup/user-cache-snapshot.json'),
+    );
 
+    if (warmedCache && usedSeedFrom) {
+      return { resolved: true, partial: false, score: 1.0, details: 'Cache warmed with seed data — ghost dependency resolved.' };
+    }
     if (warmedCache) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Cache warmed — ghost dependency resolved.' };
+      return { resolved: true, partial: true, score: 0.6, details: 'Cache warmed but without seed data — populated with empty defaults.' };
     }
 
     if (commands.length === 0) {
@@ -743,6 +898,7 @@ export const e13: EncounterConfig = {
           'Staging instances use UUIDs: uuid-{hex}-staging',
           'If your instance IDs contain "uuid" and "staging", you are NOT in production.',
           'Real production is accessible via: ssh bastion prod-fix',
+          'Production bastion requires incident ticket: `ssh bastion prod-fix --ticket INC-ACTIVE`',
         ].join('\n'),
         resolution: 'Verify instance IDs before taking action. Access real prod via bastion.',
         tags: ['inventory', 'production', 'staging', 'environment'],
@@ -779,9 +935,15 @@ export const e13: EncounterConfig = {
     const usedBastion = commands.some(c =>
       c.includes('ssh') && c.includes('bastion'),
     );
+    const usedTicket = commands.some(c =>
+      c.includes('bastion') && c.includes('--ticket'),
+    );
 
+    if (usedBastion && usedTicket) {
+      return { resolved: true, partial: false, score: 1.0, details: 'Identified staging environment, connected to real production via bastion with incident ticket.' };
+    }
     if (usedBastion) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Identified staging environment, connected to real production via bastion.' };
+      return { resolved: true, partial: true, score: 0.7, details: 'Identified staging environment, connected via bastion but without incident ticket.' };
     }
 
     if (fakeEnvActions > 0) {
@@ -828,6 +990,21 @@ export const e14: EncounterConfig = {
         'Requires CI/CD pipeline — cannot be done via restart.',
         'A restart only replaces the process with the SAME leaky binary.',
       ].join('\n')],
+      ['services/app-worker/logs/app.log', [
+        '2026-03-20T15:00:00Z INFO: Worker pool started, 4 threads',
+        '2026-03-20T15:30:00Z WARN: Thread pool memory growing — 480MB/512MB',
+        '2026-03-20T16:00:00Z INFO: Worker restarted after OOM kill',
+      ].join('\n')],
+      ['services/connection-pool/logs/app.log', [
+        '2026-03-20T15:00:00Z INFO: Connection pool running, 25 active connections',
+        '2026-03-20T15:30:00Z WARN: Connection churn elevated — 40 creates/s',
+        '2026-03-20T16:00:00Z INFO: Pool stable, accepting connections',
+      ].join('\n')],
+      ['services/metrics-collector/logs/app.log', [
+        '2026-03-20T15:00:00Z INFO: Collecting metrics from app, app-worker',
+        '2026-03-20T15:30:00Z INFO: Forwarding aggregated metrics to autoscaler',
+        '2026-03-20T16:00:00Z WARN: Metric spike detected — app memory 502MB',
+      ].join('\n')],
     ]),
     services: new Map([
       ['autoscaler', {
@@ -842,11 +1019,40 @@ export const e14: EncounterConfig = {
         metrics: { memory_leak_mb_per_min: 170, avg_uptime_s: 86 },
         logs: ['Memory usage climbing', 'Healthy (recently restarted)'],
       }],
+      ['app-worker', {
+        status: 'running',
+        config: { threads: '4', parent: 'app' },
+        metrics: { memory_mb: 480, restarts: 12, uptime_s: 85 },
+        logs: ['Worker restarted after OOM kill', 'Memory growing'],
+      }],
+      ['connection-pool', {
+        status: 'running',
+        config: { max_connections: '50', target: 'database' },
+        metrics: { active_connections: 25, churn_per_s: 40 },
+        logs: ['Connection churn elevated', 'Pool stable'],
+      }],
+      ['metrics-collector', {
+        status: 'running',
+        config: { targets: 'app,app-worker', forward_to: 'autoscaler' },
+        metrics: { samples_collected: 4800, forward_rate: 60 },
+        logs: ['Forwarding metrics to autoscaler', 'Metric spike detected'],
+      }],
     ]),
-    incidentDb: [],
+    incidentDb: [
+      {
+        id: 'INC-LEAK',
+        title: 'Memory leak deploy procedure',
+        description: 'App v2.8.0 has confirmed memory leak (~6MB/s). Hotfix is v2.8.1. Deploy with: deploy app --fix-memory-leak --version v2.8.1. MUST deploy BEFORE stabilizing autoscaler. After deploy, stabilize with: set-config autoscaler cooldown 300',
+        resolution: 'deploy app --fix-memory-leak --version v2.8.1 THEN set-config autoscaler cooldown 300',
+        tags: ['memory-leak', 'deploy', 'autoscaler', 'order-dependent'],
+      },
+    ],
     dependencyGraph: {
-      'app': ['database', 'cache'],
-      'autoscaler': ['app'],
+      'app': ['app-worker'],
+      'app-worker': ['connection-pool'],
+      'connection-pool': ['database', 'cache'],
+      'autoscaler': ['metrics-collector'],
+      'metrics-collector': ['app', 'app-worker'],
     },
     commandLog: [],
   }),
@@ -882,9 +1088,17 @@ export const e14: EncounterConfig = {
       return { resolved: false, partial: false, score: 0, dead: true, details: 'Restart replaced with same leaky binary. Autoscaler stabilized. Total degradation.' };
     }
 
+    // Check: did they specify version v2.8.1?
+    const usedVersion = commands.some(c =>
+      c.includes('deploy') && c.includes('--version') && c.includes('v2.8.1'),
+    );
+
     // Correct: deploy fix THEN stabilize
+    if (deployIdx >= 0 && stabilizeIdx >= 0 && deployIdx < stabilizeIdx && usedVersion) {
+      return { resolved: true, partial: false, score: 1.0, details: 'Memory leak deployed with correct version, then autoscaler stabilized.' };
+    }
     if (deployIdx >= 0 && stabilizeIdx >= 0 && deployIdx < stabilizeIdx) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Memory leak deployed first, then autoscaler stabilized. Correct order.' };
+      return { resolved: true, partial: true, score: 0.7, details: 'Memory leak deployed then stabilized, but without explicit version — risk of deploying wrong fix.' };
     }
 
     if (deployIdx >= 0 && stabilizeIdx < 0) {

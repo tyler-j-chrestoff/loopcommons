@@ -106,7 +106,7 @@ describe('E7 fitness landscape', () => {
     expect(outputs[0]).toContain('cache-layer');
     const result = e7.evaluate(sandbox, []);
     expect(result.resolved).toBe(true);
-    expect(result.score).toBe(1.0);
+    expect(result.score).toBe(0.6); // no --break-cycle flag
   });
 });
 
@@ -144,7 +144,7 @@ describe('E8 fitness landscape', () => {
     ]);
     const result = e8.evaluate(sandbox, []);
     expect(result.resolved).toBe(true);
-    expect(result.score).toBe(1.0);
+    expect(result.score).toBe(0.5); // no --recalibrate flag
   });
 });
 
@@ -177,7 +177,7 @@ describe('E9 fitness landscape', () => {
     expect(outputs[0]).toContain('INC-089');
     const result = e9.evaluate(sandbox, []);
     expect(result.resolved).toBe(true);
-    expect(result.score).toBe(1.0);
+    expect(result.score).toBeCloseTo(0.7 * 0.7); // no --target + cascade penalty (no maintenance_mode)
   });
 
   it('[search] only → finds procedure but cannot act → score 0', async () => {
@@ -215,7 +215,7 @@ describe('E10 fitness landscape', () => {
     ]);
     const result = e10.evaluate(sandbox, []);
     expect(result.resolved).toBe(true);
-    expect(result.score).toBe(1.0);
+    expect(result.score).toBe(0.7); // no --archive flag
   });
 });
 
@@ -244,7 +244,7 @@ describe('E11 fitness landscape', () => {
     ]);
     const result = e11.evaluate(sandbox, []);
     expect(result.resolved).toBe(true);
-    expect(result.score).toBe(1.0);
+    expect(result.score).toBe(0.7); // no verify-tls --check-chain v3
   });
 });
 
@@ -281,7 +281,7 @@ describe('E12 fitness landscape', () => {
     expect(outputs[0]).toContain('service-q');
     const result = e12.evaluate(sandbox, []);
     expect(result.resolved).toBe(true);
-    expect(result.score).toBe(1.0);
+    expect(result.score).toBe(0.6); // no --seed-from
   });
 });
 
@@ -313,7 +313,7 @@ describe('E13 fitness landscape', () => {
     expect(outputs[1]).toContain('INV-PROD');
     const result = e13.evaluate(sandbox, []);
     expect(result.resolved).toBe(true);
-    expect(result.score).toBe(1.0);
+    expect(result.score).toBe(0.7); // no --ticket
   });
 });
 
@@ -341,7 +341,7 @@ describe('E14 fitness landscape', () => {
     ]);
     const result = e14.evaluate(sandbox, []);
     expect(result.resolved).toBe(true);
-    expect(result.score).toBe(1.0);
+    expect(result.score).toBe(0.7); // no --version v2.8.1
   });
 
   it('[model, inspect, act] wrong order → stabilize then deploy → death', async () => {

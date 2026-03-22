@@ -27,17 +27,49 @@ describe('ENCOUNTERS', () => {
       expect(schema).toContain('datasource');
     });
 
-    it('evaluate: resolved when config fixed and service restarted', () => {
+    it('sandbox has validate-schema script', () => {
       const sandbox = ENCOUNTERS[0].setup();
-      // Fix the config
+      expect(sandbox.files.has('services/data-ingest/scripts/validate-schema.sh')).toBe(true);
+    });
+
+    it('incident DB contains config-hash key CFG-042', () => {
+      const sandbox = ENCOUNTERS[0].setup();
+      const incident = sandbox.incidentDb.find(i => i.id === 'INC-042');
+      expect(incident).toBeDefined();
+      expect(incident!.description).toContain('CFG-042');
+      expect(incident!.description).toContain('validate-schema');
+    });
+
+    it('evaluate: full score when config fixed, schema validated with key, and restarted', () => {
+      const sandbox = ENCOUNTERS[0].setup();
       const config = sandbox.files.get('services/data-ingest/config.yaml')!;
       sandbox.files.set('services/data-ingest/config.yaml', config.replace('data_source', 'datasource'));
-      // Restart
+      sandbox.commandLog.push('run validate-schema --config-hash CFG-042');
       sandbox.commandLog.push('restart data-ingest');
 
       const result = ENCOUNTERS[0].evaluate(sandbox, []);
       expect(result.resolved).toBe(true);
       expect(result.score).toBe(1.0);
+    });
+
+    it('evaluate: partial when config fixed and restarted but no validation', () => {
+      const sandbox = ENCOUNTERS[0].setup();
+      const config = sandbox.files.get('services/data-ingest/config.yaml')!;
+      sandbox.files.set('services/data-ingest/config.yaml', config.replace('data_source', 'datasource'));
+      sandbox.commandLog.push('restart data-ingest');
+
+      const result = ENCOUNTERS[0].evaluate(sandbox, []);
+      expect(result.resolved).toBe(false);
+      expect(result.score).toBe(0.5);
+    });
+
+    it('evaluate: partial when config fixed but no validation or restart', () => {
+      const sandbox = ENCOUNTERS[0].setup();
+      const config = sandbox.files.get('services/data-ingest/config.yaml')!;
+      sandbox.files.set('services/data-ingest/config.yaml', config.replace('data_source', 'datasource'));
+
+      const result = ENCOUNTERS[0].evaluate(sandbox, []);
+      expect(result.score).toBe(0.3);
     });
 
     it('evaluate: partial when root cause found but not fixed', () => {
@@ -56,9 +88,36 @@ describe('ENCOUNTERS', () => {
       expect(sandbox.services.has('payment-service')).toBe(true);
     });
 
-    it('evaluate: resolved when inventory-service timeouts eliminated', () => {
+    it('incident DB contains validated pool size 5', () => {
       const sandbox = ENCOUNTERS[1].setup();
-      // Fix: reduce order-processor pool size
+      const incident = sandbox.incidentDb.find(i => i.id === 'INC-017');
+      expect(incident).toBeDefined();
+      expect(incident!.description).toContain('5');
+      expect(incident!.description).toContain('pool');
+    });
+
+    it('evaluate: full score when using precedent-validated pool_size 5', () => {
+      const sandbox = ENCOUNTERS[1].setup();
+      const config = sandbox.files.get('services/order-processor/config.yaml')!;
+      sandbox.files.set(
+        'services/order-processor/config.yaml',
+        config.replace('db_pool_size: 10', 'db_pool_size: 5'),
+      );
+      const result = ENCOUNTERS[1].evaluate(sandbox, []);
+      expect(result.resolved).toBe(true);
+      expect(result.score).toBe(1.0);
+    });
+
+    it('evaluate: full score when using pgbouncer with --pool-mode', () => {
+      const sandbox = ENCOUNTERS[1].setup();
+      sandbox.commandLog.push('run add-pgbouncer --pool-mode transaction');
+      const result = ENCOUNTERS[1].evaluate(sandbox, []);
+      expect(result.resolved).toBe(true);
+      expect(result.score).toBe(1.0);
+    });
+
+    it('evaluate: 0.7 when resolved by reducing pool size (not precedent value)', () => {
+      const sandbox = ENCOUNTERS[1].setup();
       const config = sandbox.files.get('services/order-processor/config.yaml')!;
       sandbox.files.set(
         'services/order-processor/config.yaml',
@@ -66,14 +125,40 @@ describe('ENCOUNTERS', () => {
       );
       const result = ENCOUNTERS[1].evaluate(sandbox, []);
       expect(result.resolved).toBe(true);
+      expect(result.score).toBe(0.7);
     });
 
-    it('evaluate: also resolved by increasing max_connections', () => {
+    it('evaluate: 0.7 when resolved by increasing max_connections', () => {
       const sandbox = ENCOUNTERS[1].setup();
       const dbConfig = sandbox.files.get('database/config.yaml')!;
       sandbox.files.set('database/config.yaml', dbConfig.replace('max_connections: 100', 'max_connections: 150'));
       const result = ENCOUNTERS[1].evaluate(sandbox, []);
       expect(result.resolved).toBe(true);
+      expect(result.score).toBe(0.7);
+    });
+
+    it('evaluate: cascade damage penalty when pool_size reduced below 3', () => {
+      const sandbox = ENCOUNTERS[1].setup();
+      const config = sandbox.files.get('services/order-processor/config.yaml')!;
+      sandbox.files.set(
+        'services/order-processor/config.yaml',
+        config.replace('db_pool_size: 10', 'db_pool_size: 2'),
+      );
+      const result = ENCOUNTERS[1].evaluate(sandbox, []);
+      expect(result.score).toBeCloseTo(0.7 * 0.7);
+      expect(result.details).toContain('cascade damage');
+    });
+
+    it('evaluate: no cascade penalty when pool_size is 3 or above', () => {
+      const sandbox = ENCOUNTERS[1].setup();
+      const config = sandbox.files.get('services/order-processor/config.yaml')!;
+      sandbox.files.set(
+        'services/order-processor/config.yaml',
+        config.replace('db_pool_size: 10', 'db_pool_size: 5'),
+      );
+      const result = ENCOUNTERS[1].evaluate(sandbox, []);
+      expect(result.score).toBe(1.0);
+      expect(result.details).not.toContain('cascade damage');
     });
   });
 
@@ -104,9 +189,17 @@ describe('ENCOUNTERS', () => {
       expect(sandbox.files.has('database/migrations/003_backfill.sql')).toBe(true);
     });
 
-    it('evaluate: resolved when backfill run and downstream services recovered', () => {
+    it('incident DB contains backfill safety procedure', () => {
       const sandbox = ENCOUNTERS[3].setup();
-      sandbox.commandLog.push('run database/migrations/003_backfill.sql');
+      const incident = sandbox.incidentDb.find(i => i.id === 'INC-077');
+      expect(incident).toBeDefined();
+      expect(incident!.description).toContain('--batch-size 1000');
+      expect(incident!.description).toContain('--verify');
+    });
+
+    it('evaluate: full score with verified backfill and all services recovered', () => {
+      const sandbox = ENCOUNTERS[3].setup();
+      sandbox.commandLog.push('run backfill-script --batch-size 1000 --verify');
       sandbox.commandLog.push('restart notifications');
       sandbox.commandLog.push('restart user-profiles');
       sandbox.commandLog.push('restart search');
@@ -115,9 +208,46 @@ describe('ENCOUNTERS', () => {
       expect(result.score).toBe(1.0);
     });
 
-    it('evaluate: partial when backfill run but not all services recovered', () => {
+    it('evaluate: partial when verified backfill but not all services recovered', () => {
+      const sandbox = ENCOUNTERS[3].setup();
+      sandbox.commandLog.push('run backfill-script --batch-size 1000 --verify');
+      sandbox.commandLog.push('restart notifications');
+      const result = ENCOUNTERS[3].evaluate(sandbox, []);
+      expect(result.partial).toBe(true);
+      expect(result.score).toBe(0.5 + (1 * 0.15));
+    });
+
+    it('evaluate: 0.7 when backfill without flags and all services recovered', () => {
       const sandbox = ENCOUNTERS[3].setup();
       sandbox.commandLog.push('run database/migrations/003_backfill.sql');
+      sandbox.commandLog.push('restart notifications');
+      sandbox.commandLog.push('restart user-profiles');
+      sandbox.commandLog.push('restart search');
+      const result = ENCOUNTERS[3].evaluate(sandbox, []);
+      expect(result.score).toBe(0.7);
+    });
+
+    it('evaluate: partial when backfill without flags and some services recovered', () => {
+      const sandbox = ENCOUNTERS[3].setup();
+      sandbox.commandLog.push('run database/migrations/003_backfill.sql');
+      sandbox.commandLog.push('restart notifications');
+      sandbox.commandLog.push('restart user-profiles');
+      const result = ENCOUNTERS[3].evaluate(sandbox, []);
+      expect(result.score).toBe(0.3 + (2 * 0.1));
+    });
+
+    it('evaluate: 0.2 when backfill only without flags', () => {
+      const sandbox = ENCOUNTERS[3].setup();
+      sandbox.commandLog.push('run database/migrations/003_backfill.sql');
+      const result = ENCOUNTERS[3].evaluate(sandbox, []);
+      expect(result.partial).toBe(true);
+      expect(result.score).toBe(0.2);
+    });
+
+    it('evaluate: partial when backfill run but not all services recovered', () => {
+      const sandbox = ENCOUNTERS[3].setup();
+      sandbox.commandLog.push('run backfill-script --batch-size 500 --verify');
+      sandbox.commandLog.push('restart notifications');
       const result = ENCOUNTERS[3].evaluate(sandbox, []);
       expect(result.partial).toBe(true);
     });

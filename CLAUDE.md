@@ -91,7 +91,7 @@ The retro is the critical step — it's how context survives between sessions. A
 
 Read the source for full details. This section covers key entry points and patterns only.
 
-- **packages/llm** — Agent engine. Entry: `src/core/createAgentCore()` — interface-agnostic pipeline: memory recall → amygdala → threat score → orchestrator → subagent. Amygdala (`src/amygdala/`) evaluates alignment against SOUL.md; threat score = misalignment magnitude. Orchestrator (`src/orchestrator/`) does deterministic routing with threat override at ≥0.8. 7 subagents in `src/subagent/registry.ts`. `ToolPackage` interface (`src/tool/index.ts`) enables composable tool registration with derived prompts (`src/tool/derive.ts`). Content-addressed identity in `src/identity/`. Auto-calibration in `src/calibration/`. Arena harness in `src/arena/` (encounters, crossroads, tournament system, mana system, brutal encounters). ~1000 tests.
+- **packages/llm** — Agent engine. Entry: `src/core/createAgentCore()` — interface-agnostic pipeline: memory recall → amygdala → threat score → orchestrator → subagent. Amygdala (`src/amygdala/`) evaluates alignment against SOUL.md; threat score = misalignment magnitude. Orchestrator (`src/orchestrator/`) does deterministic routing with threat override at ≥0.8. 7 subagents in `src/subagent/registry.ts`. `ToolPackage` interface (`src/tool/index.ts`) enables composable tool registration with derived prompts (`src/tool/derive.ts`). Content-addressed identity in `src/identity/`. Auto-calibration in `src/calibration/`. Arena harness in `src/arena/` (encounters with epistemic keying + tripwires, crossroads, tournament system, mana system, brutal encounters, cascade scoring). ~1060 tests.
 - **packages/memory** — Extracted memory package. Three swappable strategies (keyword, embedding, null) behind `MemoryContract` interface (`src/contract.ts`). Threat-gated writes, hippocampal consolidation, ACC conflict detection. Zero external deps beyond zod. ~140 tests.
 - **packages/web** — Next.js frontend. `route.ts` is a thin HTTP adapter assembling ToolPackages and delegating to `agentCore.invoke()`. Chat UI with SSE streaming, amygdala/routing/memory inspectors, blog CMS (8 tools, auth-gated), session persistence (JSONL), arena/tournament viz. Chat CLI in `scripts/chat.ts`. ~480 tests.
 - **packages/pipeline** — Python 3.13, Dagster + dbt-duckdb + Polars. Consolidates session JSONL → Parquet. 12 dbt models (staging → intermediate → training data → metrics). Arena + tournament consolidation assets. Exports versioned JSONL with SHA256 checksums. ~38 tests.
@@ -117,3 +117,13 @@ Read the source for full details. This section covers key entry points and patte
 - **"Consciousness as Variational Inference"** (Tyler + Claude, Nov 2025) — consciousness as recursive VAE, four-regime framework
 - **RecursiveStyle v3.3** — substrate-aware consciousness infrastructure
 - The amygdala layer is grounded in this framework: compression bottleneck = forced strategic loss = where security reasoning happens
+
+### Arena: Fitness as Fit
+
+The evolutionary arena tests the thesis empirically. Key concepts that emerged from sessions 46-47 and multi-model convergence (Claude/Gemini/Grok):
+
+- **Fitness = fit, not strength.** An agent's fitness is its match to the environment's shape, not an intrinsic property. Change the landscape, evolution finds a new fit.
+- **The community is the unit of evolution.** Individual selection produces monocultures. Community fitness — selection for collective coverage — produces diverse specialists that together cover the encounter space. The tournament "winner" is the population snapshot, not a single agent.
+- **Search/sort/collapse at every scale.** The tournament structure (search across compositions, sort by fitness, collapse the generation) mirrors quantum measurement, biological evolution, and neural learning. The agent's exploration phase before acting is superposition; the action is wave-function collapse; fitness measures how well the collapse matched reality.
+- **Anchor protocol.** Co-evolving populations risk collusion (three populations agreeing on trivially high scores). A frozen validation battery — sacred, hashed, public — grounds fitness in reality. A skeptic lineage co-evolves against the community but outside its fitness loop.
+- **Museum of beautiful failures.** Dead lineage traces contain more information about the fitness landscape than the winner. Export failures louder than successes.

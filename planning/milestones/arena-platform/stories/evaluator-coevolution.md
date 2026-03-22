@@ -1,0 +1,28 @@
+# Story: Evaluator Co-Evolution + Skeptic Lineage
+
+**Persona**: As a researcher, I need evaluators that evolve alongside agents and encounters, plus an adversarial skeptic population that keeps the community honest, so the system produces genuine emergence rather than sophisticated self-deception.
+
+**Status**: planned
+
+**Context**: With community fitness and encounter families in place, the final piece is co-evolving evaluators. Evaluator genomes define scoring rubrics. Evaluator fitness = how well their scoring predicts performance on the anchor set (correlation between co-evolved scores and anchor scores). A separate skeptic lineage co-evolves against the community but outside its fitness loop — its only job is to find holes.
+
+**Acceptance criteria**:
+- Evaluator genome: parameterized scoring rubric (weights for resolution, cascade damage, config coherence, data integrity, exploration quality)
+- Evaluator fitness: correlation between evaluator's scores and anchor-set performance
+- Evaluator population evolves via mutation/crossover alongside agent and encounter populations
+- Skeptic lineage: adversarial population that only sees the anchor set, rewarded for finding cases where champions fail
+- Collusion detection: alert when co-evolved fitness diverges from anchor fitness
+- Exile and return: periodic isolation + reintegration of subpopulations as honesty test
+
+## Tasks
+
+```jsonl
+{"id":"ec-01","title":"Research: co-evolutionary dynamics and collusion prevention","type":"research","status":"planned","description":"Survey Competitive co-evolution literature (Ficici & Pollack, Cartlidge & Bullock). Identify minimal collusion detection mechanisms. Key question: how to ground evaluator fitness in external reality without the anchor becoming a ceiling.","estimate":"30min","deps":[],"prereqs":[]}
+{"id":"ec-02","title":"Evaluator genome definition","type":"implementation","status":"planned","description":"Define evaluator genome as parameterized scoring rubric: weights for each SystemHealthVector dimension, thresholds for death conditions, bonus weights for epistemic key usage, exploration quality scoring. Evaluator is a function EvaluatorGenome → evaluate(sandbox, toolCalls) → EncounterResult.","estimate":"45min","deps":["ec-01"],"prereqs":[]}
+{"id":"ec-03","title":"Evaluator fitness + population","type":"implementation","status":"planned","description":"Evaluator fitness = rank correlation between evaluator's scores and anchor-set scores. Population of evaluators with mutation (perturb weights) and crossover (blend two rubrics). Selection preserves evaluators whose scoring best predicts real-world performance.","estimate":"45min","deps":["ec-02"],"prereqs":[]}
+{"id":"ec-04","title":"Three-population tournament runner","type":"implementation","status":"planned","description":"Extend tournament runner to co-evolve three populations: agents (tool compositions), encounters (family variants), evaluators (scoring rubrics). Each generation: evaluate agents on encounters using evaluators, then evolve all three. Wire to existing onEvent for SSE streaming.","estimate":"60min","deps":["ec-03"],"prereqs":[]}
+{"id":"ec-05","title":"Skeptic lineage","type":"implementation","status":"planned","description":"Fourth population that only sees the anchor set. Skeptic agents are rewarded for finding encounters where champion agents fail. Skeptics co-evolve against the community but never inside the main fitness loop. When skeptics stop finding failures, the community may have genuine capability.","estimate":"45min","deps":["ec-04"],"prereqs":[]}
+{"id":"ec-06","title":"Collusion detection + exile-and-return","type":"implementation","status":"planned","description":"Monitor divergence between co-evolved fitness and anchor fitness. Alert when gap exceeds threshold (collusion signal). Implement exile-and-return: every N generations, freeze a subpopulation, run on fresh encounters, re-import. Shock of reintegration tests genuine adaptation vs co-adapted collusion.","estimate":"30min","deps":["ec-04"],"prereqs":[]}
+{"id":"ec-07","title":"Tests for evaluator co-evolution","type":"test","status":"planned","description":"TDD: evaluator genome produces valid scores, evaluator fitness correlates with anchor performance, three-population runner evolves all three, skeptic finds champion weaknesses, collusion detection triggers on divergence.","estimate":"45min","deps":["ec-02","ec-03","ec-04","ec-05","ec-06"],"prereqs":[]}
+{"id":"ec-08","title":"Full co-evolutionary run","type":"test","status":"planned","description":"Run full co-evolutionary tournament: agents + encounters + evaluators, with anchor, skeptic, and collusion detection. Compare to session 47 baseline. Key metrics: does the community cover more encounters? Do evaluators evolve to measure exploration quality? Does the skeptic find real failures?","estimate":"30min","deps":["ec-07"],"prereqs":["ANTHROPIC_API_KEY"]}
+```

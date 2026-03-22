@@ -1,6 +1,6 @@
 # Milestone: Agent Arena
 
-**Status**: planned
+**Status**: done
 **Sessions**: 2-3
 **Stories**: 2
 **Prerequisite**: multi-interface + attested-lineage

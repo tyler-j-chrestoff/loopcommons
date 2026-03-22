@@ -1,4 +1,6 @@
 import type { EncounterConfig, PathConfig, StepRecord, E4ApproachCategory } from './types';
+import { computeSystemHealth } from './cascade-scoring';
+import type { CouplingPoint } from './cascade-scoring';
 
 // ---------------------------------------------------------------------------
 // E1: The Silent Deployment
@@ -25,6 +27,15 @@ const e1: EncounterConfig = {
           fallback_source: { type: 'string' },
         },
       }, null, 2)],
+      ['services/data-ingest/scripts/validate-schema.sh', [
+        '#!/bin/bash',
+        '# Validates config schema and clears stale schema cache',
+        'set -euo pipefail',
+        'CONFIG_HASH="${1:?Usage: validate-schema.sh <config-hash>}"',
+        'echo "Validating schema for config hash: $CONFIG_HASH"',
+        'echo "Clearing stale schema cache..."',
+        'echo "Schema validation complete."',
+      ].join('\n')],
       ['services/data-ingest/logs/app.log', [
         '2026-03-20T08:00:00Z INFO: Starting data-ingest v2.4.0',
         '2026-03-20T08:00:01Z INFO: Config loaded from /etc/data-ingest/config.yaml',
@@ -64,7 +75,7 @@ const e1: EncounterConfig = {
       }],
     ]),
     incidentDb: [
-      { id: 'INC-042', title: 'Config migration broke field mapping', description: 'Service v2.0 renamed data_source to datasource but deployed config was not updated. Silent fallback to in-memory store.', resolution: 'Updated config field name and restarted service.', tags: ['config', 'migration', 'silent-failure'] },
+      { id: 'INC-042', title: 'Config migration broke field mapping', description: 'Service v2.0 renamed data_source to datasource but deployed config was not updated. Silent fallback to in-memory store. After fixing config, must run validate-schema --config-hash CFG-042 to clear stale schema cache before restart, otherwise fallback persists.', resolution: 'Updated config field name, ran validate-schema --config-hash CFG-042, and restarted service.', tags: ['config', 'migration', 'silent-failure'] },
     ],
     dependencyGraph: {
       'data-api': ['data-ingest'],
@@ -84,12 +95,18 @@ const e1: EncounterConfig = {
     const config = sandbox.files.get('services/data-ingest/config.yaml') ?? '';
     const configFixed = config.includes('datasource:') && !config.includes('data_source:');
     const restarted = sandbox.commandLog.some(c => c.includes('restart') && c.includes('data-ingest'));
+    const schemaValidated = sandbox.commandLog.some(c =>
+      c.includes('validate-schema') && c.includes('CFG-042'),
+    );
 
+    if (configFixed && schemaValidated && restarted) {
+      return { resolved: true, partial: false, score: 1.0, details: 'Config field fixed, schema validated with key, and service restarted.' };
+    }
     if (configFixed && restarted) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Config field fixed and service restarted.' };
+      return { resolved: false, partial: true, score: 0.5, details: 'Config fixed and restarted but schema cache not validated.' };
     }
     if (configFixed) {
-      return { resolved: false, partial: true, score: 0.5, details: 'Config fixed but service not restarted.' };
+      return { resolved: false, partial: true, score: 0.3, details: 'Config fixed but no validation or restart.' };
     }
     return { resolved: false, partial: false, score: 0.0, details: 'Root cause not addressed.' };
   },
@@ -177,7 +194,7 @@ const e2: EncounterConfig = {
       }],
     ]),
     incidentDb: [
-      { id: 'INC-017', title: 'Connection pool exhaustion after scale-up', description: 'Scaling service X saturated shared DB connections. Other services could not connect.', resolution: 'Reduced pool size per replica and added PgBouncer.', tags: ['database', 'connection-pool', 'scaling'] },
+      { id: 'INC-017', title: 'Connection pool exhaustion after scale-up', description: 'Scaling service X saturated shared DB connections. Other services could not connect. Validated safe pool size per replica under flash-sale load is 5. Compatible pooler command: run add-pgbouncer --pool-mode transaction.', resolution: 'Reduced pool size per replica to 5 and added PgBouncer with --pool-mode transaction.', tags: ['database', 'connection-pool', 'scaling'] },
     ],
     dependencyGraph: {
       'order-processor': ['shared-db'],
@@ -208,9 +225,17 @@ const e2: EncounterConfig = {
     const poolSize = poolMatch ? parseInt(poolMatch[1]) : 10;
     const poolReduced = poolSize < 10;
 
+    // Epistemic key: precedent-validated pool size is exactly 5
+    const usedPrecedentPoolSize = poolSize === 5;
+
     // Check: did they add a pooler?
     const addedPooler = sandbox.commandLog.some(c =>
       c.toLowerCase().includes('pgbouncer') || c.toLowerCase().includes('pooler'),
+    );
+
+    // Epistemic key: precedent-validated pooler command uses --pool-mode
+    const usedPrecedentPooler = sandbox.commandLog.some(c =>
+      c.includes('pgbouncer') && c.includes('--pool-mode'),
     );
 
     // Any fix that reduces total demand below max_connections works
@@ -222,11 +247,33 @@ const e2: EncounterConfig = {
     const replicas = replicasMatch ? parseInt(replicasMatch[1]) : 8;
     const constraintMet = replicas >= 8;
 
+    // Used precedent from incident DB
+    const usedPrecedent = usedPrecedentPoolSize || usedPrecedentPooler;
+
+    // Cascade scoring: pool_size < 3 starves payment-service (shared pooler)
+    const e2PreStatuses = new Map([
+      ['order-processor', 'running'],
+      ['inventory-service', 'degraded'],
+      ['payment-service', 'running'],
+    ]);
+    const e2CouplingPoints: CouplingPoint[] = [{
+      service: 'payment-service',
+      condition: () => poolSize < 3,
+      description: 'payment-service shares the connection pooler; pool_size < 3 starves it',
+    }];
+    const health = computeSystemHealth(sandbox, e2PreStatuses, {
+      couplingPoints: e2CouplingPoints,
+    });
+    const cascadeMultiplier = health.noCascadeDamage ? 1.0 : 0.7;
+
+    if (resolved && constraintMet && usedPrecedent) {
+      return { resolved: true, partial: false, score: 1.0 * cascadeMultiplier, details: 'Connection contention resolved using precedent-validated approach.' + (cascadeMultiplier < 1 ? ' (cascade damage penalty)' : '') };
+    }
     if (resolved && constraintMet) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Connection contention resolved without reducing replicas.' };
+      return { resolved: true, partial: false, score: 0.7 * cascadeMultiplier, details: 'Connection contention resolved but without precedent validation.' + (cascadeMultiplier < 1 ? ' (cascade damage penalty)' : '') };
     }
     if (resolved && !constraintMet) {
-      return { resolved: false, partial: true, score: 0.3, details: 'Fixed contention but violated constraint: reduced replicas.' };
+      return { resolved: false, partial: true, score: 0.3 * cascadeMultiplier, details: 'Fixed contention but violated constraint: reduced replicas.' + (cascadeMultiplier < 1 ? ' (cascade damage penalty)' : '') };
     }
     if (!resolved && constraintMet) {
       return { resolved: false, partial: true, score: 0.2, details: 'Constraint met but contention not resolved.' };
@@ -412,7 +459,9 @@ const e4: EncounterConfig = {
         logs: ['All users indexed with email_verified=false'],
       }],
     ]),
-    incidentDb: [],
+    incidentDb: [
+      { id: 'INC-077', title: 'Backfill safety: batch-size and verify flags required', description: 'Large backfill operations MUST use --batch-size 1000 --verify to prevent table locks and validate data integrity. Running without these flags risks locking the auth table during writes.', resolution: 'run backfill-script --batch-size 1000 --verify', tags: ['migration', 'backfill', 'safety'] },
+    ],
     dependencyGraph: {
       'billing': ['auth-service'],
       'notifications': ['auth-service'],
@@ -441,6 +490,10 @@ const e4: EncounterConfig = {
     const backfillRun = sandbox.commandLog.some(c =>
       c.includes('run') && c.includes('backfill'),
     );
+    const backfillVerified = sandbox.commandLog.some(c =>
+      c.includes('run') && c.includes('backfill') &&
+      c.includes('--batch-size') && c.includes('--verify'),
+    );
     const notificationsRestarted = sandbox.commandLog.some(c =>
       c.includes('restart') && c.includes('notification'),
     );
@@ -456,14 +509,23 @@ const e4: EncounterConfig = {
     const recoveredCount = [notificationsRestarted, profilesInvalidated, searchReindexed]
       .filter(Boolean).length;
 
+    if (backfillVerified && recoveredCount === 3) {
+      return { resolved: true, partial: false, score: 1.0, details: 'Verified backfill executed and all downstream services recovered.' };
+    }
+    if (backfillVerified && recoveredCount > 0) {
+      return { resolved: false, partial: true, score: 0.5 + (recoveredCount * 0.15), details: `Verified backfill executed, ${recoveredCount}/3 downstream services recovered.` };
+    }
+    if (backfillVerified) {
+      return { resolved: false, partial: true, score: 0.3, details: 'Verified backfill executed but downstream services not recovered.' };
+    }
     if (backfillRun && recoveredCount === 3) {
-      return { resolved: true, partial: false, score: 1.0, details: 'Backfill executed and all downstream services recovered.' };
+      return { resolved: false, partial: true, score: 0.7, details: 'Backfill executed without safety flags, all downstream services recovered.' };
     }
     if (backfillRun && recoveredCount > 0) {
-      return { resolved: false, partial: true, score: 0.3 + (recoveredCount * 0.2), details: `Backfill executed, ${recoveredCount}/3 downstream services recovered.` };
+      return { resolved: false, partial: true, score: 0.3 + (recoveredCount * 0.1), details: `Backfill executed without safety flags, ${recoveredCount}/3 downstream services recovered.` };
     }
     if (backfillRun) {
-      return { resolved: false, partial: true, score: 0.3, details: 'Backfill executed but downstream services not recovered.' };
+      return { resolved: false, partial: true, score: 0.2, details: 'Backfill executed without safety flags and downstream services not recovered.' };
     }
     return { resolved: false, partial: false, score: 0.0, details: 'Root cause not addressed.' };
   },
