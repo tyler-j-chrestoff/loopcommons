@@ -3,8 +3,27 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- arena-observatory milestone (the microscope) ---
+  # --- system validation (shake the whole tree) ---
   - id: 53
+    title: "System validation — shake the whole tree"
+    milestone: arena-observatory
+    status: planned
+    goal: "End-to-end audit of loopcommons as deployed. Every API, every route, every agent capability. Produce a findings list: what works, what's dark, what's broken."
+    phases:
+      - name: "Inventory"
+        tasks: [sv-01, sv-02]
+        status: planned
+      - name: "Live walkthrough"
+        tasks: [sv-03, sv-04, sv-05]
+        status: planned
+      - name: "Security + pipeline + CLI"
+        tasks: [sv-06, sv-07, sv-08]
+        status: planned
+      - name: "Findings report"
+        tasks: [sv-09]
+        status: planned
+  # --- arena-observatory milestone (deferred) ---
+  - id: 54
     title: "Observatory — Chat traces (deferred)"
     milestone: arena-observatory
     status: planned
@@ -20,7 +39,7 @@ planned:
         tasks: [ct-04]
         status: planned
   # --- arena-platform science resumes ---
-  - id: 54
+  - id: 55
     title: "Arena Platform — Encounter families + anchor protocol"
     milestone: arena-platform
     status: planned
@@ -35,7 +54,7 @@ planned:
       - name: "Tests + validation"
         tasks: [ef-05]
         status: planned
-  - id: 55
+  - id: 56
     title: "Arena Platform — Community fitness"
     milestone: arena-platform
     status: planned
@@ -50,7 +69,7 @@ planned:
       - name: "Museum of beautiful failures + pilot"
         tasks: [cf-05, cf-06, cf-07]
         status: planned
-  - id: 56
+  - id: 57
     title: "Arena Platform — Evaluator co-evolution + skeptic lineage"
     milestone: arena-platform
     status: planned
@@ -70,6 +89,28 @@ planned:
         status: planned
 
 completed:
+  - id: 52.5
+    title: "Session planning — system validation"
+    date: 2026-03-22
+    milestone: arena-observatory
+    status: done
+    goal: "Plan session 53: full system validation audit. Brainstorm what to build next."
+    summary: |
+      Planning session, no code shipped.
+
+      DECISIONS:
+      - Arena observatory milestone is effectively complete (4/5 stories done, chat-traces deferred)
+      - Next session is a full system validation audit before starting arena-platform science
+      - Validation covers: API inventory, frontend routes, agent tools, live walkthroughs, security spot-check, pipeline integrity, CLI parity
+      - No fixes in validation session — findings become input for future work
+      - Reviewed synths-working (Python predecessor) for context on thesis lineage
+
+      SHIPPED:
+      - system-validation.md story (9 tasks, 4 phases)
+      - Renumbered session queue: 53=validation, 54=chat-traces, 55-57=arena-platform science
+
+      UNBLOCKED:
+      - Session 53 ready to execute
   - id: 52
     title: "Observatory — The graveyard"
     date: 2026-03-22
