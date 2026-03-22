@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { TournamentLive } from '@/components/TournamentLive';
 import { EncounterHeatmap } from '@/components/EncounterHeatmap';
 import { FeaturedDeath } from '@/components/FeaturedDeath';
+import { GraveyardSection } from '@/components/GraveyardSection';
 
 type TournamentSummary = {
   id: string;
@@ -211,10 +212,13 @@ export default function ArenaPage() {
               />
             )}
 
-            {/* Featured Death */}
+            {/* Featured Death (legacy — from current tournament) */}
             {lastGen && (
               <FeaturedDeath agents={lastGen.agents} fitness={lastGen.fitness} />
             )}
+
+            {/* Graveyard — dead agents across all tournaments */}
+            <GraveyardSection />
 
             {/* Past tournaments */}
             {tournaments.length > 1 && (

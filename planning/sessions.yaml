@@ -4,21 +4,6 @@
 
 planned:
   # --- arena-observatory milestone (the microscope) ---
-  - id: 52
-    title: "Observatory — The graveyard"
-    milestone: arena-observatory
-    status: planned
-    goal: "Dead agents as first-class content. Sorted by most interesting death. Epitaphs. Shareable cards. Failure is the hero."
-    phases:
-      - name: "Interestingness scoring + epitaph generator"
-        tasks: [gy-01, gy-02]
-        status: planned
-      - name: "Graveyard API + death card component"
-        tasks: [gy-03, gy-04]
-        status: planned
-      - name: "Tests"
-        tasks: [gy-05]
-        status: planned
   - id: 53
     title: "Observatory — Chat traces (deferred)"
     milestone: arena-observatory
@@ -85,6 +70,50 @@ planned:
         status: planned
 
 completed:
+  - id: 52
+    title: "Observatory — The graveyard"
+    date: 2026-03-22
+    milestone: arena-observatory
+    status: done
+    goal: "Dead agents as first-class content. Sorted by most interesting death. Epitaphs. Shareable cards. Failure is the hero."
+    phases:
+      - name: "Interestingness scoring + epitaph generator"
+        tasks: [gy-01, gy-02]
+        status: done
+      - name: "Graveyard API + death card component"
+        tasks: [gy-03, gy-04]
+        status: done
+      - name: "Tests"
+        tasks: [gy-05]
+        status: done
+    summary: |
+      All 5 tasks done across 3 phases.
+
+      SHIPPED:
+      - scoreInterestingness(): tragedy × (1+rarity) × (1+collateral), extensible InterestingnessInput struct
+      - generateEpitaph(): deterministic template-based, 7 death-cause verbs, 3 sentence patterns (near-miss, long struggle, default)
+      - loadDeathRecords(): filesystem scanner — reads trace meta across all tournaments, builds agent→tools map from generations.jsonl
+      - collectGraveyardEntries(): aggregates deaths, computes cross-population death cause frequency, sorts by interestingness, paginates
+      - GET /api/arena/graveyard — paginated endpoint (limit/offset), 60s cache, auth-gated
+      - DeathCard component: tool badges, epitaph, score, death cause, replay link (/arena/{tid}/{agentId}/{encounterId})
+      - GraveyardSection component: fetches graveyard API, featured death at top, responsive grid
+      - Wired into /arena page below heatmap
+      - 41 new tests across 5 files (614 total web tests, up from 573)
+
+      KEY DECISIONS:
+      - Death data from trace files (not generations.jsonl which strips taskResults to save space)
+      - Interestingness formula designed for extensibility: typed input struct, future signals (trajectory shape, niche context, lineage delta) add terms without refactoring
+      - Rarity computed as cross-population death cause frequency — scales with encounter families
+      - Collateral defaults to 0 when absent (backward compat with older trace data)
+      - DeathCard links directly to session 51's encounter replay URLs
+
+      BUGS FOUND:
+      - generations.jsonl strips taskResults from fitness (writer.ts line 45-48) — death info only available in trace files, not generation summaries
+      - Pre-existing: api-chat.test.ts fails due to stale blog mock (unrelated)
+
+      UNBLOCKED:
+      - Session 53 (chat traces) can reuse GraveyardSection pattern for unified trace browsing
+      - Future sessions can extend InterestingnessInput with trajectory shape, niche rank, lineage delta
   - id: 51
     title: "Observatory — Encounter replay"
     date: 2026-03-22
