@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
   const manager = getTournamentManager();
 
-  if (manager.getStatus() === 'idle') {
+  if (manager.getStatus() !== 'running') {
     return NextResponse.json({ active: false }, { status: 404 });
   }
 
