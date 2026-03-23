@@ -39,8 +39,8 @@ describe('TournamentList', () => {
 
   it('renders generation count and fitness', () => {
     render(<TournamentList tournaments={mockTournaments} />);
-    expect(screen.getByText(/5g/)).toBeInTheDocument();
-    expect(screen.getByText(/0\.92/)).toBeInTheDocument();
+    expect(screen.getByText(/5 gens/)).toBeInTheDocument();
+    expect(screen.getByText(/0\.920/)).toBeInTheDocument();
   });
 
   it('renders winner tool badges', () => {

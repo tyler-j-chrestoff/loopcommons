@@ -108,39 +108,40 @@ export default function ArenaPage() {
 
   return (
     <div className="space-y-6">
-      {latestDetail && <TournamentDetailView detail={latestDetail} />}
-
-      <GraveyardSection />
-
-      {tournaments.length > 1 && (
-        <div>
-          <div className="flex items-baseline justify-between mb-2">
-            <h2 className="text-sm font-semibold opacity-70">Past Tournaments</h2>
-            <a href="/arena/tournaments" className="text-xs opacity-50 hover:opacity-100 transition-opacity">
-              View all
-            </a>
+      <div>
+        <div className="flex items-baseline justify-between mb-3">
+          <h1 className="text-lg font-semibold font-[family-name:var(--font-literata)]">
+            Tournaments
+          </h1>
+          <div className="flex gap-2">
+            <button
+              onClick={() => startTournament(true)}
+              disabled={starting}
+              className="px-3 py-1 border border-current/20 rounded text-xs hover:bg-current/5 disabled:opacity-50 transition-colors"
+            >
+              {starting ? 'Starting...' : 'Mock'}
+            </button>
+            <button
+              onClick={() => startTournament(false)}
+              disabled={starting}
+              className="px-3 py-1 bg-accent text-white rounded text-xs hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              {starting ? 'Starting...' : 'New Tournament'}
+            </button>
           </div>
-          <TournamentList tournaments={tournaments.slice(1)} compact />
+        </div>
+        {error && <div className="text-sm text-red-600 mb-2">{error}</div>}
+        <TournamentList tournaments={tournaments} />
+      </div>
+
+      {latestDetail && (
+        <div>
+          <h2 className="text-sm font-semibold opacity-70 mb-2">Latest Result</h2>
+          <TournamentDetailView detail={latestDetail} />
         </div>
       )}
 
-      <div className="flex gap-3 pt-4 border-t border-current/10">
-        <button
-          onClick={() => startTournament(false)}
-          disabled={starting}
-          className="px-4 py-2 bg-accent text-white rounded text-sm hover:opacity-90 disabled:opacity-50 transition-opacity"
-        >
-          {starting ? 'Starting...' : 'New Tournament'}
-        </button>
-        <button
-          onClick={() => startTournament(true)}
-          disabled={starting}
-          className="px-4 py-2 border border-current/20 rounded text-sm hover:bg-current/5 disabled:opacity-50 transition-colors"
-        >
-          {starting ? 'Starting...' : 'Mock'}
-        </button>
-        {error && <div className="text-sm text-red-600 self-center">{error}</div>}
-      </div>
+      <GraveyardSection />
     </div>
   );
 }
