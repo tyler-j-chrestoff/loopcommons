@@ -3,22 +3,7 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- arena-platform science resumes ---
-  - id: 55
-    title: "Arena Platform — Encounter families + anchor protocol"
-    milestone: arena-platform
-    status: planned
-    goal: "Surface variants for generalization pressure. Frozen validation battery as anchor to reality. Transfer pressure in fitness."
-    phases:
-      - name: "Encounter variance research + family generator"
-        tasks: [ef-01, ef-02]
-        status: planned
-      - name: "Consistency scoring + anchor protocol"
-        tasks: [ef-03, ef-04]
-        status: planned
-      - name: "Tests + validation"
-        tasks: [ef-05]
-        status: planned
+  # --- arena-platform science continues ---
   - id: 56
     title: "Arena Platform — Community fitness"
     milestone: arena-platform
@@ -70,6 +55,48 @@ planned:
         status: planned
 
 completed:
+  - id: 55
+    title: "Arena Platform — Encounter families + anchor protocol"
+    date: 2026-03-22
+    milestone: arena-platform
+    status: done
+    goal: "Surface variants for generalization pressure. Frozen validation battery as anchor to reality. Transfer pressure in fitness."
+    summary: |
+      First session of arena-platform science phase. Three new modules, 4 test files, 56 new tests.
+
+      NEW MODULES:
+      - encounter-family.ts — generateFamily(base, specs) produces N surface variants via uniform
+        string substitution across all EncounterYaml layers (sandbox, prompt, scoring, incidents,
+        dependency graph, epistemic keys). Structural identity guaranteed.
+      - consistency-scoring.ts — computeConsistencyScore(familyScores) measures score variance
+        across family members. applyConsistencyBonus(fitness, results) applies ±10% modifier.
+        Low variance = understanding (bonus), high variance = memorization (penalty).
+      - anchor-protocol.ts — createAnchor(encounters, version) produces SHA-256 content-hashed
+        frozen validation battery. verifyAnchor() detects tampering. detectDivergence() compares
+        anchor vs co-evolved scores to flag collusion.
+
+      KEY DESIGN DECISIONS:
+      - Families operate at EncounterYaml (DSL) level, not code level. Uniform string substitution
+        ensures structural relationships are preserved automatically.
+      - Consistency scoring uses variance/0.25 normalization (max possible variance for [0,1] scores).
+      - Anchor hash includes version + encounter IDs + sandbox state + prompt text.
+      - Transfer pressure is natural: include family variants in task battery, fitness drops for
+        agents that memorize base but fail variants.
+
+      TESTS:
+      - encounter-family.test.ts: 21 tests (substitution at every layer, edge cases, scoring preservation)
+      - consistency-scoring.test.ts: 14 tests (consistency computation, bonus/penalty, clamping)
+      - anchor-protocol.test.ts: 13 tests (creation, hash verification, tampering, divergence)
+      - family-integration.test.ts: 8 tests (end-to-end pipeline, transfer pressure, collusion detection)
+
+      UNBLOCKED:
+      - Session 56 (community fitness) can use encounter families as task battery
+      - Session 57 (evaluator co-evolution) can use anchor protocol for collusion detection
+
+      SHIPPED:
+      - 1178 LLM tests passing (was 1122, +56 new), 0 failures
+      - Clean typecheck across both packages
+
   - id: 54
     title: "Observatory — Tournament navigation"
     date: 2026-03-22

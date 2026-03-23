@@ -56,6 +56,8 @@ export { computeSystemHealth } from './cascade-scoring';
 export type { SystemHealthVector, CouplingPoint, ConfigCoherenceCheck } from './cascade-scoring';
 export { parseEncounterYaml, compileEncounter, compileEncounterFromYaml } from './encounter-dsl';
 export type { EncounterYaml } from './encounter-dsl';
+export { generateFamily } from './encounter-family';
+export type { VarianceSpec, EncounterFamily, Substitution } from './encounter-family';
 export {
   formatRunTable,
   formatApproachDistribution,

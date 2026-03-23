@@ -34,3 +34,7 @@ export { createTournamentWriter } from './writer';
 export type { TournamentWriter } from './writer';
 export { createTraceWriter } from './trace-writer';
 export type { TraceWriter, OnEncounterComplete } from './trace-writer';
+export { computeConsistencyScore, applyConsistencyBonus } from './consistency-scoring';
+export type { FamilyScores, ConsistencyResult } from './consistency-scoring';
+export { createAnchor, verifyAnchor, detectDivergence } from './anchor-protocol';
+export type { AnchorBattery, AnchorValidationResult, DivergenceResult } from './anchor-protocol';
