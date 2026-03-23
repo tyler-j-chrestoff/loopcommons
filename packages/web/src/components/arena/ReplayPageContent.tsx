@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { EncounterReplay } from './EncounterReplay';
+import { ArenaBreadcrumb } from './ArenaBreadcrumb';
 import type { EncounterTraceMeta, EncounterTraceStep } from '@/lib/tournament-loader';
 
 type ReplayPageContentProps = {
@@ -51,14 +52,11 @@ export function ReplayPageContent({ tournamentId, agentId, encounterId }: Replay
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <a href={`/arena/${tournamentId}`} className="text-xs text-text-secondary hover:text-accent transition-colors">
-          ← Back
-        </a>
-        <span className="text-xs text-text-muted font-mono">
-          {tournamentId.slice(0, 8)} / {agentId.slice(0, 8)} / {encounterId}
-        </span>
-      </div>
+      <ArenaBreadcrumb crumbs={[
+        { label: 'Arena', href: '/arena' },
+        { label: tournamentId.slice(0, 8), href: `/arena/${tournamentId}` },
+        { label: encounterId },
+      ]} />
       <EncounterReplay meta={trace.meta} steps={trace.steps} />
     </div>
   );

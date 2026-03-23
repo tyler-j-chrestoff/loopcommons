@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { TournamentList } from '@/components/arena/TournamentList';
+import { ArenaBreadcrumb } from '@/components/arena/ArenaBreadcrumb';
 import type { TournamentSummary } from '@/lib/arena-types';
 
 export default function TournamentsPage() {
@@ -23,6 +24,10 @@ export default function TournamentsPage() {
 
   return (
     <div className="space-y-4">
+      <ArenaBreadcrumb crumbs={[
+        { label: 'Arena', href: '/arena' },
+        { label: 'All Tournaments' },
+      ]} />
       <h1 className="text-lg font-semibold font-[family-name:var(--font-literata)]">
         All Tournaments
       </h1>

@@ -44,14 +44,14 @@ describe('TournamentLiveClient', () => {
   it('renders TournamentLive with the tournament ID', async () => {
     render(<TournamentLiveClient tournamentId="t-1" />);
     await waitFor(() => {
-      expect(screen.getByText(/t-1/)).toBeInTheDocument();
+      expect(screen.getAllByText(/t-1/).length).toBeGreaterThanOrEqual(1);
     });
   });
 
-  it('shows back link to tournament detail', () => {
+  it('shows breadcrumb with link to tournament detail', () => {
     render(<TournamentLiveClient tournamentId="t-1" />);
-    const backLink = screen.getByText(/back to results/i);
-    expect(backLink).toBeInTheDocument();
-    expect(backLink.closest('a')).toHaveAttribute('href', '/arena/t-1');
+    const breadcrumbLink = screen.getByRole('link', { name: /t-1/ });
+    expect(breadcrumbLink).toBeInTheDocument();
+    expect(breadcrumbLink).toHaveAttribute('href', '/arena/t-1');
   });
 });

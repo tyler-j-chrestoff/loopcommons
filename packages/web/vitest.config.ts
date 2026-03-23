@@ -8,6 +8,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@/app/arena/[id]/live': path.resolve(__dirname, 'src/app/arena/[id]/live'),
+      '@/app/arena/[id]': path.resolve(__dirname, 'src/app/arena/[id]'),
       '@': path.resolve(__dirname, 'src'),
       '@loopcommons/llm/arena/tournament': path.resolve(__dirname, '../llm/src/arena/tournament/index.ts'),
       '@loopcommons/llm/arena': path.resolve(__dirname, '../llm/src/arena/index.ts'),

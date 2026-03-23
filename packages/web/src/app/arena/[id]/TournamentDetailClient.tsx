@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { TournamentDetailView } from '@/components/arena/TournamentDetailView';
+import { ArenaBreadcrumb } from '@/components/arena/ArenaBreadcrumb';
 import type { TournamentDetail } from '@/lib/arena-types';
 
 export default function TournamentDetailClient({ tournamentId }: { tournamentId: string }) {
@@ -32,5 +33,13 @@ export default function TournamentDetailClient({ tournamentId }: { tournamentId:
 
   if (!detail) return null;
 
-  return <TournamentDetailView detail={detail} />;
+  return (
+    <>
+      <ArenaBreadcrumb crumbs={[
+        { label: 'Arena', href: '/arena' },
+        { label: tournamentId.slice(0, 8) },
+      ]} />
+      <TournamentDetailView detail={detail} />
+    </>
+  );
 }

@@ -302,7 +302,7 @@ describe('ReplayPageContent', () => {
     });
   });
 
-  it('has back link to arena', async () => {
+  it('has breadcrumb with link to arena', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => traceResponse,
@@ -311,8 +311,8 @@ describe('ReplayPageContent', () => {
       <ReplayPageContent tournamentId="tid" agentId="agent-1" encounterId="e1" />,
     );
     await waitFor(() => {
-      const backLink = screen.getByText(/back/i);
-      expect(backLink).toBeInTheDocument();
+      const arenaLink = screen.getByRole('link', { name: /arena/i });
+      expect(arenaLink).toHaveAttribute('href', '/arena');
     });
   });
 });

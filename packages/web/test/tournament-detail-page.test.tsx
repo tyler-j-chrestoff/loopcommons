@@ -56,7 +56,7 @@ describe('TournamentDetailClient', () => {
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText(/abc12345/)).toBeInTheDocument();
+      expect(screen.getAllByText(/abc12345/).length).toBeGreaterThanOrEqual(1);
     });
 
     expect(mockFetch).toHaveBeenCalledWith('/api/arena/tournaments/abc12345-dead-beef');

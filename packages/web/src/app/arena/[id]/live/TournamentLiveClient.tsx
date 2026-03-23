@@ -1,16 +1,16 @@
 'use client';
 
 import { TournamentLive } from '@/components/TournamentLive';
+import { ArenaBreadcrumb } from '@/components/arena/ArenaBreadcrumb';
 
 export default function TournamentLiveClient({ tournamentId }: { tournamentId: string }) {
   return (
     <div className="space-y-4">
-      <a
-        href={`/arena/${tournamentId}`}
-        className="text-xs opacity-50 hover:opacity-100 transition-opacity"
-      >
-        Back to Results
-      </a>
+      <ArenaBreadcrumb crumbs={[
+        { label: 'Arena', href: '/arena' },
+        { label: tournamentId.slice(0, 8), href: `/arena/${tournamentId}` },
+        { label: 'Live' },
+      ]} />
       <TournamentLive tournamentId={tournamentId} />
     </div>
   );
