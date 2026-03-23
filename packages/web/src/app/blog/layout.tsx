@@ -29,6 +29,12 @@ export default function BlogLayout({
             >
               Chat
             </Link>
+            <Link
+              href="/arena"
+              className="text-text-secondary hover:text-text transition-colors"
+            >
+              Arena
+            </Link>
             <SeasonPicker />
           </div>
         </div>

@@ -32,6 +32,7 @@ export default function Home() {
       header={
         <div className="flex items-center gap-3">
           <a href="/blog" className="text-sm text-text-secondary hover:text-accent transition-colors">Blog</a>
+          <a href="/arena" className="text-sm text-text-secondary hover:text-accent transition-colors">Arena</a>
           <RateLimitIndicator rateLimitStatus={rateLimitStatus} />
           <SpendGauge spendStatus={spendStatus} />
           <CostDashboard messages={messages} />
