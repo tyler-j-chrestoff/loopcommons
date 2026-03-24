@@ -71,6 +71,7 @@ if (!process.env.ANTHROPIC_API_KEY) {
 const args = process.argv.slice(2);
 const isPilot = args.includes('--pilot');
 const isMock = args.includes('--mock');
+const useNicheSelection = args.includes('--niche');
 const genIdx = args.indexOf('--generations');
 const popIdx = args.indexOf('--population');
 
@@ -164,9 +165,10 @@ async function main() {
     convergenceWindow: 5,
     commitSha: 'arena-tournament',
     manaConfig,
+    nicheSelection: useNicheSelection,
   };
 
-  console.log(`\n  Arena Tournament${isPilot ? ' (pilot)' : ''}${isMock ? ' (mock)' : ''}`);
+  console.log(`\n  Arena Tournament${isPilot ? ' (pilot)' : ''}${isMock ? ' (mock)' : ''}${useNicheSelection ? ' (niche selection)' : ''}`);
   console.log(`  Population: ${populationSize} | Generations: ${maxGenerations}`);
   console.log(`  Encounters: ${allEncounters.length} (${ENCOUNTERS.length} roguelike + ${BRUTAL_ENCOUNTERS.length} brutal + ${GENERALIZATION_ENCOUNTERS.length} generalization)`);
   console.log(`  Survivors: ${config.survivorCount} | Mutations: ${config.mutationCount} | Crossovers: ${config.crossoverCount}`);
@@ -212,7 +214,11 @@ async function main() {
           const best = event.result.fitness.reduce((a, b) =>
             a.fitnessScore > b.fitnessScore ? a : b,
           );
-          console.log(` best=${best.fitnessScore.toFixed(3)} (${event.result.durationMs}ms)`);
+          const health = event.result.populationHealth;
+          const healthStr = health
+            ? ` coverage=${health.collectiveCoverage.toFixed(2)} niches=${health.nicheCount} diversity=${health.compositionDiversity}`
+            : '';
+          console.log(` best=${best.fitnessScore.toFixed(3)}${healthStr} (${event.result.durationMs}ms)`);
           writer.writeGeneration(event.result);
           break;
         }

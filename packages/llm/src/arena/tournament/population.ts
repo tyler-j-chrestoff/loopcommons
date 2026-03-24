@@ -17,6 +17,7 @@ import { computeIdentity, buildAgentIdentity } from '../../identity';
 import { mutateAgent } from './mutation';
 import { crossoverAgents } from './crossover';
 import { rankPopulation, selectSurvivors } from './fitness';
+import { selectSurvivorsWithNiches } from './community-fitness';
 
 // ---------------------------------------------------------------------------
 // Seed creation
@@ -189,6 +190,8 @@ type NextGenConfig = {
   maxTools: number;
   generation: number;
   commitSha: string;
+  /** Use niche-preserving selection instead of top-N. */
+  nicheSelection?: boolean;
 };
 
 export async function buildNextGeneration(config: NextGenConfig): Promise<{
@@ -197,7 +200,9 @@ export async function buildNextGeneration(config: NextGenConfig): Promise<{
   mutations: MutationRecord[];
   crossovers: CrossoverRecord[];
 }> {
-  const survivorIds = selectSurvivors(config.fitness, config.survivorCount);
+  const survivorIds = config.nicheSelection
+    ? selectSurvivorsWithNiches(config.fitness, config.survivorCount)
+    : selectSurvivors(config.fitness, config.survivorCount);
   const survivorAgents = config.currentPopulation.filter(a => survivorIds.includes(a.id));
 
   // Mark survivors as 'survivor' origin in the new generation

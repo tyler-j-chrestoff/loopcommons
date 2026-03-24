@@ -93,6 +93,17 @@ export type GenerationResult = {
   lineage: LineageRecord[];
   /** Wall-clock duration of this generation. */
   durationMs: number;
+  /** Community-level health metrics (optional for backward compat). */
+  populationHealth?: PopulationHealth;
+};
+
+export type PopulationHealth = {
+  /** Fraction of encounters solved by at least one agent. */
+  collectiveCoverage: number;
+  /** Number of unique tool compositions in the population. */
+  compositionDiversity: number;
+  /** Number of encounters with exactly one solver (occupied niches). */
+  nicheCount: number;
 };
 
 export type MutationRecord = {
@@ -144,6 +155,8 @@ export type TournamentConfig = {
   commitSha: string;
   /** Optional mana config for phase-gated tool access. */
   manaConfig?: ManaConfig;
+  /** Use niche-preserving community fitness selection. */
+  nicheSelection?: boolean;
 };
 
 // ---------------------------------------------------------------------------

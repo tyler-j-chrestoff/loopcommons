@@ -26,6 +26,7 @@ import {
   createPopulationFromSeeds,
   buildNextGeneration,
 } from './population';
+import { computePopulationHealth } from './community-fitness';
 
 type EvaluateAgentFn = (agent: TournamentAgent) => Promise<TaskResult[]>;
 
@@ -94,11 +95,14 @@ export function createTournament(config: TournamentConfig, options: TournamentOp
           maxTools: config.maxTools,
           generation: gen + 1,
           commitSha: config.commitSha,
+          nicheSelection: config.nicheSelection,
         });
 
         survivors = next.survivors;
         mutations = next.mutations;
         crossovers = next.crossovers;
+
+        const health = computePopulationHealth(fitnessResults, population);
 
         const genResult: GenerationResult = {
           generation: gen,
@@ -109,6 +113,7 @@ export function createTournament(config: TournamentConfig, options: TournamentOp
           crossovers,
           lineage: [], // lineage records built from mutations/crossovers
           durationMs: Date.now() - genStart,
+          populationHealth: health,
         };
 
         allGenerations.push(genResult);
@@ -118,6 +123,8 @@ export function createTournament(config: TournamentConfig, options: TournamentOp
         population = next.population;
       } else {
         // Final generation or converged
+        const health = computePopulationHealth(fitnessResults, population);
+
         const genResult: GenerationResult = {
           generation: gen,
           population,
@@ -127,6 +134,7 @@ export function createTournament(config: TournamentConfig, options: TournamentOp
           crossovers: [],
           lineage: [],
           durationMs: Date.now() - genStart,
+          populationHealth: health,
         };
         allGenerations.push(genResult);
         emit({ type: 'generation:complete', result: genResult });

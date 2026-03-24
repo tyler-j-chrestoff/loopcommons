@@ -15,6 +15,7 @@ export type {
   MutationRecord,
   CrossoverRecord,
   AgentOrigin,
+  PopulationHealth,
 } from './types';
 
 export { createTournament } from './runner';
@@ -38,3 +39,10 @@ export { computeConsistencyScore, applyConsistencyBonus } from './consistency-sc
 export type { FamilyScores, ConsistencyResult } from './consistency-scoring';
 export { createAnchor, verifyAnchor, detectDivergence } from './anchor-protocol';
 export type { AnchorBattery, AnchorValidationResult, DivergenceResult } from './anchor-protocol';
+export {
+  computeMarginalContribution,
+  selectSurvivorsWithNiches,
+  computePopulationHealth,
+  extractDeadLineages,
+} from './community-fitness';
+export type { DeadLineage } from './community-fitness';
