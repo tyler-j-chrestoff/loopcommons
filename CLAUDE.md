@@ -70,10 +70,12 @@ The `planning/` directory is a filesystem API for project planning. See `plannin
 The retro is the critical step — it's how context survives between sessions. A fresh agent can reconstruct full project state from `sessions.yaml` retros + `CLAUDE.md` + `memory/`.
 
 **Key rules:**
+- **Matryoshka nesting**: VISION.md → Milestone → Design → Story → Task. Every level traces to the one above it. Sessions are workers, not nesting levels. If an artifact can't trace back to VISION.md, it's orphaned.
 - Stories are the atomic unit — they carry the *why* and contain tasks as JSONL
 - ROADMAP.md always has an **Active milestone** pointer
 - Completed stories move to `archive/`
 - Stories that touch security/best-practices/library-selection must lead with a research task
+- **Design docs** live at `milestones/<name>/designs/` and must open with vision traceability (§0) mapping every section to a VISION.md commitment
 
 ## Tech Decisions
 
@@ -88,6 +90,8 @@ The retro is the critical step — it's how context survives between sessions. A
 - **GitHub**: `github.com/tyler-j-chrestoff/loopcommons` (public).
 
 ## Architecture
+
+**Design doc**: `planning/milestones/agent-framework/designs/brain-architecture.md` — defines the target architecture: 7 brain-inspired subsystems (Router, Guardian, Orchestrator, Consolidator, ConflictMonitor, SubstrateMonitor, Reflector), thermodynamic ledger, multi-channel contracts, community model. Current code is being migrated toward this design. The existing architecture below is Phase 0.
 
 Read the source for full details. This section covers key entry points and patterns only.
 

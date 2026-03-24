@@ -3,30 +3,57 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- agent-framework: the pivot ---
-  - id: 57
-    title: "Agent Framework — Architecture design doc"
-    milestone: agent-framework
-    status: planned
-    goal: "Rigorous design doc defining brain-inspired subsystems, thermodynamic ledger, multi-channel contracts, and migration path. No code — contracts and prose only."
-    phases:
-      - name: "Research foundations"
-        tasks: [af-01, af-01b, af-02]
-        status: planned
-      - name: "Core contracts"
-        tasks: [af-03, af-04, af-05]
-        status: planned
-      - name: "Identity, sandbox, migration"
-        tasks: [af-06, af-07, af-08]
-        status: planned
-      - name: "Synthesize design doc"
-        tasks: [af-09]
-        status: planned
-  # --- deferred (arena science + observatory) ---
-  # - Evaluator co-evolution (was S57): revisit after agent-framework ships
-  # - Chat traces (was S58): revisit after agent-framework ships
+  # --- agent-framework: implementation ---
+  # Next session: TBD — Router extraction + Ledger bootstrap (Phase A from design doc)
+  # Deferred: arena science (evaluator co-evolution), chat traces
+  []
 
 completed:
+  - id: 57
+    title: "Agent Framework — Architecture design doc"
+    date: 2026-03-24
+    milestone: agent-framework
+    status: done
+    goal: "Rigorous design doc defining brain-inspired subsystems, thermodynamic ledger, multi-channel contracts, and migration path. No code — contracts and prose only."
+    summary: |
+      All 9 tasks (af-01 through af-09) completed. Design doc at
+      planning/milestones/agent-framework/designs/brain-architecture.md.
+
+      Research (3 docs, parallel agents):
+      - af-01: Claude Agent SDK vs Vercel AI SDK vs raw API + MCP. Decision: keep Vercel AI SDK v6.
+      - af-01b: OpenClaw (332k stars, catastrophic security), NanoClaw (25k, container isolation),
+        Mastra (22k, best memory model), LangGraph, CrewAI. Identified 7 gaps our approach fills.
+      - af-02: TigerBeetle Node.js client production-ready. Two-phase transfers map directly to
+        staking. Recommendation: use it, defer until subsystems need coordination.
+
+      Design doc — 10 sections, 7 subsystem contracts:
+      - §0 Vision Traceability: matryoshka nesting (VISION → Milestone → Design → Story → Task).
+        Every section traces to a VISION.md commitment.
+      - §1 Canonical Message Format: channel-agnostic ChannelMessage/ChannelResponse types.
+      - §2 Subsystem Contracts: Router, Guardian (identity-first, security as consequence),
+        Orchestrator, Consolidator (cross-channel memory), ConflictMonitor (ACC), SubstrateMonitor,
+        Reflector. Plus §2.8 Embedding Requirement (Consolidator + ConflictMonitor need semantic recall).
+      - §3 Thermodynamic Ledger: abstract Ledger interface, TigerBeetle mapping, staking protocol.
+        Ships from Phase A as simple counters — commitment #2 can't be deferred.
+      - §4 User Identity: cross-channel linking (phone-match, explicit-link, OAuth, admin-link).
+      - §5 Sandbox: per-tool-execution isolation (not per-session like NanoClaw). Phased rollout.
+      - §6 Migration Map: every existing component maps to new architecture. Nothing thrown away.
+      - §8 Community Model: domain specialists (housing, healthcare, legal aid, crisis, benefits,
+        employment). Community health = coverage metrics. Crisis routing = always to human.
+      - §9 Failure as Data: 6 failure types, structured export, published graveyard.
+      - §10 Open Questions: 8 items for future sessions.
+
+      Key design decisions:
+      - Keep Vercel AI SDK v6 (don't adopt Claude Agent SDK — it would replace our custom architecture)
+      - Guardian's primary function is identity assertion; security is a consequence
+      - Ledger bootstraps in Phase A (receipts from day one), TigerBeetle in Phase E
+      - Embeddings are an architectural requirement for Consolidator + ConflictMonitor
+      - 5-phase migration: Router+Ledger → Guardian → 2nd channel → Containers → Community specialists
+
+      Matryoshka principle established: VISION → Milestone → Design → Story → Task.
+      Every level traces to the one above it. Sessions are workers, not nesting levels.
+
+      No code changes. No tests affected. 3 research memos + 1 design doc + story status updates.
   - id: 56.5
     title: "Arena Platform — Arena memory (agents that learn)"
     date: 2026-03-24
