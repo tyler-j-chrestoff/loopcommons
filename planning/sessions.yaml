@@ -55,6 +55,38 @@ planned:
         status: planned
 
 completed:
+  - id: 55.5
+    title: "Arena UX — Navigation fixes + breadcrumbs"
+    date: 2026-03-23
+    milestone: arena-observatory
+    status: done
+    goal: "Fix broken arena navigation: redirect bug, missing breadcrumbs, hidden tournament list, inconsistent headers."
+    summary: |
+      Unplanned hotfix/UX session. Four commits fixing arena navigation end-to-end.
+
+      BUGS FIXED:
+      - /arena always redirected to /arena/{id}/live — the /current endpoint returned active:true
+        for completed/errored tournaments (status !== 'idle'), not just running ones. Fixed to
+        check status === 'running' only.
+      - 3 test files (tournament-detail, tournament-live, encounter-replay) were silently failing
+        with ERR_MODULE_NOT_FOUND due to [id] bracket paths in vitest imports. Added explicit
+        aliases in vitest.config.ts. These tests were broken before this session.
+
+      UX IMPROVEMENTS:
+      - Breadcrumb navigation (ArenaBreadcrumb component) on all arena sub-routes:
+        /arena/[id], /arena/[id]/live, /arena/[id]/.../replay, /arena/tournaments.
+      - Restructured /arena landing: tournament list is now primary content (was buried below
+        graveyard). Cards show status badges, dates, agent count, generation count, fitness.
+      - Arena link added to chat and blog nav bars (was only visible on arena pages).
+      - Arena header restyled to match chat/blog (bg-bg-surface + border-border).
+
+      TEST RESULTS: 653/653 web tests green (was 649/653 before — recovered 4 broken tests).
+
+      COMMITS:
+      - ab64692 Fix /arena redirect
+      - 06acd8d Add breadcrumb navigation + fix test imports
+      - 633bd91 Restructure /arena with richer tournament cards
+      - de267ff Add Arena link to all nav bars + match header style
   - id: 55
     title: "Arena Platform — Encounter families + anchor protocol"
     date: 2026-03-22
