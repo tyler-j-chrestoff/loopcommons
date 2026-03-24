@@ -4,21 +4,6 @@
 
 planned:
   # --- arena-platform science continues ---
-  - id: 56.5
-    title: "Arena Platform — Arena memory (agents that learn)"
-    milestone: arena-platform
-    status: planned
-    goal: "Fix the memory gap: arena agents read relevant memories before encounters and generate new memories after. Bounded context + out-of-band reflection. Three-model convergence design (Claude/Gemini/Tyler)."
-    phases:
-      - name: "InMemoryState + context injection"
-        tasks: [am-01, am-02]
-        status: planned
-      - name: "Post-encounter reflection + persistence"
-        tasks: [am-03, am-04]
-        status: planned
-      - name: "Tests + memory vs no-memory pilot"
-        tasks: [am-05, am-06]
-        status: planned
   - id: 57
     title: "Arena Platform — Evaluator co-evolution + skeptic lineage"
     milestone: arena-platform
@@ -55,6 +40,40 @@ planned:
         status: planned
 
 completed:
+  - id: 56.5
+    title: "Arena Platform — Arena memory (agents that learn)"
+    date: 2026-03-24
+    milestone: arena-platform
+    status: done
+    goal: "Fix the memory gap: arena agents read relevant memories before encounters and generate new memories after. Bounded context + out-of-band reflection."
+    summary: |
+      Shipped full arena memory lifecycle (am-01 through am-06):
+
+      InMemoryState: array-backed PersistentState in packages/memory for arena agents (no filesystem I/O).
+      Exported as @loopcommons/memory/in-memory. 11 unit tests.
+
+      Memory context injection: AgentFnInput.memoryContext field threaded through encounter-engine →
+      live-agent.ts. Top-K memories (by certainty/recency) injected into system prompt before each
+      encounter. Free — no mana cost.
+
+      Post-encounter reflection: out-of-band Haiku call after each encounter generates learning capsule
+      from trajectory + outcome. Appended to shared InMemoryState. Outside mana/step limits.
+
+      Memory persistence: one InMemoryState per agent across encounter loop. Serialized back to
+      agent.memoryState after all encounters. Inherited by mutation, merged by crossover (existing code
+      now has data to work with).
+
+      CLI: --memory flag on arena-tournament.ts. Mock and live modes.
+
+      Pilot: 4 agents, 3 gens, 14 encounters, --niche --memory. Agents accumulated 42-84 memories by
+      gen 2. Crossover correctly merges. Reflections are substantive DevOps insights (e.g. "Connection
+      pool exhaustion from order-processor's scale-up starved inventory-service"). Control pilot without
+      memory: best=0.387, coverage=0.43. Memory pilot: best=0.238, coverage=0.21. Memory didn't boost
+      fitness in this single run — needs more data points to draw conclusions. The pipeline is the
+      deliverable; whether memory helps fitness is a research question for larger runs.
+
+      32 new tests across 3 files. All 1369 llm+memory tests pass. Web test failures are pre-existing
+      (path alias resolution, unrelated to this session).
   - id: 56
     title: "Arena Platform — Community fitness"
     date: 2026-03-24

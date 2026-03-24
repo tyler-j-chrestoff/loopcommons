@@ -20,7 +20,7 @@ export type {
 
 export { createTournament } from './runner';
 export { createTaskBattery, encounterResultToTaskResult } from './task-battery';
-export type { TaskBattery } from './task-battery';
+export type { TaskBattery, ReflectionLlmFn } from './task-battery';
 export { computeAgentFitness, rankPopulation, selectSurvivors } from './fitness';
 export { mutateAdd, mutateRemove, mutateSwap, mutateAgent } from './mutation';
 export { mergeMemoryStates, crossoverAgents } from './crossover';

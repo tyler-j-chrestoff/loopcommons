@@ -22,6 +22,8 @@ import type {
 export interface KeywordMemoryPackageConfig {
   /** Path to the JSON file for persistent storage. */
   filePath?: string;
+  /** Optional pre-built PersistentState (e.g. InMemoryState for arena agents). */
+  state?: PersistentState;
   /** Optional callback returning the current threat score for tool-level gating. */
   getThreatScore?: () => number;
 }
@@ -70,7 +72,7 @@ function matchesQuery(memory: Memory, query: string): boolean {
 }
 
 export function createKeywordMemoryPackage(config: KeywordMemoryPackageConfig): KeywordMemoryPackage {
-  const state = createJsonFilePersistentState({
+  const state = config.state ?? createJsonFilePersistentState({
     filePath: config.filePath,
   });
 

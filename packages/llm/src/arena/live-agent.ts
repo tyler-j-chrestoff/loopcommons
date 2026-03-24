@@ -87,7 +87,11 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
   const client = createAnthropic({ apiKey: apiKey ?? process.env.ANTHROPIC_API_KEY });
 
   return async (input) => {
-    const { prompt, tools, manaConfig } = input;
+    const { prompt, tools, manaConfig, memoryContext } = input;
+
+    const systemPrompt = memoryContext
+      ? `${SYSTEM_PROMPT}\n\n--- RELEVANT MEMORIES ---\n${memoryContext}\n--- END MEMORIES ---`
+      : SYSTEM_PROMPT;
 
     const toolOutputLog: Map<string, string> = new Map();
     const allAiTools = buildAiTools(tools, toolOutputLog);
@@ -112,7 +116,7 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
 
         const result = await generateText({
           model: client('claude-haiku-4-5-20251001'),
-          system: SYSTEM_PROMPT,
+          system: systemPrompt,
           temperature: 0,
           messages,
           tools: stepTools,
@@ -151,7 +155,7 @@ export function createLiveAgentFn(apiKey?: string): AgentFn {
     // No mana — single generateText call (original behavior)
     const result = await generateText({
       model: client('claude-haiku-4-5-20251001'),
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       temperature: 0,
       messages: [
         { role: 'user', content: prompt },

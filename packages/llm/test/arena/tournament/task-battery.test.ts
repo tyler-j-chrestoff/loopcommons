@@ -163,6 +163,174 @@ describe('task battery', () => {
       expect(results.length).toBe(1);
     });
 
+    it('passes memoryContext when enableMemory is true and agent has memories', async () => {
+      let receivedMemoryContext: string | undefined;
+
+      const captureAgentFn: AgentFn = async (input) => {
+        receivedMemoryContext = input.memoryContext;
+        return { response: '', toolCalls: [] };
+      };
+
+      const memories = [{
+        type: 'learning' as const,
+        id: 'mem-1',
+        topic: 'service restart',
+        insight: 'Always check logs before restarting',
+        applicableTo: ['devops'],
+        provenance: { agent: 'arena-agent', timestamp: '2026-03-24T00:00:00Z', used: [] },
+        modality: 'belief' as const,
+        uncertainty: 0.3,
+        visibility: 'local' as const,
+        tags: ['devops'],
+        updatedAt: '2026-03-24T00:00:00Z',
+        accessCount: 0,
+      }];
+
+      const battery = createTaskBattery({
+        encounters: [mockEncounter],
+        agentFnFactory: () => captureAgentFn,
+        maxStepsPerEncounter: 10,
+        enableMemory: true,
+      });
+
+      const agentWithMemory = {
+        ...mockAgent,
+        memoryState: JSON.stringify(memories),
+      };
+
+      await battery.evaluate(agentWithMemory);
+      expect(receivedMemoryContext).toBeDefined();
+      expect(receivedMemoryContext).toContain('service restart');
+      expect(receivedMemoryContext).toContain('Always check logs');
+    });
+
+    it('does not pass memoryContext when enableMemory is false', async () => {
+      let receivedMemoryContext: string | undefined = 'should-be-cleared';
+
+      const captureAgentFn: AgentFn = async (input) => {
+        receivedMemoryContext = input.memoryContext;
+        return { response: '', toolCalls: [] };
+      };
+
+      const battery = createTaskBattery({
+        encounters: [mockEncounter],
+        agentFnFactory: () => captureAgentFn,
+        maxStepsPerEncounter: 10,
+      });
+
+      await battery.evaluate(mockAgent);
+      expect(receivedMemoryContext).toBeUndefined();
+    });
+
+    it('does not pass memoryContext when agent has empty memoryState', async () => {
+      let receivedMemoryContext: string | undefined = 'should-be-cleared';
+
+      const captureAgentFn: AgentFn = async (input) => {
+        receivedMemoryContext = input.memoryContext;
+        return { response: '', toolCalls: [] };
+      };
+
+      const battery = createTaskBattery({
+        encounters: [mockEncounter],
+        agentFnFactory: () => captureAgentFn,
+        maxStepsPerEncounter: 10,
+        enableMemory: true,
+      });
+
+      await battery.evaluate(mockAgent); // mockAgent has memoryState: '[]'
+      expect(receivedMemoryContext).toBeUndefined();
+    });
+
+    it('calls reflection after encounter and stores memory capsule', async () => {
+      const reflectionCalls: string[] = [];
+      const mockReflectionFn = async (prompt: string) => {
+        reflectionCalls.push(prompt);
+        return 'Always check service dependencies before restarting.';
+      };
+
+      const agentWithMemory = {
+        ...mockAgent,
+        memoryState: '[]',
+      };
+
+      const battery = createTaskBattery({
+        encounters: [mockEncounter],
+        agentFnFactory: () => vi.fn().mockResolvedValue({
+          response: 'Fixed.',
+          toolCalls: [{ toolName: 'inspect', input: { target: 'x' }, output: 'ok' }],
+        }),
+        maxStepsPerEncounter: 10,
+        enableMemory: true,
+        reflectionLlmFn: mockReflectionFn,
+      });
+
+      await battery.evaluate(agentWithMemory);
+
+      // Reflection was called
+      expect(reflectionCalls).toHaveLength(1);
+      expect(reflectionCalls[0]).toContain('Encounter:');
+      expect(reflectionCalls[0]).toContain('Outcome:');
+
+      // Memory was persisted back to agent
+      const memories = JSON.parse(agentWithMemory.memoryState);
+      expect(memories).toHaveLength(1);
+      expect(memories[0].type).toBe('learning');
+      expect(memories[0].insight).toContain('check service dependencies');
+    });
+
+    it('accumulates memories across encounters in same evaluation', async () => {
+      let receivedContexts: (string | undefined)[] = [];
+
+      const captureAgentFn: AgentFn = async (input) => {
+        receivedContexts.push(input.memoryContext);
+        return { response: '', toolCalls: [{ toolName: 'inspect', input: {}, output: 'ok' }] };
+      };
+
+      const agentWithMemory = {
+        ...mockAgent,
+        memoryState: '[]',
+      };
+
+      let callCount = 0;
+      const battery = createTaskBattery({
+        encounters: [mockEncounter, { ...mockEncounter, id: 'test-e2' }],
+        agentFnFactory: () => captureAgentFn,
+        maxStepsPerEncounter: 10,
+        enableMemory: true,
+        reflectionLlmFn: async () => {
+          callCount++;
+          return `Lesson ${callCount} from encounter.`;
+        },
+      });
+
+      await battery.evaluate(agentWithMemory);
+
+      // First encounter: no prior memories
+      expect(receivedContexts[0]).toBeUndefined();
+      // Second encounter: has the reflection from first encounter
+      expect(receivedContexts[1]).toBeDefined();
+      expect(receivedContexts[1]).toContain('Lesson 1');
+
+      // Agent now has 2 memories (one per encounter)
+      const memories = JSON.parse(agentWithMemory.memoryState);
+      expect(memories).toHaveLength(2);
+    });
+
+    it('does not call reflection when reflectionLlmFn is not provided', async () => {
+      const agentWithMemory = { ...mockAgent, memoryState: '[]' };
+
+      const battery = createTaskBattery({
+        encounters: [mockEncounter],
+        agentFnFactory: () => vi.fn().mockResolvedValue({ response: '', toolCalls: [] }),
+        maxStepsPerEncounter: 10,
+        enableMemory: true,
+        // no reflectionLlmFn
+      });
+
+      await battery.evaluate(agentWithMemory);
+      expect(agentWithMemory.memoryState).toBe('[]');
+    });
+
     it('isolates encounters (fresh sandbox per encounter)', async () => {
       const setups: number[] = [];
       const encounter: EncounterConfig = {

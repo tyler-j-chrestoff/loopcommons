@@ -2,7 +2,7 @@
 
 **Persona**: As a researcher, I need arena agents to actually use their inherited memories during encounters and generate new memories after encounters, so that crossover memory merge produces meaningful evolutionary signal and agents can transfer learned knowledge across encounters and generations.
 
-**Status**: planned
+**Status**: done
 
 **Context**: Session 56 discovered that arena agents store and inherit memory (mutation copies it, crossover merges weighted by fitness) but memory is never injected into the LLM call during encounters. Agents start every encounter blank. Crossover is dead code.
 

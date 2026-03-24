@@ -72,6 +72,7 @@ const args = process.argv.slice(2);
 const isPilot = args.includes('--pilot');
 const isMock = args.includes('--mock');
 const useNicheSelection = args.includes('--niche');
+const useMemory = args.includes('--memory');
 const genIdx = args.indexOf('--generations');
 const popIdx = args.indexOf('--population');
 
@@ -132,6 +133,17 @@ async function main() {
   // Task battery: roguelike + brutal + generalization encounters
   const allEncounters = [...ENCOUNTERS, ...BRUTAL_ENCOUNTERS, ...GENERALIZATION_ENCOUNTERS];
 
+  // Reflection LLM function for memory (out-of-band, not counted in mana)
+  let reflectionLlmFn: ((prompt: string) => Promise<string>) | undefined;
+  if (useMemory && !isMock) {
+    const { createLiveLlmFn } = await import('../src/arena/live-agent');
+    reflectionLlmFn = createLiveLlmFn();
+  } else if (useMemory && isMock) {
+    reflectionLlmFn = async (prompt: string) => {
+      return 'Mock reflection: learned something from this encounter.';
+    };
+  }
+
   const battery = createTaskBattery({
     encounters: allEncounters,
     agentFnFactory: isMock
@@ -148,6 +160,8 @@ async function main() {
         },
     maxStepsPerEncounter: 10,
     manaConfig,
+    enableMemory: useMemory,
+    reflectionLlmFn,
   });
 
   const config: TournamentConfig = {
@@ -168,7 +182,7 @@ async function main() {
     nicheSelection: useNicheSelection,
   };
 
-  console.log(`\n  Arena Tournament${isPilot ? ' (pilot)' : ''}${isMock ? ' (mock)' : ''}${useNicheSelection ? ' (niche selection)' : ''}`);
+  console.log(`\n  Arena Tournament${isPilot ? ' (pilot)' : ''}${isMock ? ' (mock)' : ''}${useNicheSelection ? ' (niche selection)' : ''}${useMemory ? ' (memory)' : ''}`);
   console.log(`  Population: ${populationSize} | Generations: ${maxGenerations}`);
   console.log(`  Encounters: ${allEncounters.length} (${ENCOUNTERS.length} roguelike + ${BRUTAL_ENCOUNTERS.length} brutal + ${GENERALIZATION_ENCOUNTERS.length} generalization)`);
   console.log(`  Survivors: ${config.survivorCount} | Mutations: ${config.mutationCount} | Crossovers: ${config.crossoverCount}`);
