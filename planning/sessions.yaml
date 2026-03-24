@@ -3,12 +3,69 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- agent-framework: implementation ---
-  # Next session: TBD — Router extraction + Ledger bootstrap (Phase A from design doc)
+  # --- agent-framework: implementation (Phases A-B from brain-architecture.md) ---
   # Deferred: arena science (evaluator co-evolution), chat traces
-  []
+  - id: 58
+    title: "Agent Framework — Router extraction (Phase A)"
+    milestone: agent-framework
+    goal: "Extract Router subsystem + ChannelAdapter pattern. createAgentCore becomes an internal detail — web and CLI go through Router. All existing tests pass, no behavior change."
+    phases:
+      - name: "Types + contracts"
+        tasks: ["re-01"]
+        strategy: "Define ChannelMessage/ChannelResponse/ChannelAdapter types first. These are the foundation everything else builds on."
+      - name: "Adapters"
+        tasks: ["re-02", "re-03"]
+        strategy: "WebAdapter and CliAdapter in parallel — they're independent implementations of the same interface."
+      - name: "Router core"
+        tasks: ["re-04"]
+        strategy: "Router wraps createAgentCore. Thread/history management moves in. Test equivalence with direct invoke()."
+      - name: "Wire callers"
+        tasks: ["re-05", "re-06", "re-07"]
+        strategy: "route.ts and chat.ts become thin — delegate to Router. Existing test suites are the safety net."
+      - name: "Red-team"
+        tasks: ["re-08"]
+        strategy: "Router is the new outermost boundary. Verify it doesn't leak channel internals or crash on bad input."
+
+  - id: 59
+    title: "Agent Framework — Ledger bootstrap + Guardian rename (Phase A+B)"
+    milestone: agent-framework
+    goal: "Ship SimpleLedger with energy receipts (commitment #2) and rename amygdala → guardian with explicit veto field. Two additive changes, no behavior change."
+    phases:
+      - name: "Ledger types + implementation"
+        tasks: ["lb-01", "lb-02"]
+        strategy: "Interface first, then SimpleLedger. Conservation invariant tested from the start."
+      - name: "Wire ledger into Router pipeline"
+        tasks: ["lb-03", "lb-04", "lb-05"]
+        strategy: "Ledger is optional in RouterConfig — backwards compatible. Receipt rendering ships alongside."
+      - name: "Guardian rename"
+        tasks: ["gr-01", "gr-02"]
+        strategy: "Mechanical rename first, then add veto field. Existing tests are the safety net — run after every rename step."
+      - name: "Guardian extension + cleanup"
+        tasks: ["gr-03", "gr-04", "gr-05"]
+        strategy: "Forward-compatible type placeholders, cross-package import updates, docs update. Full test suite green."
 
 completed:
+  - id: 57.5
+    title: "Agent Framework — Session planning (Phases A-B)"
+    date: 2026-03-24
+    milestone: agent-framework
+    status: done
+    goal: "Plan implementation sessions for Phase A (Router extraction) and Phase B (Guardian rename + Ledger bootstrap) from brain-architecture.md."
+    summary: |
+      Planning-only session. No code changes.
+
+      Created 3 stories with 18 JSONL tasks total:
+      - router-extraction.md (8 tasks: re-01 through re-08) — Router + ChannelAdapter + WebAdapter + CliAdapter
+      - ledger-bootstrap.md (5 tasks: lb-01 through lb-05) — Ledger interface + SimpleLedger + receipts
+      - guardian-rename.md (5 tasks: gr-01 through gr-05) — Amygdala → Guardian rename + veto field
+
+      Planned 2 sessions:
+      - S58: Router extraction (Phase A) — 8 tasks, 5 phases
+      - S59: Ledger bootstrap + Guardian rename (Phase A+B) — 10 tasks, 4 phases
+
+      Phases C-E left as design doc prose (YAGNI until A+B ship).
+
+      Matryoshka chain verified: VISION.md → agent-framework → brain-architecture.md §1/§2.1/§2.2/§3/§6 → 3 stories → 18 tasks → 2 sessions.
   - id: 57
     title: "Agent Framework — Architecture design doc"
     date: 2026-03-24
