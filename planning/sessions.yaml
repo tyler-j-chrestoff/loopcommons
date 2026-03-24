@@ -3,41 +3,28 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- arena-platform science continues ---
+  # --- agent-framework: the pivot ---
   - id: 57
-    title: "Arena Platform — Evaluator co-evolution + skeptic lineage"
-    milestone: arena-platform
+    title: "Agent Framework — Architecture design doc"
+    milestone: agent-framework
     status: planned
-    goal: "Three populations co-evolving. Skeptic lineage keeps the community honest. Collusion detection anchors fitness in reality."
+    goal: "Rigorous design doc defining brain-inspired subsystems, thermodynamic ledger, multi-channel contracts, and migration path. No code — contracts and prose only."
     phases:
-      - name: "Research co-evolution + evaluator genome"
-        tasks: [ec-01, ec-02]
+      - name: "Research foundations"
+        tasks: [af-01, af-01b, af-02]
         status: planned
-      - name: "Three-population runner + evaluator fitness"
-        tasks: [ec-03, ec-04]
+      - name: "Core contracts"
+        tasks: [af-03, af-04, af-05]
         status: planned
-      - name: "Skeptic lineage + collusion detection"
-        tasks: [ec-05, ec-06]
+      - name: "Identity, sandbox, migration"
+        tasks: [af-06, af-07, af-08]
         status: planned
-      - name: "Tests + full co-evolutionary run"
-        tasks: [ec-07, ec-08]
+      - name: "Synthesize design doc"
+        tasks: [af-09]
         status: planned
-  # --- deferred ---
-  - id: 58
-    title: "Observatory — Chat traces (deferred)"
-    milestone: arena-observatory
-    status: planned
-    goal: "Chat sessions appear alongside tournament traces. Same replay component. Unified trace format. Ships after tournament format is proven."
-    phases:
-      - name: "Research unified trace schema"
-        tasks: [ct-01]
-        status: planned
-      - name: "Chat adapter + UI integration"
-        tasks: [ct-02, ct-03]
-        status: planned
-      - name: "Tests"
-        tasks: [ct-04]
-        status: planned
+  # --- deferred (arena science + observatory) ---
+  # - Evaluator co-evolution (was S57): revisit after agent-framework ships
+  # - Chat traces (was S58): revisit after agent-framework ships
 
 completed:
   - id: 56.5
@@ -74,6 +61,22 @@ completed:
 
       32 new tests across 3 files. All 1369 llm+memory tests pass. Web test failures are pre-existing
       (path alias resolution, unrelated to this session).
+
+      STRATEGIC PIVOT: After reviewing Antithesis/Hegel and NanoClaw (25k-star agent framework),
+      decided Loop Commons is becoming a multi-channel agent framework + Denver non-profit for
+      underserved communities (unhoused, minorities, LGBTQ, disabled, veterans).
+
+      Key design decisions:
+      - Brain-inspired subsystems (function names, not brain region names): router, guardian,
+        orchestrator, consolidator, conflict-monitor, substrate-monitor, reflector
+      - Thermodynamic ledger via TigerBeetle: subsystem energy staking, three-scale economy
+        (intra-agent, inter-agent, organizational), two-phase transfers for bid resolution
+      - Keep Vercel AI SDK (multi-provider, no lock-in). Don't couple to Claude Agent SDK.
+      - Multi-channel with unified memory: channels are sensory modalities, not partitions
+      - VISION.md written and committed to repo root
+
+      New milestone: agent-framework. Session 57 planned as architecture design doc (no code).
+      Arena science (evaluator co-evolution) and observatory deferred.
   - id: 56
     title: "Arena Platform — Community fitness"
     date: 2026-03-24

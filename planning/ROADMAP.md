@@ -6,7 +6,7 @@ This is "Consciousness as Variational Inference" applied to agent architecture. 
 
 Everything below serves this thesis. The platform generates open-source training data as a side effect of testing it.
 
-**Active milestone**: [arena-observatory](milestones/arena-observatory/)
+**Active milestone**: [agent-framework](milestones/agent-framework/)
 
 ---
 
@@ -26,6 +26,7 @@ Each milestone proves a stronger claim about the thesis. Each is independently u
 | 8a | [arena-platform](milestones/arena-platform/) (infra) | SSE streaming, agent tooling, encounter DSL — the arena becomes composable | 1 ✓ |
 | 8b | [arena-observatory](milestones/arena-observatory/) | The data is self-explanatory — traces, replays, and failures visible to any visitor | 3-5 |
 | 8c | [arena-platform](milestones/arena-platform/) (science) | Co-evolving communities of agents, encounters, and evaluators | 3 |
+| 9 | [agent-framework](milestones/agent-framework/) | The agent becomes multi-channel, brain-inspired, thermodynamically grounded, and deployable | ? |
 
 ```
 derived-prompts (done) → memory-contract (done)
