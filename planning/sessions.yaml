@@ -3,10 +3,100 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- agent-framework: implementation (Phases C-E from brain-architecture.md) ---
-  # Deferred: arena science (evaluator co-evolution), chat traces
+  # --- agent-framework: Phase C (cross-channel) ---
+  # Deferred: Phase D (container isolation), Phase E (community specialists), arena science
+
+  - id: 60
+    title: "Agent Framework — ConflictMonitor + Consolidator (Phase C.1)"
+    milestone: agent-framework
+    goal: "Ship ConflictMonitor (keyword contradiction detection) and Consolidator (provenance-tracked memory writes with threat gating). Wire both into Router pipeline. TestAdapter for cross-channel integration tests."
+    stories:
+      - conflict-monitor.md
+      - consolidator.md
+      - pipeline-wiring.md
+    phases:
+      - name: "Types + contracts"
+        tasks: [cm-01, co-01, pw-01]
+        strategy: "parallel — three independent type definitions"
+      - name: "Implementations"
+        tasks: [cm-02, cm-03, co-02, co-03, pw-02]
+        strategy: "parallel — ConflictMonitor and Consolidator are independent. TestAdapter is independent."
+      - name: "Pipeline wiring"
+        tasks: [cm-04, co-04]
+        strategy: "sequential — ConflictMonitor wired first (parallel to Guardian), then Consolidator (post-orchestrator)"
+      - name: "Integration + red-team"
+        tasks: [cm-05, co-05, pw-03]
+        strategy: "parallel — red-team tests are independent, integration test depends on both wired"
+
+  - id: 61
+    title: "Agent Framework — User Identity + SMS Adapter (Phase C.2)"
+    milestone: agent-framework
+    goal: "Ship UserIdentity/ChannelLink with explicit-link protocol. Build TwilioAdapter for inbound/outbound SMS. Wire into Router as channel two."
+    stories:
+      - user-identity.md
+    phases:
+      - name: "Research + types"
+        tasks: [ui-01, ui-02]
+        strategy: "parallel — Twilio research and identity types are independent"
+      - name: "Identity store + adapter"
+        tasks: [ui-03, ui-04]
+        strategy: "parallel after research completes"
+      - name: "Webhook + linking"
+        tasks: [ui-05, ui-06]
+        strategy: "sequential — webhook route first, then identity linking E2E"
+      - name: "Red-team"
+        tasks: [ui-07]
+        strategy: "adversarial testing of the full SMS + identity flow"
+
+  - id: 62
+    title: "Agent Framework — Cross-Channel Integration + Discord Prep (Phase C.3)"
+    milestone: agent-framework
+    goal: "Prove the full cross-channel loop: web + SMS, linked identity, shared memory, contradiction detection, provenance. Research Discord as channel three."
+    stories:
+      - cross-channel-integration.md
+    phases:
+      - name: "E2E + research"
+        tasks: [xi-01, xi-04]
+        strategy: "parallel — E2E tests and Discord research are independent"
+      - name: "Features"
+        tasks: [xi-02, xi-03, xi-05]
+        strategy: "parallel — receipt provenance, cross-channel recall, and conflict UX are independent"
+      - name: "Red-team"
+        tasks: [xi-06]
+        strategy: "adversarial cross-channel attack scenarios"
 
 completed:
+  - id: 59.5
+    title: "Agent Framework — Phase C planning (cross-channel)"
+    date: 2026-03-24
+    milestone: agent-framework
+    status: done
+    goal: "Plan Phase C sessions: ConflictMonitor, Consolidator, SMS adapter, user identity, cross-channel integration."
+    summary: |
+      Planning-only session. No code changes.
+
+      Research: Discord vs Matrix vs SMS for channel two. Findings:
+      - 89% of homeless veterans have phones, 71% text — SMS is the real channel
+      - Discord is for staff/volunteers, not clients
+      - Matrix interesting for data sovereignty but deferred (operational complexity)
+      - Decision: SMS (Twilio) first, Discord second
+
+      Created 5 stories with 26 JSONL tasks total:
+      - conflict-monitor.md (5 tasks: cm-01 through cm-05) — keyword contradiction detection
+      - consolidator.md (5 tasks: co-01 through co-05) — provenance-tracked memory writes
+      - pipeline-wiring.md (3 tasks: pw-01 through pw-03) — TestAdapter + pipeline integration
+      - user-identity.md (7 tasks: ui-01 through ui-07) — UserIdentity + TwilioAdapter
+      - cross-channel-integration.md (6 tasks: xi-01 through xi-06) — E2E + Discord research
+
+      Planned 3 sessions:
+      - S60: ConflictMonitor + Consolidator + wiring (13 tasks)
+      - S61: User Identity + SMS adapter (7 tasks, requires Twilio account)
+      - S62: Cross-channel integration + Discord prep (6 tasks)
+
+      Key decisions:
+      - SubstrateMonitor moved from Phase C to Phase D (not needed until container isolation)
+      - ConflictMonitor starts with keyword matching (embeddings deferred to S62+)
+      - TestAdapter provides programmatic second channel for integration tests without external deps
   - id: 59
     title: "Agent Framework — Ledger bootstrap + Guardian rename (Phase A+B)"
     date: 2026-03-24
