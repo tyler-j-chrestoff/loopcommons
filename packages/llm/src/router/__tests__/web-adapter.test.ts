@@ -7,6 +7,7 @@ const stubGuardian: AmygdalaResult = {
   rewrittenPrompt: '',
   intent: 'conversation',
   threat: { score: 0, category: 'none', reasoning: '' },
+  veto: false,
   contextDelegation: { historyIndices: [], annotations: [] },
   traceEvents: [],
   latencyMs: 0,

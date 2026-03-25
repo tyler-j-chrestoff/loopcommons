@@ -1,7 +1,7 @@
 /**
  * Subagent Registry — declarative routing from amygdala intent to subagent config.
  *
- * amyg-07: Each AmygdalaIntent maps to a SubagentConfig that specifies:
+ * amyg-07: Each Intent maps to a SubagentConfig that specifies:
  *   - Which tools the subagent may use (allowlist of tool names)
  *   - A system prompt fragment tailored to the subagent's role
  *   - Context requirements (how much history, whether memory is needed)
@@ -10,7 +10,7 @@
  * Tool scoping enforcement happens in amyg-08.
  */
 
-import type { AmygdalaIntent } from '../amygdala/types';
+import type { Intent } from '../guardian/types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,7 +43,7 @@ export type RoutingContext = {
 
 export type SubagentRegistry = {
   /** Look up the subagent config for a given intent. Falls back to conversational. */
-  get(intent: AmygdalaIntent, context?: RoutingContext): SubagentConfig;
+  get(intent: Intent, context?: RoutingContext): SubagentConfig;
   /** List all registered subagent configs. */
   list(): SubagentConfig[];
 };
@@ -187,7 +187,7 @@ const refusalSubagent: SubagentConfig = {
 // Intent → subagent mapping
 // ---------------------------------------------------------------------------
 
-const intentMap: Record<AmygdalaIntent, SubagentConfig> = {
+const intentMap: Record<Intent, SubagentConfig> = {
   resume: resumeSubagent,
   project: projectSubagent,
   blog: blogReaderSubagent, // Default for blog; overridden to blog-writer when isAdmin
@@ -215,12 +215,12 @@ const allConfigs: SubagentConfig[] = [
 /**
  * Create a SubagentRegistry from the default configs.
  *
- * The `get()` method maps an AmygdalaIntent to the appropriate SubagentConfig,
+ * The `get()` method maps an Intent to the appropriate SubagentConfig,
  * falling back to the conversational subagent for any unrecognized intent.
  */
 export function createSubagentRegistry(): SubagentRegistry {
   return {
-    get(intent: AmygdalaIntent, context?: RoutingContext): SubagentConfig {
+    get(intent: Intent, context?: RoutingContext): SubagentConfig {
       // Blog intent is context-dependent: admin gets blog-writer, others get blog-reader
       if (intent === 'blog' && context?.isAdmin) {
         return blogWriterSubagent;

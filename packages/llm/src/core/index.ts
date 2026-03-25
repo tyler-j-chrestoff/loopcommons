@@ -6,7 +6,7 @@
  * the core handles agent logic.
  */
 
-import { createAmygdala } from '../amygdala';
+import { createGuardian } from '../guardian';
 import { createOrchestrator } from '../orchestrator';
 import { createToolRegistry } from '../tool';
 import type { TraceEvent } from '../trace/events';
@@ -19,7 +19,7 @@ export type { AgentCore, AgentCoreConfig, AgentInvocation, AgentInvocationResult
 export function createAgentCore(config: AgentCoreConfig): AgentCore {
   const {
     toolPackages,
-    amygdala = createAmygdala(),
+    amygdala = createGuardian(),
     orchestrator = createOrchestrator(),
     toolRegistry: registryOverride,
     model = 'claude-haiku-4-5',

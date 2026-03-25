@@ -10,7 +10,7 @@
  * not through this interface.
  */
 
-import type { TraceEvent, AmygdalaTraceEvent, OrchestratorTraceEvent, JudgeScoreEvent, Memory, MemoryType, AgentIdentity } from '@loopcommons/llm';
+import type { TraceEvent, GuardianTraceEvent, OrchestratorTraceEvent, JudgeScoreEvent, Memory, MemoryType, AgentIdentity } from '@loopcommons/llm';
 import type { BudgetSnapshot } from '@/lib/token-budget';
 import type { FeedbackEvent } from '@/lib/feedback';
 
@@ -35,7 +35,7 @@ export type WebSessionEvent =
 /** Union of all events that can be persisted in a session.
  *  Includes LLM trace events, amygdala events, orchestrator events, and web events.
  *  This is the raw material for the training data pipeline. */
-export type SessionEvent = TraceEvent | AmygdalaTraceEvent | OrchestratorTraceEvent | WebSessionEvent;
+export type SessionEvent = TraceEvent | GuardianTraceEvent | OrchestratorTraceEvent | WebSessionEvent;
 
 // ---------------------------------------------------------------------------
 // Session summary (written on finalize, returned by list)

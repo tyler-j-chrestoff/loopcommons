@@ -3,27 +3,36 @@
 # Subagents stretch this further via parallel execution.
 
 planned:
-  # --- agent-framework: implementation (Phases A-B from brain-architecture.md) ---
+  # --- agent-framework: implementation (Phases C-E from brain-architecture.md) ---
   # Deferred: arena science (evaluator co-evolution), chat traces
-  - id: 59
-    title: "Agent Framework — Ledger bootstrap + Guardian rename (Phase A+B)"
-    milestone: agent-framework
-    goal: "Ship SimpleLedger with energy receipts (commitment #2) and rename amygdala → guardian with explicit veto field. Two additive changes, no behavior change."
-    phases:
-      - name: "Ledger types + implementation"
-        tasks: ["lb-01", "lb-02"]
-        strategy: "Interface first, then SimpleLedger. Conservation invariant tested from the start."
-      - name: "Wire ledger into Router pipeline"
-        tasks: ["lb-03", "lb-04", "lb-05"]
-        strategy: "Ledger is optional in RouterConfig — backwards compatible. Receipt rendering ships alongside."
-      - name: "Guardian rename"
-        tasks: ["gr-01", "gr-02"]
-        strategy: "Mechanical rename first, then add veto field. Existing tests are the safety net — run after every rename step."
-      - name: "Guardian extension + cleanup"
-        tasks: ["gr-03", "gr-04", "gr-05"]
-        strategy: "Forward-compatible type placeholders, cross-package import updates, docs update. Full test suite green."
 
 completed:
+  - id: 59
+    title: "Agent Framework — Ledger bootstrap + Guardian rename (Phase A+B)"
+    date: 2026-03-24
+    milestone: agent-framework
+    status: done
+    goal: "Ship SimpleLedger with energy receipts (commitment #2) and rename amygdala → guardian with explicit veto field. Two additive changes, no behavior change."
+    summary: |
+      All 10 tasks (lb-01 through lb-05, gr-01 through gr-05) completed.
+
+      Ledger (5 tasks):
+      - Ledger interface: stake/resolve/fund/balance with StakeBid, StakeReceipt, StakeOutcome types
+      - SimpleLedger: Map-backed in-memory implementation with conservation invariant
+      - Receipt renderer: human-readable plain-text energy cost summary
+      - Router integration: optional Ledger in RouterOptions, stakes energy for normalize+dispatch, receipts on ChannelResponse
+      - Exported from @loopcommons/llm and @loopcommons/llm/ledger sub-path
+
+      Guardian rename (5 tasks):
+      - src/amygdala/ → src/guardian/ with backwards-compatible re-export shim
+      - Type renames: AmygdalaFn→GuardianFn, AmygdalaResult→GuardianResult, AmygdalaIntent→Intent, etc.
+      - Explicit veto field: veto=true when threat>=0.8 OR (adversarial intent + threat>=0.5)
+      - Forward-compatible placeholders: channelType, channelCapabilities, substrateReport, conflictFlags on GuardianInput
+      - Cross-package imports updated (web, memory), CLAUDE.md updated
+
+      Tests: 1296 pass (was 1260), 36 new tests. Zero regressions.
+
+      Unblocked: Phase C (ConflictMonitor, SubstrateMonitor wiring into Guardian), Phase D (Orchestrator→Consolidator), Phase E (TigerBeetle).
   - id: 58
     title: "Agent Framework — Router extraction (Phase A)"
     date: 2026-03-24

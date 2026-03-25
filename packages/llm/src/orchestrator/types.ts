@@ -7,7 +7,7 @@
  * and training data export.
  */
 
-import type { AmygdalaResult, AmygdalaIntent } from '../amygdala/types';
+import type { GuardianResult, Intent } from '../guardian/types';
 import type { Message, AgentResult } from '../types';
 import type { ToolRegistry, ToolPackage } from '../tool';
 import type { TraceCollector } from '../trace';
@@ -34,8 +34,8 @@ export type OrchestratorRouteEvent = {
   /** The subagent that was selected. */
   subagentId: string;
   subagentName: string;
-  /** The intent from the amygdala that drove the selection. */
-  intent: AmygdalaIntent;
+  /** The intent from the guardian that drove the selection. */
+  intent: Intent;
   /** Whether a threat override changed the routing (e.g., high threat → refusal). */
   threatOverride: boolean;
   /** The threat score that informed the decision. */
@@ -79,8 +79,8 @@ export type OrchestratorTraceEvent =
 // ---------------------------------------------------------------------------
 
 export type OrchestratorInput = {
-  /** The amygdala's classification result. */
-  amygdalaResult: AmygdalaResult;
+  /** The guardian's classification result. */
+  amygdalaResult: GuardianResult;
   /** The full conversation history (orchestrator filters before passing to subagent). */
   conversationHistory: Message[];
   /** The full tool registry (orchestrator scopes before passing to subagent). */

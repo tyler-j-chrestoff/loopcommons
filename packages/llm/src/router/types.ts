@@ -1,6 +1,6 @@
 import type { TraceEvent } from '../trace/events';
 import type { TokenUsage } from '../types';
-import type { AmygdalaResult } from '../amygdala/types';
+import type { GuardianResult } from '../guardian/types';
 import type { AgentCoreConfig, AgentInvocationResult } from '../core/types';
 
 // ---------------------------------------------------------------------------
@@ -79,7 +79,8 @@ export type ChannelResponse = {
   cost: number;
   subagentId: string;
   subagentName: string;
-  guardianAssessment: AmygdalaResult;
+  guardianAssessment: GuardianResult;
+  receipts?: import('../ledger/types').StakeReceipt[];
 };
 
 // ---------------------------------------------------------------------------

@@ -19,21 +19,32 @@ export { createTrace } from './trace';
 export type { Provider, ProviderCallParams, ProviderCallResult, StreamEvent } from './provider/base';
 export { LLMError } from './errors';
 export type { LLMErrorCode } from './errors';
+// Guardian — canonical exports (new names)
+export type {
+  GuardianFn,
+  GuardianInput,
+  GuardianResult,
+  Intent,
+  GuardianTraceEvent,
+  ThreatAssessment,
+  ThreatCategory,
+  ContextDelegationPlan,
+  ContextAnnotation,
+  RequestMetadata,
+} from './guardian/types';
+export { createGuardian } from './guardian';
+export type { GuardianConfig } from './guardian';
+export { hashForPrivacy } from './guardian/metadata';
+// Backwards-compatible re-exports — remove in Phase C
 export type {
   AmygdalaFn,
   AmygdalaInput,
   AmygdalaResult,
   AmygdalaIntent,
   AmygdalaTraceEvent,
-  ThreatAssessment,
-  ThreatCategory,
-  ContextDelegationPlan,
-  ContextAnnotation,
-  RequestMetadata,
 } from './amygdala/types';
 export { createAmygdala } from './amygdala';
 export type { AmygdalaConfig } from './amygdala';
-export { hashForPrivacy } from './amygdala/metadata';
 export type { SubagentConfig, SubagentRegistry } from './subagent';
 export { createSubagentRegistry } from './subagent';
 export type {
@@ -53,6 +64,15 @@ export { computeIdentity, buildAgentIdentity, getCommitSha, computeToolDiff, bui
 export type { AgentIdentity, LineageRecord } from './identity';
 export { SLUG_REGEX, BlogFrontmatterSchema } from './blog/types';
 export type { BlogPost, BlogPostSummary, BlogFrontmatter } from './blog/types';
+export { createSimpleLedger, renderReceipt } from './ledger';
+export type {
+  Ledger,
+  StakeBid,
+  StakeReceipt,
+  StakeOutcome,
+  TransferResult,
+  AccountBalance,
+} from './ledger';
 export { createRouter } from './router';
 export type {
   Router,

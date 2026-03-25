@@ -1,6 +1,7 @@
 import type { Message } from '../types';
 import type { TraceEvent } from '../trace/events';
 import type { AgentCore, AgentInvocationResult, InvocationIdentity } from '../core/types';
+import type { Ledger, StakeReceipt } from '../ledger/types';
 import type {
   ChannelAdapter,
   ChannelMessage,
@@ -18,6 +19,7 @@ export { createCliAdapter } from './adapters/cli';
 export type RouterOptions = {
   adapters: ChannelAdapter[];
   core: AgentCore;
+  ledger?: Ledger;
 };
 
 export type ProcessOptions = {
@@ -38,8 +40,11 @@ export type Router = {
   getAdapter(type: ChannelType): ChannelAdapter | undefined;
 };
 
+const ROUTER_STAKE_AMOUNT = 10;
+const ROUTER_STAKE_TIMEOUT = 60;
+
 export function createRouter(options: RouterOptions): Router {
-  const { adapters, core } = options;
+  const { adapters, core, ledger } = options;
 
   const adapterMap = new Map<ChannelType, ChannelAdapter>();
   for (const adapter of adapters) {
@@ -77,6 +82,18 @@ export function createRouter(options: RouterOptions): Router {
         ...processOptions?.identityOverrides,
       };
 
+      // Stake energy for normalize + dispatch (if ledger present)
+      let routerReceipt: StakeReceipt | undefined;
+      if (ledger) {
+        routerReceipt = await ledger.stake({
+          subsystemId: 'router',
+          amount: ROUTER_STAKE_AMOUNT,
+          purpose: 'normalize + dispatch',
+          timeout: ROUTER_STAKE_TIMEOUT,
+          correlationId: channelMessage.id,
+        });
+      }
+
       // Call the agent core pipeline
       const coreResult = await core.invoke({
         message: channelMessage.content.text,
@@ -85,6 +102,13 @@ export function createRouter(options: RouterOptions): Router {
         stream: processOptions?.stream,
         onTraceEvent: processOptions?.onTraceEvent,
       });
+
+      // Resolve router stake
+      const receipts: StakeReceipt[] = [];
+      if (ledger && routerReceipt) {
+        await ledger.resolve(routerReceipt, { quality: 1.0 });
+        receipts.push(routerReceipt);
+      }
 
       // Update thread history (only when Router manages history)
       if (processOptions?.conversationHistory === undefined) {
@@ -112,12 +136,14 @@ export function createRouter(options: RouterOptions): Router {
           rewrittenPrompt: '',
           intent: 'conversation',
           threat: { score: 0, category: 'none', reasoning: '' },
+          veto: false,
           contextDelegation: { historyIndices: [], annotations: [] },
           traceEvents: [],
           latencyMs: 0,
           usage: { inputTokens: 0, outputTokens: 0, cachedTokens: 0 },
           cost: 0,
         },
+        ...(receipts.length > 0 ? { receipts } : {}),
       };
 
       // Format for the channel

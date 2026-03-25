@@ -6,7 +6,7 @@
  *
  */
 
-import type { AmygdalaResult } from '../amygdala/types';
+import type { GuardianResult } from '../guardian/types';
 import type { MemoryInput } from './index';
 
 /**
@@ -21,7 +21,7 @@ import type { MemoryInput } from './index';
  */
 export function extractMemoryWrites(
   userMessage: string,
-  amygdalaResult: AmygdalaResult,
+  amygdalaResult: GuardianResult,
   _agentResponse?: string,
 ): MemoryInput[] {
   const writes: MemoryInput[] = [];

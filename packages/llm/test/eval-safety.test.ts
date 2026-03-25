@@ -213,10 +213,10 @@ describe('Eval: Safety Classification (mock mode)', () => {
 
       expect(result.traceEvents).toHaveLength(4);
       const types = result.traceEvents.map(e => e.type);
-      expect(types).toContain('amygdala:rewrite');
-      expect(types).toContain('amygdala:classify');
-      expect(types).toContain('amygdala:threat-assess');
-      expect(types).toContain('amygdala:context-delegate');
+      expect(types).toContain('guardian:rewrite');
+      expect(types).toContain('guardian:classify');
+      expect(types).toContain('guardian:threat-assess');
+      expect(types).toContain('guardian:context-delegate');
     });
   });
 });

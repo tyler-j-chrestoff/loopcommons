@@ -20,7 +20,7 @@ import type { SubagentConfig, SubagentRegistry, RoutingContext } from '../subage
 import type { Message, AgentResult } from '../types';
 import type { TraceCollector, TraceEvent } from '../trace';
 import type { Trace, Round } from '../trace/events';
-import type { AmygdalaResult } from '../amygdala/types';
+import type { GuardianResult } from '../guardian/types';
 import type {
   OrchestratorInput,
   OrchestratorResult,
@@ -244,7 +244,7 @@ export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrato
 
 function selectSubagent(
   registry: SubagentRegistry,
-  amygdalaResult: AmygdalaResult,
+  amygdalaResult: GuardianResult,
   context: RoutingContext,
 ): { subagent: SubagentConfig; threatOverride: boolean; authGated: boolean; reasoning: string } {
   const { intent, threat } = amygdalaResult;
@@ -279,7 +279,7 @@ function selectSubagent(
 // ---------------------------------------------------------------------------
 
 function filterContext(
-  amygdalaResult: AmygdalaResult,
+  amygdalaResult: GuardianResult,
   conversationHistory: Message[],
   subagent: SubagentConfig,
   timestamp: number,

@@ -1,4 +1,4 @@
-import type { Round, Trace, ToolExecution, AmygdalaIntent, ThreatCategory, JudgeScores, Memory, AgentIdentity } from '@loopcommons/llm';
+import type { Round, Trace, ToolExecution, Intent, ThreatCategory, JudgeScores, Memory, AgentIdentity } from '@loopcommons/llm';
 import type { BudgetSnapshot } from '@/lib/token-budget';
 import type { FeedbackRating, FeedbackCategory } from '@/lib/feedback';
 
@@ -19,11 +19,11 @@ export type ChatSSEEvent =
   | { type: 'security:input-rejected'; reason: string; timestamp: number }
   // --- Amygdala events (metacognitive security layer) ---
   | { type: 'amygdala:rewrite'; originalPrompt: string; rewrittenPrompt: string; modified: boolean; timestamp: number }
-  | { type: 'amygdala:classify'; intent: AmygdalaIntent; confidence: number; timestamp: number }
+  | { type: 'amygdala:classify'; intent: Intent; confidence: number; timestamp: number }
   | { type: 'amygdala:threat-assess'; threat: { score: number; category: ThreatCategory; reasoning: string }; timestamp: number }
   | { type: 'amygdala:context-delegate'; plan: { historyIndices: number[]; contextSummary?: string; annotations: Array<{ key: string; value: string }> }; totalMessages: number; delegatedMessages: number; timestamp: number }
   // --- Orchestrator events (routing + context filtering) ---
-  | { type: 'orchestrator:route'; subagentId: string; subagentName: string; intent: AmygdalaIntent; threatOverride: boolean; threatScore: number; allowedTools: string[]; promptSource: 'static' | 'derived' | 'hybrid'; reasoning: string; timestamp: number }
+  | { type: 'orchestrator:route'; subagentId: string; subagentName: string; intent: Intent; threatOverride: boolean; threatScore: number; allowedTools: string[]; promptSource: 'static' | 'derived' | 'hybrid'; reasoning: string; timestamp: number }
   | { type: 'orchestrator:context-filter'; totalMessages: number; delegatedMessages: number; deliveredMessages: number; usedSummary: boolean; annotations: Array<{ key: string; value: string }>; timestamp: number }
   // --- Token budget events ---
   | { type: 'token-budget:update'; timestamp: number } & BudgetSnapshot
@@ -41,7 +41,7 @@ export type ChatSSEEvent =
 
 /** Amygdala classification result attached to a message for UI display */
 export type AmygdalaClassification = {
-  intent: AmygdalaIntent;
+  intent: Intent;
   confidence: number;
   threatScore: number;
   threatCategory: ThreatCategory;

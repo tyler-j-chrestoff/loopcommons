@@ -9,9 +9,9 @@
 
 import type { Message, TokenUsage } from '../types';
 import type { TraceEvent } from '../trace/events';
-import type { RequestMetadata } from '../amygdala/types';
+import type { RequestMetadata } from '../guardian/types';
 import type { ToolPackage, ToolRegistry } from '../tool';
-import type { AmygdalaFn } from '../amygdala/types';
+import type { GuardianFn } from '../guardian/types';
 import type { OrchestratorFn } from '../orchestrator/types';
 import type { AgentIdentity } from '../identity';
 
@@ -84,8 +84,8 @@ export type AgentCoreConfig = {
   /** ToolPackages that define the agent's capabilities.
    *  Must include at least one with memory intent (construction-time invariant). */
   toolPackages: ToolPackage[];
-  /** Override the amygdala. Default: createAmygdala(). */
-  amygdala?: AmygdalaFn;
+  /** Override the guardian. Default: createGuardian(). */
+  amygdala?: GuardianFn;
   /** Override the orchestrator. Default: createOrchestrator(). */
   orchestrator?: OrchestratorFn;
   /** Override the tool registry. Default: built from toolPackages. */
