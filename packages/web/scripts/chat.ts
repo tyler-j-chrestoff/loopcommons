@@ -12,7 +12,7 @@
 import * as readline from 'node:readline';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
-import { createAgentCore, getCommitSha, buildAgentIdentity } from '@loopcommons/llm';
+import { createAgentCore, createRouter, createCliAdapter, getCommitSha, buildAgentIdentity } from '@loopcommons/llm';
 import type { InvocationIdentity, TraceEvent, ToolPackage } from '@loopcommons/llm';
 import type { Message } from '@loopcommons/llm';
 import { createKeywordMemoryPackage } from '@loopcommons/memory/keyword';
@@ -124,6 +124,11 @@ async function main(): Promise<void> {
     onThreatScore: (score) => { currentThreatScore = score; },
   });
 
+  const router = createRouter({
+    adapters: [createCliAdapter()],
+    core: agentCore,
+  });
+
   // Session persistence
   const sessionWriter = new FileSessionWriter({ basePath: dataDir });
   const sessionId = crypto.randomUUID();
@@ -138,9 +143,6 @@ async function main(): Promise<void> {
     agentIdentity,
     timestamp: Date.now(),
   } as any);
-
-  // Conversation history
-  const history: Message[] = [];
 
   // Banner
   const mode = args.admin ? `${ansi.yellow}admin${ansi.reset}` : 'public';
@@ -168,24 +170,33 @@ async function main(): Promise<void> {
     }
 
     try {
-      const identity = buildIdentity({ admin: args.admin });
-
-      const result = await agentCore.invoke({
-        message: input,
-        conversationHistory: history,
-        identity,
-        stream: false,
-        onTraceEvent(event: TraceEvent) {
-          sessionWriter.append(sessionId, event as any);
-          if (args.verbose) {
-            process.stderr.write(`${ansi.dim}[trace] ${event.type}${ansi.reset}\n`);
-          }
+      const routerOutput = await router.process(
+        {
+          raw: { message: input, isAdmin: args.admin, sessionId },
+          channelType: 'cli',
         },
-      });
+        {
+          stream: false,
+          identityOverrides: {
+            commitSha: getCommitSha(),
+            requestMetadata: {
+              ipHash: 'cli-local',
+              isAuthenticated: true,
+              isAdmin: args.admin,
+              sessionIndex: 0,
+              hourUtc: new Date().getUTCHours(),
+            },
+          },
+          onTraceEvent(event: TraceEvent) {
+            sessionWriter.append(sessionId, event as any);
+            if (args.verbose) {
+              process.stderr.write(`${ansi.dim}[trace] ${event.type}${ansi.reset}\n`);
+            }
+          },
+        },
+      );
 
-      // Update conversation history
-      history.push({ role: 'user', content: input });
-      history.push({ role: 'assistant', content: result.response });
+      const result = routerOutput.coreResult;
 
       // Print response
       console.log(`\n${ansi.cyan}agent>${ansi.reset} ${result.response}`);

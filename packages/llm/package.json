@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./blog/types": "./src/blog/types.ts",
     "./arena": "./src/arena/index.ts",
-    "./arena/tournament": "./src/arena/tournament/index.ts"
+    "./arena/tournament": "./src/arena/tournament/index.ts",
+    "./router": "./src/router/index.ts"
   },
   "scripts": {
     "build": "tsc",

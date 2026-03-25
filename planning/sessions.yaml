@@ -5,27 +5,6 @@
 planned:
   # --- agent-framework: implementation (Phases A-B from brain-architecture.md) ---
   # Deferred: arena science (evaluator co-evolution), chat traces
-  - id: 58
-    title: "Agent Framework — Router extraction (Phase A)"
-    milestone: agent-framework
-    goal: "Extract Router subsystem + ChannelAdapter pattern. createAgentCore becomes an internal detail — web and CLI go through Router. All existing tests pass, no behavior change."
-    phases:
-      - name: "Types + contracts"
-        tasks: ["re-01"]
-        strategy: "Define ChannelMessage/ChannelResponse/ChannelAdapter types first. These are the foundation everything else builds on."
-      - name: "Adapters"
-        tasks: ["re-02", "re-03"]
-        strategy: "WebAdapter and CliAdapter in parallel — they're independent implementations of the same interface."
-      - name: "Router core"
-        tasks: ["re-04"]
-        strategy: "Router wraps createAgentCore. Thread/history management moves in. Test equivalence with direct invoke()."
-      - name: "Wire callers"
-        tasks: ["re-05", "re-06", "re-07"]
-        strategy: "route.ts and chat.ts become thin — delegate to Router. Existing test suites are the safety net."
-      - name: "Red-team"
-        tasks: ["re-08"]
-        strategy: "Router is the new outermost boundary. Verify it doesn't leak channel internals or crash on bad input."
-
   - id: 59
     title: "Agent Framework — Ledger bootstrap + Guardian rename (Phase A+B)"
     milestone: agent-framework
@@ -45,6 +24,31 @@ planned:
         strategy: "Forward-compatible type placeholders, cross-package import updates, docs update. Full test suite green."
 
 completed:
+  - id: 58
+    title: "Agent Framework — Router extraction (Phase A)"
+    date: 2026-03-24
+    milestone: agent-framework
+    status: done
+    goal: "Extract Router subsystem + ChannelAdapter pattern. createAgentCore becomes an internal detail — web and CLI go through Router. All existing tests pass, no behavior change."
+    summary: |
+      All 8 tasks (re-01 through re-08) completed. Router is the new outermost boundary.
+
+      Built:
+      - ChannelMessage/ChannelResponse/ChannelAdapter types (router/types.ts)
+      - WebAdapter (adapters/web.ts) and CliAdapter (adapters/cli.ts)
+      - Router factory (router/index.ts) with per-thread history, caller-provided history override, identity overrides
+      - Wired route.ts and chat.ts through Router
+      - Exported from @loopcommons/llm and @loopcommons/llm/router sub-path
+
+      Key decisions:
+      - ProcessOptions.conversationHistory allows stateless channels (web) to pass history from request body
+      - ProcessOptions.identityOverrides merges transport metadata (requestMetadata, commitSha) on top of adapter identity
+      - coreResult exposed on RouterOutput for Phase A migration (callers still need amygdalaUsage etc.)
+      - Adapters handle null/undefined raw input safely (caught by red-team tests)
+
+      Tests: 1293 pass (was 1251), 42 new router tests (8 type, 6 web adapter, 5 cli adapter, 15 router core, 12 red-team). Zero regressions.
+
+      Unblocked: S59 (Ledger bootstrap + Guardian rename). Router is ready to receive ledger receipts.
   - id: 57.5
     title: "Agent Framework — Session planning (Phases A-B)"
     date: 2026-03-24

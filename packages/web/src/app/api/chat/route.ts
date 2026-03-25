@@ -1,5 +1,7 @@
 import {
   createAgentCore,
+  createRouter,
+  createWebAdapter,
   createJudge,
   hashForPrivacy,
   getCommitSha,
@@ -58,6 +60,11 @@ const toolPackages = [resumePackage, projectPackage, blogPackage, memoryPackage,
 const agentCore = createAgentCore({
   toolPackages,
   onThreatScore: (score) => { currentRequestThreatScore = score; },
+});
+
+const router = createRouter({
+  adapters: [createWebAdapter({ channelId: 'web-main' })],
+  core: agentCore,
 });
 
 const sessionWriter = new FileSessionWriter();
@@ -269,34 +276,37 @@ export async function POST(request: Request): Promise<Response> {
       }
 
       // =====================================================================
-      // AGENT CORE — memory → amygdala → orchestrator → subagent
+      // ROUTER — normalize → core (memory → amygdala → orchestrator → subagent)
       // =====================================================================
-      const coreResult = await agentCore.invoke({
-        message: rawMessage,
-        conversationHistory: validatedMessages.slice(0, -1),
-        identity: {
-          interfaceId: 'web',
-          isAdmin,
-          isAuthenticated: true,
-          commitSha: getCommitSha(),
-          requestMetadata: {
-            ipHash: hashForPrivacy(ip),
-            isAuthenticated: true,
-            isAdmin,
-            sessionIndex: 0, // TODO: track per-IP session count
-            hourUtc: new Date().getUTCHours(),
-            userAgentHash: request.headers.get('user-agent')
-              ? hashForPrivacy(request.headers.get('user-agent')!)
-              : undefined,
+      const routerOutput = await router.process(
+        {
+          raw: { message: rawMessage, userId: session.user?.name ?? 'anonymous', isAdmin, isAuthenticated: true, sessionId },
+          channelType: 'web',
+        },
+        {
+          stream: true,
+          conversationHistory: validatedMessages.slice(0, -1),
+          identityOverrides: {
+            commitSha: getCommitSha(),
+            requestMetadata: {
+              ipHash: hashForPrivacy(ip),
+              isAuthenticated: true,
+              isAdmin,
+              sessionIndex: 0, // TODO: track per-IP session count
+              hourUtc: new Date().getUTCHours(),
+              userAgentHash: request.headers.get('user-agent')
+                ? hashForPrivacy(request.headers.get('user-agent')!)
+                : undefined,
+            },
+          },
+          onTraceEvent(event: TraceEvent) {
+            // Sanitize before sending to client, persist raw for training data
+            sendEvent(sanitizeEvent(event));
+            sessionWriter.append(sessionId, event);
           },
         },
-        stream: true,
-        onTraceEvent(event: TraceEvent) {
-          // Sanitize before sending to client, persist raw for training data
-          sendEvent(sanitizeEvent(event));
-          sessionWriter.append(sessionId, event);
-        },
-      });
+      );
+      const coreResult = routerOutput.coreResult;
 
       // Track token usage for budget visualization
       tokenBudget.addActual('amygdala', {

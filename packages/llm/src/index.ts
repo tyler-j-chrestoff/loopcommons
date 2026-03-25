@@ -53,6 +53,28 @@ export { computeIdentity, buildAgentIdentity, getCommitSha, computeToolDiff, bui
 export type { AgentIdentity, LineageRecord } from './identity';
 export { SLUG_REGEX, BlogFrontmatterSchema } from './blog/types';
 export type { BlogPost, BlogPostSummary, BlogFrontmatter } from './blog/types';
+export { createRouter } from './router';
+export type {
+  Router,
+  RouterOptions,
+  ProcessOptions,
+  ChannelAdapter,
+  ChannelMessage,
+  ChannelResponse,
+  ChannelType,
+  ChannelCapabilities,
+  ChannelOrigin,
+  UserRef,
+  ThreadRef,
+  MessageContent,
+  Attachment,
+  RouterConfig,
+  RouterPipelineConfig,
+  RouterInput,
+  RouterOutput,
+} from './router';
+export { createWebAdapter } from './router/adapters/web';
+export { createCliAdapter } from './router/adapters/cli';
 export { createJsonFilePersistentState, formatMemoryContext, MemorySchema, isContradiction } from './memory';
 export type {
   PersistentState,

@@ -1,0 +1,133 @@
+import type { Message } from '../types';
+import type { TraceEvent } from '../trace/events';
+import type { AgentCore, AgentInvocationResult, InvocationIdentity } from '../core/types';
+import type {
+  ChannelAdapter,
+  ChannelMessage,
+  ChannelResponse,
+  ChannelType,
+  RouterInput,
+  RouterOutput,
+} from './types';
+
+export type { ChannelAdapter, ChannelMessage, ChannelResponse, ChannelType, RouterInput, RouterOutput } from './types';
+export type { ChannelCapabilities, ChannelOrigin, UserRef, ThreadRef, MessageContent, Attachment, RouterConfig, RouterPipelineConfig } from './types';
+export { createWebAdapter } from './adapters/web';
+export { createCliAdapter } from './adapters/cli';
+
+export type RouterOptions = {
+  adapters: ChannelAdapter[];
+  core: AgentCore;
+};
+
+export type ProcessOptions = {
+  stream?: boolean;
+  onTraceEvent?: (event: TraceEvent) => void;
+  /** Caller-provided conversation history. When set, overrides Router's internal
+   *  thread history. Used by stateless channels (web) where the client sends
+   *  full history with each request. */
+  conversationHistory?: Message[];
+  /** Additional identity fields to merge (requestMetadata, commitSha, etc.).
+   *  Router derives interfaceId/isAdmin/isAuthenticated from the ChannelMessage;
+   *  this allows callers to add transport-layer metadata. */
+  identityOverrides?: Partial<InvocationIdentity>;
+};
+
+export type Router = {
+  process(input: RouterInput, options?: ProcessOptions): Promise<RouterOutput>;
+  getAdapter(type: ChannelType): ChannelAdapter | undefined;
+};
+
+export function createRouter(options: RouterOptions): Router {
+  const { adapters, core } = options;
+
+  const adapterMap = new Map<ChannelType, ChannelAdapter>();
+  for (const adapter of adapters) {
+    adapterMap.set(adapter.type, adapter);
+  }
+
+  // Per-thread conversation history (used when caller doesn't provide history)
+  const threadHistory = new Map<string, Message[]>();
+
+  return {
+    async process(input: RouterInput, processOptions?: ProcessOptions): Promise<RouterOutput> {
+      const adapter = adapterMap.get(input.channelType);
+      if (!adapter) {
+        throw new Error(`No adapter registered for channel type: ${input.channelType}`);
+      }
+
+      // Normalize raw input into canonical ChannelMessage
+      const channelMessage = adapter.normalize(input.raw);
+
+      // Resolve conversation history: caller-provided > thread-managed > empty
+      let history: Message[];
+      if (processOptions?.conversationHistory !== undefined) {
+        history = processOptions.conversationHistory;
+      } else {
+        const threadId = channelMessage.thread?.id;
+        history = threadId ? (threadHistory.get(threadId) ?? []) : [];
+      }
+
+      // Build identity from channel message + optional overrides
+      const identity: InvocationIdentity = {
+        interfaceId: channelMessage.channel.type,
+        isAdmin: channelMessage.user.isAdmin,
+        isAuthenticated: channelMessage.user.isAuthenticated,
+        userId: channelMessage.user.id,
+        ...processOptions?.identityOverrides,
+      };
+
+      // Call the agent core pipeline
+      const coreResult = await core.invoke({
+        message: channelMessage.content.text,
+        conversationHistory: history,
+        identity,
+        stream: processOptions?.stream,
+        onTraceEvent: processOptions?.onTraceEvent,
+      });
+
+      // Update thread history (only when Router manages history)
+      if (processOptions?.conversationHistory === undefined) {
+        const threadId = channelMessage.thread?.id;
+        if (threadId) {
+          const updated = [
+            ...history,
+            { role: 'user' as const, content: channelMessage.content.text },
+            { role: 'assistant' as const, content: coreResult.response },
+          ];
+          threadHistory.set(threadId, updated);
+        }
+      }
+
+      // Build canonical response
+      const channelResponse: ChannelResponse = {
+        messageId: channelMessage.id,
+        content: { text: coreResult.response },
+        traceEvents: coreResult.traceEvents,
+        usage: coreResult.usage,
+        cost: coreResult.cost,
+        subagentId: coreResult.subagentId,
+        subagentName: coreResult.subagentName,
+        guardianAssessment: {
+          rewrittenPrompt: '',
+          intent: 'conversation',
+          threat: { score: 0, category: 'none', reasoning: '' },
+          contextDelegation: { historyIndices: [], annotations: [] },
+          traceEvents: [],
+          latencyMs: 0,
+          usage: { inputTokens: 0, outputTokens: 0, cachedTokens: 0 },
+          cost: 0,
+        },
+      };
+
+      // Format for the channel
+      const channelFormatted = adapter.format(channelResponse);
+
+      return { response: channelResponse, channelFormatted, coreResult };
+    },
+
+    getAdapter(type: ChannelType): ChannelAdapter | undefined {
+      return adapterMap.get(type);
+    },
+  };
+}
