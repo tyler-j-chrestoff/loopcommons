@@ -13,6 +13,8 @@ import type { RequestMetadata } from '../guardian/types';
 import type { ToolPackage, ToolRegistry } from '../tool';
 import type { GuardianFn } from '../guardian/types';
 import type { OrchestratorFn } from '../orchestrator/types';
+import type { ConflictMonitorFn } from '../conflict-monitor/types';
+import type { ConsolidatorFn } from '../consolidator/types';
 import type { AgentIdentity } from '../identity';
 
 // ---------------------------------------------------------------------------
@@ -50,6 +52,10 @@ export type AgentInvocation = {
   /** Called for each trace event during pipeline execution (real-time streaming).
    *  Adapters use this for SSE, session persistence, etc. */
   onTraceEvent?: (event: TraceEvent) => void;
+  /** Channel capabilities for orchestrator tool scoping (Phase C). */
+  channelCapabilities?: import('../router/types').ChannelCapabilities;
+  /** The normalized channel message — used by ConflictMonitor (Phase C). */
+  channelMessage?: import('../router/types').ChannelMessage;
 };
 
 // ---------------------------------------------------------------------------
@@ -97,6 +103,10 @@ export type AgentCoreConfig = {
   /** Called when the amygdala produces a threat score.
    *  Adapters use this to update the mutable ref that memory tools read. */
   onThreatScore?: (score: number) => void;
+  /** Optional ConflictMonitor — runs parallel to Guardian (Phase C). */
+  conflictMonitor?: ConflictMonitorFn;
+  /** Optional Consolidator — runs post-orchestrator (Phase C). */
+  consolidator?: ConsolidatorFn;
 };
 
 // ---------------------------------------------------------------------------

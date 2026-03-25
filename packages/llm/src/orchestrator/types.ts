@@ -98,6 +98,9 @@ export type OrchestratorInput = {
   /** ToolPackages for derived prompt generation. When provided, subagent prompts
    *  include auto-generated capability and boundary sections from package metadata. */
   toolPackages?: ToolPackage[];
+  /** Channel capabilities for tool scoping (Phase C). Orchestrator can use this
+   *  to restrict tools based on channel support (e.g. no streaming tools on SMS). */
+  channelCapabilities?: import('../router/types').ChannelCapabilities;
 };
 
 export type OrchestratorResult = {

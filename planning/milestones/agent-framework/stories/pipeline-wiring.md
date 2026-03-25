@@ -18,7 +18,7 @@ ConflictMonitor and Consolidator need to be wired into the Router pipeline, and 
 ## Tasks
 
 ```jsonl
-{"id":"pw-01","title":"Thread channelCapabilities to Orchestrator","description":"Pass ChannelMessage.channel.capabilities through Router -> core.invoke -> OrchestratorInput. Add channelCapabilities field to OrchestratorInput type. Orchestrator can use it for tool scoping (future).","deps":[],"prereqs":[]}
-{"id":"pw-02","title":"TestAdapter","description":"Implement TestAdapter: ChannelAdapter for type 'test'. Programmatic normalize/format, configurable capabilities. Used in integration tests to simulate a second channel without external deps.","deps":[],"prereqs":[]}
-{"id":"pw-03","title":"Cross-channel integration tests","description":"End-to-end test: user sends message via WebAdapter, then via TestAdapter. ConflictMonitor receives memory context from both. Consolidator writes memories with correct provenance from each channel. Verify trace events from all subsystems.","deps":["cm-04","co-04","pw-01","pw-02"],"prereqs":[]}
+{"id":"pw-01","title":"Thread channelCapabilities to Orchestrator","description":"Pass ChannelMessage.channel.capabilities through Router -> core.invoke -> OrchestratorInput. Add channelCapabilities field to OrchestratorInput type. Orchestrator can use it for tool scoping (future).","deps":[],"prereqs":[],"status":"done"}
+{"id":"pw-02","title":"TestAdapter","description":"Implement TestAdapter: ChannelAdapter for type 'test'. Programmatic normalize/format, configurable capabilities. Used in integration tests to simulate a second channel without external deps.","deps":[],"prereqs":[],"status":"done"}
+{"id":"pw-03","title":"Cross-channel integration tests","description":"End-to-end test: user sends message via WebAdapter, then via TestAdapter. ConflictMonitor receives memory context from both. Consolidator writes memories with correct provenance from each channel. Verify trace events from all subsystems.","deps":["cm-04","co-04","pw-01","pw-02"],"prereqs":[],"status":"done"}
 ```

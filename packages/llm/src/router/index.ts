@@ -15,6 +15,7 @@ export type { ChannelAdapter, ChannelMessage, ChannelResponse, ChannelType, Rout
 export type { ChannelCapabilities, ChannelOrigin, UserRef, ThreadRef, MessageContent, Attachment, RouterConfig, RouterPipelineConfig } from './types';
 export { createWebAdapter } from './adapters/web';
 export { createCliAdapter } from './adapters/cli';
+export { createTestAdapter } from './adapters/test';
 
 export type RouterOptions = {
   adapters: ChannelAdapter[];
@@ -101,6 +102,8 @@ export function createRouter(options: RouterOptions): Router {
         identity,
         stream: processOptions?.stream,
         onTraceEvent: processOptions?.onTraceEvent,
+        channelCapabilities: channelMessage.channel.capabilities,
+        channelMessage,
       });
 
       // Resolve router stake

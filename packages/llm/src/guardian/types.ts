@@ -231,8 +231,11 @@ export type SubstrateReport = {
 
 /** Conflict flag from ConflictMonitor — detected contradictions (Phase C). */
 export type ConflictFlag = {
-  source: string;
+  type: 'memory-contradiction' | 'cross-channel-inconsistency' | 'identity-drift';
+  severity: 'low' | 'medium' | 'high';
   description: string;
+  involvedMemories?: string[];
+  involvedChannels?: import('../router/types').ChannelType[];
 };
 
 export type GuardianInput = {

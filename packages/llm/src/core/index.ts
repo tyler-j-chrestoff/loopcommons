@@ -25,6 +25,8 @@ export function createAgentCore(config: AgentCoreConfig): AgentCore {
     model = 'claude-haiku-4-5',
     maxRounds = 5,
     onThreatScore,
+    conflictMonitor,
+    consolidator,
   } = config;
 
   const toolRegistry = registryOverride ?? createToolRegistry(
@@ -38,7 +40,7 @@ export function createAgentCore(config: AgentCoreConfig): AgentCore {
 
   return {
     async invoke(invocation: AgentInvocation): Promise<AgentInvocationResult> {
-      const { message, conversationHistory, identity, stream = true, onTraceEvent } = invocation;
+      const { message, conversationHistory, identity, stream = true, onTraceEvent, channelCapabilities, channelMessage } = invocation;
       const allTraceEvents: TraceEvent[] = [];
 
       function emitTrace(event: TraceEvent): void {
@@ -76,6 +78,27 @@ export function createAgentCore(config: AgentCoreConfig): AgentCore {
       }
 
       // =================================================================
+      // CONFLICT MONITOR — parallel to Guardian (Phase C, optional)
+      // =================================================================
+      let conflictFlags: import('../guardian/types').ConflictFlag[] | undefined;
+      if (conflictMonitor && channelMessage) {
+        try {
+          const cmResult = conflictMonitor({
+            message: channelMessage,
+            memoryContext: memoryContext ?? '',
+          });
+          if (cmResult.flags.length > 0) {
+            conflictFlags = cmResult.flags;
+          }
+          for (const event of cmResult.traceEvents) {
+            emitTrace(event as unknown as TraceEvent);
+          }
+        } catch {
+          // ConflictMonitor failure should not break the pipeline
+        }
+      }
+
+      // =================================================================
       // AMYGDALA PASS — metacognitive security layer
       // =================================================================
       const amygdalaResult = await amygdala({
@@ -83,6 +106,8 @@ export function createAgentCore(config: AgentCoreConfig): AgentCore {
         conversationHistory,
         memoryContext,
         requestMetadata: identity.requestMetadata,
+        ...(conflictFlags ? { conflictFlags } : {}),
+        ...(channelMessage ? { channelType: channelMessage.channel.type, channelCapabilities: channelMessage.channel.capabilities } : {}),
       });
 
       // Rewrite guard: if amygdala returned a history message as the rewrite
@@ -128,7 +153,45 @@ export function createAgentCore(config: AgentCoreConfig): AgentCore {
         maxRounds,
         stream,
         isAdmin: identity.isAdmin,
+        channelCapabilities,
       });
+
+      // =================================================================
+      // CONSOLIDATOR — post-orchestrator memory formation (Phase C, optional)
+      // =================================================================
+      if (consolidator && channelMessage) {
+        try {
+          const toolsUsed = allTraceEvents
+            .filter((e): e is Extract<TraceEvent, { type: 'tool:complete' }> => e.type === 'tool:complete')
+            .map(e => e.execution.toolName);
+
+          const consolidatorResult = await consolidator({
+            signal: {
+              type: 'interaction_complete',
+              threadId: channelMessage.thread?.id,
+              channelType: channelMessage.channel.type,
+              userId: channelMessage.user.id,
+              intent: amygdalaResult.intent,
+              threatScore: amygdalaResult.threat?.score ?? 0,
+              toolsUsed,
+              timestamp: Date.now(),
+            },
+            interactionTrace: allTraceEvents,
+            memoryContract: (memoryPackage as any)?.contract,
+            threadHistory: [
+              ...conversationHistory,
+              { role: 'user' as const, content: message },
+              { role: 'assistant' as const, content: result.agentResult.message },
+            ],
+          });
+
+          for (const event of consolidatorResult.traceEvents) {
+            emitTrace(event as unknown as TraceEvent);
+          }
+        } catch {
+          // Consolidator failure should not break the pipeline
+        }
+      }
 
       // =================================================================
       // Aggregate results

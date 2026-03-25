@@ -45,7 +45,7 @@ describe('GuardianInput forward-compatible fields', () => {
 
   it('accepts conflictFlags placeholder', () => {
     const flags: ConflictFlag[] = [
-      { source: 'memory', description: 'contradictory recall' },
+      { type: 'memory-contradiction', severity: 'medium', description: 'contradictory recall' },
     ];
     const input: GuardianInput = {
       ...baseInput,

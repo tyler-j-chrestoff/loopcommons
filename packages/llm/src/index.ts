@@ -31,6 +31,8 @@ export type {
   ContextDelegationPlan,
   ContextAnnotation,
   RequestMetadata,
+  ConflictFlag,
+  SubstrateReport,
 } from './guardian/types';
 export { createGuardian } from './guardian';
 export type { GuardianConfig } from './guardian';
@@ -73,6 +75,25 @@ export type {
   TransferResult,
   AccountBalance,
 } from './ledger';
+// ConflictMonitor (Phase C)
+export { createConflictMonitor } from './conflict-monitor';
+export type {
+  ConflictMonitorInput,
+  ConflictMonitorOutput,
+  ConflictMonitorTraceEvent,
+  ConflictMonitorFn,
+} from './conflict-monitor';
+// Consolidator (Phase C)
+export { createConsolidator } from './consolidator';
+export type {
+  ConsolidatorInput,
+  ConsolidatorOutput,
+  ConsolidatorTraceEvent,
+  ConsolidatorFn,
+  ConsolidationSignal,
+  MemoryProvenance,
+  MergeResult,
+} from './consolidator';
 export { createRouter } from './router';
 export type {
   Router,
@@ -95,6 +116,7 @@ export type {
 } from './router';
 export { createWebAdapter } from './router/adapters/web';
 export { createCliAdapter } from './router/adapters/cli';
+export { createTestAdapter } from './router/adapters/test';
 export { createJsonFilePersistentState, formatMemoryContext, MemorySchema, isContradiction } from './memory';
 export type {
   PersistentState,

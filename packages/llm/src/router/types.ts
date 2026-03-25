@@ -7,7 +7,7 @@ import type { AgentCoreConfig, AgentInvocationResult } from '../core/types';
 // Channel identity
 // ---------------------------------------------------------------------------
 
-export type ChannelType = 'web' | 'cli' | 'discord' | 'whatsapp' | 'sms';
+export type ChannelType = 'web' | 'cli' | 'discord' | 'whatsapp' | 'sms' | 'test';
 
 export type ChannelCapabilities = {
   maxResponseLength?: number;

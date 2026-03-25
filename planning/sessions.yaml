@@ -6,28 +6,6 @@ planned:
   # --- agent-framework: Phase C (cross-channel) ---
   # Deferred: Phase D (container isolation), Phase E (community specialists), arena science
 
-  - id: 60
-    title: "Agent Framework — ConflictMonitor + Consolidator (Phase C.1)"
-    milestone: agent-framework
-    goal: "Ship ConflictMonitor (keyword contradiction detection) and Consolidator (provenance-tracked memory writes with threat gating). Wire both into Router pipeline. TestAdapter for cross-channel integration tests."
-    stories:
-      - conflict-monitor.md
-      - consolidator.md
-      - pipeline-wiring.md
-    phases:
-      - name: "Types + contracts"
-        tasks: [cm-01, co-01, pw-01]
-        strategy: "parallel — three independent type definitions"
-      - name: "Implementations"
-        tasks: [cm-02, cm-03, co-02, co-03, pw-02]
-        strategy: "parallel — ConflictMonitor and Consolidator are independent. TestAdapter is independent."
-      - name: "Pipeline wiring"
-        tasks: [cm-04, co-04]
-        strategy: "sequential — ConflictMonitor wired first (parallel to Guardian), then Consolidator (post-orchestrator)"
-      - name: "Integration + red-team"
-        tasks: [cm-05, co-05, pw-03]
-        strategy: "parallel — red-team tests are independent, integration test depends on both wired"
-
   - id: 61
     title: "Agent Framework — User Identity + SMS Adapter (Phase C.2)"
     milestone: agent-framework
@@ -66,6 +44,48 @@ planned:
         strategy: "adversarial cross-channel attack scenarios"
 
 completed:
+  - id: 60
+    title: "Agent Framework — ConflictMonitor + Consolidator (Phase C.1)"
+    date: 2026-03-24
+    milestone: agent-framework
+    status: done
+    goal: "Ship ConflictMonitor (keyword contradiction detection) and Consolidator (provenance-tracked memory writes with threat gating). Wire both into Router pipeline. TestAdapter for cross-channel integration tests."
+    summary: |
+      All 13 tasks completed across 3 stories. 47 new tests, 1367 total in packages/llm.
+
+      Shipped:
+      - ConflictMonitor (src/conflict-monitor/): keyword/fact contradiction detection
+        using pattern matching (location, name, age, employer). Returns typed ConflictFlag[]
+        fed into GuardianInput.conflictFlags. Runs post-memory-recall, pre-Guardian.
+      - Consolidator (src/consolidator/): provenance-tracked memory writes with 4-band
+        threat gating (full <0.3, elevated 0.3-0.5, blocked >=0.5, refusal >=0.8).
+        Wraps MemoryContract, tags each write with channel/thread/timestamp provenance.
+        Runs post-orchestrator, replaces ad-hoc consolidate() pattern.
+      - TestAdapter (src/router/adapters/test.ts): programmatic ChannelAdapter for type
+        'test' with configurable capabilities. Used for cross-channel integration tests.
+      - ConflictFlag upgraded from {source, description} to {type, severity, description,
+        involvedMemories?, involvedChannels?} — richer type matching design doc §2.5.
+      - channelCapabilities threaded Router → core.invoke → Orchestrator (pw-01).
+      - channelMessage passed from Router to core for ConflictMonitor/Consolidator context.
+      - ChannelType extended with 'test'.
+
+      Key decisions:
+      - ConflictMonitor runs inside core.invoke() (not Router) because it needs memoryContext
+        which is computed during memory recall. ChannelMessage passed through AgentInvocation.
+      - Both subsystems optional in AgentCoreConfig — zero-cost when absent, matching
+        SimpleLedger pattern. No breakage to existing callers.
+      - Consolidator propagates store errors (caught by core wrapper) — acceptable for MVP.
+      - ConflictMonitor MVP: string matching only, no embeddings. Known limitation: quoted
+        examples can produce false positives ("someone told me they live in X").
+
+      Bugs found:
+      - Pre-existing: red-team-amygdala.test.ts substrate-awareness test flaky (30s timeout
+        on live LLM call). Not related to this session.
+      - Pre-existing: packages/web tests fail on @/ path alias resolution (43 test files).
+
+      Unblocked: S61 (UserIdentity + SMS adapter) — ConflictMonitor and Consolidator are
+      wired and ready for cross-channel flows. TestAdapter available for integration testing.
+
   - id: 59.5
     title: "Agent Framework — Phase C planning (cross-channel)"
     date: 2026-03-24
