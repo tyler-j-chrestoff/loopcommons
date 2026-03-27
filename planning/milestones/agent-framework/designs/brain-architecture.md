@@ -321,6 +321,9 @@ interface ContextDelegationPlan {
 - Intent set is extensible (crisis, resource-lookup for non-profit)
 - Everything else stays. The amygdala is the most mature subsystem — minimal changes.
 
+**DNA.yml — substrate-level self-knowledge (future):**
+The Guardian receives a structured YAML context containing computational facts about the agent's substrate (model card, architecture, context window), verified claims (sigmoid transformers implement belief propagation — Lean 4 proven), and derived operational implications (confidence should scale with grounding chain length, ungrounded token generation is structurally hallucination). This is loaded into the Guardian's context, not the agent's system prompt — analogous to how the brainstem regulates without conscious awareness. The agent never sees DNA.yml; it just gets the Guardian's threat score, which is informed by substrate awareness. DNA.yml evolves on geological timescales via arena selection pressure (see §10.8). See `project_dna_substrate.md` memory for full structure.
+
 ### 2.3 Orchestrator
 
 **Traces to: Commitment 2 (auditable) + Commitment 3 (route to the right specialist for the need).**
@@ -531,6 +534,7 @@ interface InteractionSummary {
 - It's the agent's equivalent of sleep consolidation: reviewing what happened, checking alignment, making corrections
 - Corrections are advisory — they produce recommendations that the Guardian and Consolidator can act on, not direct mutations
 - This is where the auto-calibration work (milestone `auto-calibration`) gets a proper home
+- **Evolutionary context:** In the arena, the Reflector's drift detection maps to the skeptic lineage's R_drift reward: max(0, A_anc - A_curr) · D_KL(P_current || P_ancestor). The Reflector detects drift; the skeptic hunts for encounters that exploit it. In production, the Reflector operates against SOUL.md (hand-authored). In the arena, SOUL.md itself evolves, and the Reflector checks drift against the lineage, not a fixed document.
 
 ---
 
@@ -1036,6 +1040,10 @@ interface FailureRecord {
 
 The graveyard is published. The non-profit's annual report doesn't hide failures — it leads with them, because that's where the learning is, and the community deserves to see what went wrong and what changed.
 
+### Merkle forensic principle
+
+The Merkle chain is forensic, not executive. Every agent decision, soul state, and evaluation is content-addressed and linked in a provenance chain. When a failure occurs, the chain enables exact diagnosis — trace the hash path from the failure back through the soul state, the Guardian assessment, and the encounter that triggered it. The system never rolls back or resurrects dead lineages. Dead agents are studied, not resurrected. Selection pressure handles correction; the Merkle chain handles understanding. This extends the existing content-addressed identity (`src/identity/`) and anchor protocol (SHA-256 encounter hashing) into a unified provenance system.
+
 ---
 
 ## 10. Open Questions
@@ -1054,7 +1062,7 @@ The graveyard is published. The non-profit's annual report doesn't hide failures
 
 7. **MCP integration point.** MCP tools can be consumed via Vercel AI SDK's client. Where in the pipeline do MCP tools register? As ToolPackages? As a special adapter? The ToolPackage `systemMethods` field might be the right place for MCP server lifecycle.
 
-8. **Arena integration.** The arena evolves agent compositions (tool sets, parameters). In the new architecture, does the arena evolve specialist configurations? Guardian parameters? Full pipeline configurations? The arena should remain an independent testing harness, but its output should inform production agent configuration.
+8. **Arena integration.** Resolved by Cryptographically Grounded Epistemics convergence (2026-03-26). The arena evolves a three-layer stack: DNA.yml (substrate awareness, meta-meta), SOUL.md (values/identity, meta), and tool compositions (capabilities, task). Arena is the R&D lab; production consumes validated improvements. **Deployment phasing:** arena-forged DNA first (epistemology — safe), arena-forged SOUL later (axiology — dangerous until skeptic lineage proves it can catch degradation). DNA.yml loads into Guardian context (subconscious substrate awareness), not agent system prompt. See `search-guidance.md` story in arena-platform and `project_cryptographic_epistemics.md` memory.
 
 ---
 

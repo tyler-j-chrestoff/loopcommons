@@ -26,6 +26,8 @@ Each milestone proves a stronger claim about the thesis. Each is independently u
 | 8a | [arena-platform](milestones/arena-platform/) (infra) | SSE streaming, agent tooling, encounter DSL — the arena becomes composable | 1 ✓ |
 | 8b | [arena-observatory](milestones/arena-observatory/) | The data is self-explanatory — traces, replays, and failures visible to any visitor | 3-5 |
 | 8c | [arena-platform](milestones/arena-platform/) (science) | Co-evolving communities of agents, encounters, and evaluators | 3 |
+| 8d | [arena-platform](milestones/arena-platform/) (evaluation) | Merkle-committed evaluation protocol: stratified sieve, DAG topology, cross-evaluator collusion breaking | 1-2 |
+| 8e | [arena-platform](milestones/arena-platform/) (guidance) | Learned manifold navigation replaces blind mutation; bidirectional encounter↔behavior queries | 2-3 |
 | 9 | [agent-framework](milestones/agent-framework/) | The agent becomes multi-channel, brain-inspired, thermodynamically grounded, and deployable | ? |
 
 ```
@@ -48,11 +50,15 @@ derived-prompts (done) → memory-contract (done)
                     arena-observatory (the microscope)
                               ↓
                     arena-platform science (co-evolution)
+                              ↓
+                    arena-platform evaluation (Merkle-committed battery, DAG)
+                              ↓
+                    arena-platform guidance (search guidance, manifold learning)
 ```
 
 Memory-contract formalizes memory as a construction-time invariant before core extraction. Attested-lineage needs core extraction (the canonical derivation path must be clean before you hash it) but not CLI. CLI doesn't need lineage chains. Roguelike-v1 needs attested lineage (identity hashes at every state transition). Its results determine what kind of arena to build: if path dependence is real, evolution operates over acquisition sequences; if not, standard population-based selection is sufficient. See `planning/memos/MOBIUS_PRINCIPLE.md`.
 
-**11-14 sessions, 12 stories, 74 tasks.** Design doc: `milestones/agent-memory/designs/tools-as-ontology.md`
+**14-20 sessions, 14 stories, 92 tasks.** Design doc: `milestones/agent-memory/designs/tools-as-ontology.md`
 
 ---
 

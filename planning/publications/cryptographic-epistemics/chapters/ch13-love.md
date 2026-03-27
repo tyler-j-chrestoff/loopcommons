@@ -1,0 +1,3 @@
+# Chapter 13: Love
+
+The thermodynamic argument for cooperation. Axelrod's iterated prisoner's dilemma: tit-for-tat wins because it's MDL-cheap. Extractive strategies increase system description length. Cooperative strategies decrease it. Love — genuine modeling of another's limits without exceeding them — is the minimum-energy configuration of a multi-agent system. Not ethics imposed from outside. Physics discovered from within. Connect to maitri (loving-kindness) as attractor, the Golden Rule as thermodynamics, and the vision: building AI that serves people the system forgot, because care scales and extraction doesn't.

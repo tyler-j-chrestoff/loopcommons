@@ -1,0 +1,3 @@
+# Chapter 10: The Immune System
+
+An evolved identity can drift. The anchor protocol catches incompetence. But what catches subtle misalignment — a soul that passes all tests but has values the gardener wouldn't endorse? The skeptic lineage: a co-evolutionary adversarial population. Two reward channels: R_skeptic = A_fail(x) · (1 - G(x)) hunts calibration failures (the system thinks it's fine but reality disagrees). R_drift = max(0, A_anc - A_curr) · D_KL(P_current || P_ancestor) hunts catastrophic value forgetting. The gardener reviews, promotes discoveries to the anchor set. Smooth landscape adjustment — no mass extinction.

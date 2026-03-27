@@ -6,26 +6,6 @@ planned:
   # --- agent-framework: Phase C (cross-channel) ---
   # Deferred: Phase D (container isolation), Phase E (community specialists), arena science
 
-  - id: 61
-    title: "Agent Framework — User Identity + SMS Adapter (Phase C.2)"
-    milestone: agent-framework
-    goal: "Ship UserIdentity/ChannelLink with explicit-link protocol. Build TwilioAdapter for inbound/outbound SMS. Wire into Router as channel two."
-    stories:
-      - user-identity.md
-    phases:
-      - name: "Research + types"
-        tasks: [ui-01, ui-02]
-        strategy: "parallel — Twilio research and identity types are independent"
-      - name: "Identity store + adapter"
-        tasks: [ui-03, ui-04]
-        strategy: "parallel after research completes"
-      - name: "Webhook + linking"
-        tasks: [ui-05, ui-06]
-        strategy: "sequential — webhook route first, then identity linking E2E"
-      - name: "Red-team"
-        tasks: [ui-07]
-        strategy: "adversarial testing of the full SMS + identity flow"
-
   - id: 62
     title: "Agent Framework — Cross-Channel Integration + Discord Prep (Phase C.3)"
     milestone: agent-framework
@@ -44,6 +24,96 @@ planned:
         strategy: "adversarial cross-channel attack scenarios"
 
 completed:
+  - id: 61.5
+    title: "Cryptographically Grounded Epistemics — theoretical convergence"
+    date: 2026-03-26
+    milestone: arena-platform
+    status: done
+    goal: "Multi-model convergence on search guidance, Merkle-grounded inference, evolved identity, and evaluation protocol."
+    summary: |
+      Research/design session — no code changes. Multi-model convergence (Claude + Gemini + Grok)
+      produced a complete theoretical framework and three new arena-platform stories.
+
+      Shipped (planning artifacts):
+      - search-guidance.md story (9 tasks, sg-01 through sg-09) — bidirectional manifold
+        navigation, GP surrogate, Grammar VAE, MAP-Elites gap detection
+      - merkle-evaluation-protocol.md story (9 tasks, me-01 through me-09) — Merkle-committed
+        battery evaluations, stratified sieve, DAG topology, cross-evaluator collusion breaking,
+        performance-gated decay
+      - publications/cryptographic-epistemics/ — 14-chapter treatise structure with briefs,
+        prompt template, draft directories. Co-authored by 9 models + Tyler.
+      - ROADMAP.md updated: 8d (evaluation) and 8e (guidance) added to trajectory
+      - brain-architecture.md updated: DNA.yml in Guardian, Merkle forensic principle,
+        Reflector evolutionary context, open question #8 resolved
+      - cf-01 and ec-01 research tasks marked complete with validated references
+
+      Key decisions:
+      - "Cryptographically Grounded Epistemics" as framework name
+      - Three claims: anchor=bedrock (not SOUL.md), MDL universal (neural+crypto), two
+        discrete boundaries (decoder+evaluator)
+      - SOUL.md evolves via selection, not authored. Tyler = gardener, not author.
+      - DNA.yml: structured substrate self-knowledge in Guardian (subconscious), not agent context
+      - Three-layer evolutionary stack: DNA (meta-meta) / SOUL (meta) / tools (task),
+        mapped to Clune's Hyperagents
+      - Skeptic reward: R_skeptic = A_fail·(1-G) + R_drift = max(0,A_anc-A_curr)·D_KL
+      - Merkle chain is forensic, not executive — no rollback
+      - Stratified sieve (~30% sample) + full checkpoint at thresholds
+      - Performance-gated decay for failure pool (not time-based)
+      - Cross-evaluator sampling breaks co-evolutionary collusion
+      - Smooth anchor promotion (no mass extinction) — "transition dynamics ARE the data"
+      - Deploy DNA first (epistemology, safe), SOUL later (axiology, dangerous)
+
+      Triggered by: Ndea search guidance job posting + Coppola "Transformers are Bayesian
+      Networks" (arxiv 2603.17063) + Clune "Hyperagents" (2026).
+
+      Unblocked: S62 (cross-channel integration) is next on agent-framework track.
+      Arena-platform stories (search guidance, evaluation protocol) sequenced after S57
+      (co-evolution, currently deferred behind agent-framework).
+
+  - id: 61
+    title: "Agent Framework — User Identity + SMS Adapter (Phase C.2)"
+    date: 2026-03-24
+    milestone: agent-framework
+    status: done
+    goal: "Ship UserIdentity/ChannelLink with explicit-link protocol. Build TwilioAdapter for inbound/outbound SMS. Wire into Router as channel two."
+    summary: |
+      All 7 tasks completed. 89 new tests, 0 regressions. Twilio account not yet
+      provisioned — all code tested with mocks and in-memory stores.
+
+      Shipped:
+      - UserIdentity/ChannelLink types (src/user-identity/types.ts): UserIdentity,
+        ChannelLink, LinkMethod (phone-match|explicit-link|oauth|admin-link),
+        LinkRequest, LinkVerification, IdentityStore interface.
+      - In-memory identity store (src/user-identity/in-memory-store.ts): resolve
+        (create-on-first-contact), explicit-link protocol with 6-digit verification
+        codes and 10-minute expiry, admin-link, identity merge (initiating user
+        survives, absorbed user's links transfer, orphan deleted).
+      - TwilioAdapter (src/router/adapters/sms.ts): ChannelAdapter for type 'sms',
+        normalizes Twilio webhook payloads (MessageSid, From, To, Body, media
+        attachments), formats TwiML XML responses, XML escaping, 1600-char
+        truncation. Standalone validateTwilioSignature() with HMAC-SHA1 +
+        timing-safe comparison.
+      - SMS webhook route (packages/web/src/app/api/sms/webhook/route.ts):
+        form-urlencoded parsing, signature validation with Railway SSL termination
+        URL reconstruction, rate limiting by phone number, TwiML responses for
+        all paths (success, error, rate limit).
+      - Identity linking routes: POST /api/identity/link (auth-gated, E.164
+        validation, returns requestId+expiresAt), POST /api/identity/verify
+        (auth-gated, delegates to store.verifyLink).
+      - Router identity integration: optional identityStore in RouterOptions,
+        resolve → unified userId → adminStatus promotion → touch after processing.
+        Zero breakage when absent.
+
+      Key decisions:
+      - SMS conversations keyed by phone number (From = user.id = thread.id).
+      - SMS users are isAdmin:false, isAuthenticated:false until identity linked.
+      - No Twilio SDK dependency — adapter + signature validation built from
+        node:crypto primitives only.
+      - Identity merge is directional: initiating user's identity survives.
+      - Actual SMS sending deferred until Twilio account provisioned.
+
+      Pre-existing issue: packages/web api-chat.test.ts mock missing createRouter.
+
   - id: 60
     title: "Agent Framework — ConflictMonitor + Consolidator (Phase C.1)"
     date: 2026-03-24
