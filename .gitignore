@@ -33,3 +33,6 @@ coverage/
 
 # Claude Code local state
 .claude/
+
+# Unpublished drafts
+planning/publications/
