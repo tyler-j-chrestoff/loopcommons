@@ -2,6 +2,7 @@ import type { Message } from '../types';
 import type { TraceEvent } from '../trace/events';
 import type { AgentCore, AgentInvocationResult, InvocationIdentity } from '../core/types';
 import type { Ledger, StakeReceipt } from '../ledger/types';
+import type { IdentityStore } from '../user-identity/types';
 import type {
   ChannelAdapter,
   ChannelMessage,
@@ -16,11 +17,15 @@ export type { ChannelCapabilities, ChannelOrigin, UserRef, ThreadRef, MessageCon
 export { createWebAdapter } from './adapters/web';
 export { createCliAdapter } from './adapters/cli';
 export { createTestAdapter } from './adapters/test';
+export { createSmsAdapter, validateTwilioSignature } from './adapters/sms';
+export type { IdentityStore } from '../user-identity/types';
+export { createInMemoryIdentityStore } from '../user-identity/in-memory-store';
 
 export type RouterOptions = {
   adapters: ChannelAdapter[];
   core: AgentCore;
   ledger?: Ledger;
+  identityStore?: IdentityStore;
 };
 
 export type ProcessOptions = {
@@ -45,7 +50,7 @@ const ROUTER_STAKE_AMOUNT = 10;
 const ROUTER_STAKE_TIMEOUT = 60;
 
 export function createRouter(options: RouterOptions): Router {
-  const { adapters, core, ledger } = options;
+  const { adapters, core, ledger, identityStore } = options;
 
   const adapterMap = new Map<ChannelType, ChannelAdapter>();
   for (const adapter of adapters) {
@@ -75,11 +80,25 @@ export function createRouter(options: RouterOptions): Router {
       }
 
       // Build identity from channel message + optional overrides
+      let resolvedUserId = channelMessage.user.id;
+      let resolvedIsAdmin = channelMessage.user.isAdmin;
+
+      if (identityStore) {
+        const userIdentity = await identityStore.resolve(
+          channelMessage.channel.type,
+          channelMessage.user.id,
+        );
+        resolvedUserId = userIdentity.id;
+        if (userIdentity.adminStatus) {
+          resolvedIsAdmin = true;
+        }
+      }
+
       const identity: InvocationIdentity = {
         interfaceId: channelMessage.channel.type,
-        isAdmin: channelMessage.user.isAdmin,
+        isAdmin: resolvedIsAdmin,
         isAuthenticated: channelMessage.user.isAuthenticated,
-        userId: channelMessage.user.id,
+        userId: resolvedUserId,
         ...processOptions?.identityOverrides,
       };
 
@@ -148,6 +167,11 @@ export function createRouter(options: RouterOptions): Router {
         },
         ...(receipts.length > 0 ? { receipts } : {}),
       };
+
+      // Touch identity to update lastSeenAt
+      if (identityStore) {
+        await identityStore.touch(resolvedUserId);
+      }
 
       // Format for the channel
       const channelFormatted = adapter.format(channelResponse);

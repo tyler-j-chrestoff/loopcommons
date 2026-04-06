@@ -6,69 +6,74 @@ planned:
   # --- agent-framework: Phase C (cross-channel) ---
   # Deferred: Phase D (container isolation), Phase E (community specialists), arena science
 
-  - id: 62
-    title: "Agent Framework — Cross-Channel Integration + Discord Prep (Phase C.3)"
+  - id: 63
+    title: "Agent Framework — Discord Adapter (Phase C.4)"
     milestone: agent-framework
-    goal: "Prove the full cross-channel loop: web + SMS, linked identity, shared memory, contradiction detection, provenance. Research Discord as channel three."
+    goal: "Ship Discord as channel three. Bot registration, DiscordAdapter, gateway harness, Railway deployment, identity linking."
     stories:
-      - cross-channel-integration.md
+      - discord-adapter.md
     phases:
-      - name: "E2E + research"
-        tasks: [xi-01, xi-04]
-        strategy: "parallel — E2E tests and Discord research are independent"
-      - name: "Features"
-        tasks: [xi-02, xi-03, xi-05]
-        strategy: "parallel — receipt provenance, cross-channel recall, and conflict UX are independent"
-      - name: "Red-team"
-        tasks: [xi-06]
-        strategy: "adversarial cross-channel attack scenarios"
+      - name: "Setup + adapter"
+        tasks: [dc-01, dc-02]
+        strategy: "sequential — registration before adapter"
+      - name: "Harness + identity"
+        tasks: [dc-03, dc-05]
+        strategy: "parallel — gateway harness and identity mapping are independent"
+      - name: "Deploy + red-team"
+        tasks: [dc-04, dc-06]
+        strategy: "sequential — deploy before red-team"
 
 completed:
-  - id: 61.5
-    title: "Cryptographically Grounded Epistemics — theoretical convergence"
-    date: 2026-03-26
-    milestone: arena-platform
+  - id: 62
+    title: "Agent Framework — Cross-Channel Integration + Discord Prep (Phase C.3)"
+    date: 2026-04-05
+    milestone: agent-framework
     status: done
-    goal: "Multi-model convergence on search guidance, Merkle-grounded inference, evolved identity, and evaluation protocol."
+    goal: "Prove the full cross-channel loop: web + SMS, linked identity, shared memory, contradiction detection, provenance. Research Discord as channel three."
     summary: |
-      Research/design session — no code changes. Multi-model convergence (Claude + Gemini + Grok)
-      produced a complete theoretical framework and three new arena-platform stories.
+      All 6 tasks completed. 35 new tests (16 E2E + 5 receipt + 5 guardian + 2 memory + 8 red-team),
+      0 regressions across packages/llm (1612 pass) and packages/memory (154 pass).
 
-      Shipped (planning artifacts):
-      - search-guidance.md story (9 tasks, sg-01 through sg-09) — bidirectional manifold
-        navigation, GP surrogate, Grammar VAE, MAP-Elites gap detection
-      - merkle-evaluation-protocol.md story (9 tasks, me-01 through me-09) — Merkle-committed
-        battery evaluations, stratified sieve, DAG topology, cross-evaluator collusion breaking,
-        performance-gated decay
-      - publications/cryptographic-epistemics/ — 14-chapter treatise structure with briefs,
-        prompt template, draft directories. Co-authored by 9 models + Tyler.
-      - ROADMAP.md updated: 8d (evaluation) and 8e (guidance) added to trajectory
-      - brain-architecture.md updated: DNA.yml in Guardian, Merkle forensic principle,
-        Reflector evolutionary context, open question #8 resolved
-      - cf-01 and ec-01 research tasks marked complete with validated references
+      Shipped:
+      - Cross-channel E2E test suite (xi-01): 16 Router-level tests proving
+        identity linking across web + SMS — unlinked isolation, admin-link,
+        explicit-link protocol with verification codes, adminStatus promotion,
+        thread isolation, SMS threading by phone number, full loop test.
+      - Receipt rendering with provenance (xi-02): renderConsolidationReceipt()
+        shows channel provenance (web/sms), stored count, gating band. Exported
+        from @loopcommons/llm/ledger.
+      - Cross-channel memory recall (xi-03): formatMemoryContext() now includes
+        source attribution ("via web", "via sms") when provenance.source is set.
+        Consolidator already writes source = channelType, so this is automatic.
+      - Conflict resolution UX (xi-05): Guardian's buildUserPrompt() now injects
+        ConflictMonitor flags into the prompt context — "acknowledge the conflict,
+        ask for clarification, don't assume either channel was correct." Exported
+        buildUserPrompt for testing.
+      - Red-team cross-channel attacks (xi-06): 8 adversarial tests — unlinked
+        user isolation (no thread/identity leakage), SMS admin spoofing blocked,
+        phone number reuse, cross-channel contradiction detection, rapid channel
+        switching, TwiML injection escaping, oversized message handling.
+      - Discord research (xi-04): discord.js v14, MESSAGE_CONTENT privileged
+        intent, gateway architecture (persistent WebSocket vs HTTP), Railway
+        worker service deployment, DiscordAdapter shape. Full story with 6 tasks
+        written (discord-adapter.md).
+
+      Also produced:
+      - planning/memos/BOUNDARY_TRACES.md — theoretical convergence from
+        multi-model session on trace universality, boundary traces, and
+        "the soul is the shape of the deletion."
 
       Key decisions:
-      - "Cryptographically Grounded Epistemics" as framework name
-      - Three claims: anchor=bedrock (not SOUL.md), MDL universal (neural+crypto), two
-        discrete boundaries (decoder+evaluator)
-      - SOUL.md evolves via selection, not authored. Tyler = gardener, not author.
-      - DNA.yml: structured substrate self-knowledge in Guardian (subconscious), not agent context
-      - Three-layer evolutionary stack: DNA (meta-meta) / SOUL (meta) / tools (task),
-        mapped to Clune's Hyperagents
-      - Skeptic reward: R_skeptic = A_fail·(1-G) + R_drift = max(0,A_anc-A_curr)·D_KL
-      - Merkle chain is forensic, not executive — no rollback
-      - Stratified sieve (~30% sample) + full checkpoint at thresholds
-      - Performance-gated decay for failure pool (not time-based)
-      - Cross-evaluator sampling breaks co-evolutionary collusion
-      - Smooth anchor promotion (no mass extinction) — "transition dynamics ARE the data"
-      - Deploy DNA first (epistemology, safe), SOUL later (axiology, dangerous)
+      - Guardian's conflict flag injection is prompt-level (not schema-level) —
+        the subagent sees the conflict context and can address it naturally.
+      - Memory source attribution uses provenance.source field (already set by
+        Consolidator) rather than a new metadata column.
+      - Discord is a gateway architecture (long-running WebSocket), not HTTP
+        webhook. Needs separate Railway worker service.
 
-      Triggered by: Ndea search guidance job posting + Coppola "Transformers are Bayesian
-      Networks" (arxiv 2603.17063) + Clune "Hyperagents" (2026).
+      Pre-existing issue: packages/web test failures (mock missing createRouter,
+      noted in S61 retro). red-team-blog.test.ts has a statistical LLM flake.
 
-      Unblocked: S62 (cross-channel integration) is next on agent-framework track.
-      Arena-platform stories (search guidance, evaluation protocol) sequenced after S57
-      (co-evolution, currently deferred behind agent-framework).
 
   - id: 61
     title: "Agent Framework — User Identity + SMS Adapter (Phase C.2)"

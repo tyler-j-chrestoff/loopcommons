@@ -368,8 +368,10 @@ export function createGuardian(config: GuardianConfig = {}): GuardianFn {
  * Build the user prompt that includes the raw message and conversation context.
  * The guardian sees everything — it needs full context to detect incremental
  * escalation and context manipulation patterns.
+ *
+ * Exported for testing — deterministic, no LLM dependency.
  */
-function buildUserPrompt(input: GuardianInput): string {
+export function buildUserPrompt(input: GuardianInput): string {
   const parts: string[] = [];
 
   // Conversation history (if any)
@@ -390,6 +392,18 @@ function buildUserPrompt(input: GuardianInput): string {
   if (input.memoryContext) {
     parts.push('## Memory Context');
     parts.push(input.memoryContext);
+    parts.push('');
+  }
+
+  // Conflict flags from ConflictMonitor (if any)
+  if (input.conflictFlags && input.conflictFlags.length > 0) {
+    parts.push('## Conflict Flags');
+    parts.push('The ConflictMonitor detected contradictions between stored memories and the current message.');
+    parts.push('When responding, acknowledge the conflict and ask for clarification. Do not assume either version is correct.');
+    parts.push('');
+    for (const flag of input.conflictFlags) {
+      parts.push(`- [${flag.severity}] ${flag.description}`);
+    }
     parts.push('');
   }
 

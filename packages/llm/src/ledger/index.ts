@@ -7,4 +7,4 @@ export type {
   AccountBalance,
 } from './types';
 export { createSimpleLedger } from './simple-ledger';
-export { renderReceipt } from './receipt';
+export { renderReceipt, renderConsolidationReceipt } from './receipt';

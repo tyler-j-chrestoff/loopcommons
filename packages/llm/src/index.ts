@@ -117,6 +117,9 @@ export type {
 export { createWebAdapter } from './router/adapters/web';
 export { createCliAdapter } from './router/adapters/cli';
 export { createTestAdapter } from './router/adapters/test';
+export { createSmsAdapter, validateTwilioSignature } from './router/adapters/sms';
+export type { UserIdentity, ChannelLink, LinkMethod, IdentityStore } from './user-identity';
+export { createInMemoryIdentityStore } from './user-identity';
 export { createJsonFilePersistentState, formatMemoryContext, MemorySchema, isContradiction } from './memory';
 export type {
   PersistentState,

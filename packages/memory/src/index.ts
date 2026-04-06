@@ -582,15 +582,18 @@ export function formatMemoryContext(memories: Memory[]): string {
 
   const lines = memories.map((m) => {
     const confidence = (1 - m.uncertainty).toFixed(1);
+    const source = m.provenance.source && m.provenance.source !== 'conversation'
+      ? `, via ${m.provenance.source}`
+      : '';
     switch (m.type) {
       case 'observation':
-        return `- [observation] ${m.subject}: ${m.content} (confidence: ${confidence})`;
+        return `- [observation] ${m.subject}: ${m.content} (confidence: ${confidence}${source})`;
       case 'learning':
-        return `- [learning] ${m.topic}: ${m.insight} (confidence: ${confidence})`;
+        return `- [learning] ${m.topic}: ${m.insight} (confidence: ${confidence}${source})`;
       case 'relationship':
-        return `- [relationship] ${m.entity}: ${m.context} (rapport: ${m.rapport.toFixed(1)})`;
+        return `- [relationship] ${m.entity}: ${m.context} (rapport: ${m.rapport.toFixed(1)}${source})`;
       case 'reflection':
-        return `- [reflection] ${m.insight} (significance: ${m.significance})`;
+        return `- [reflection] ${m.insight} (significance: ${m.significance}${source})`;
     }
   });
 

@@ -46,6 +46,39 @@ describe('@loopcommons/memory core', () => {
     expect(ctx).toContain('hello world');
   });
 
+  it('formatMemoryContext includes source attribution when present', async () => {
+    const state = createJsonFilePersistentState({ filePath });
+    await state.remember({
+      type: 'observation',
+      subject: 'user-location',
+      content: 'lives in Denver',
+      source: 'web',
+    });
+    await state.remember({
+      type: 'observation',
+      subject: 'user-job',
+      content: 'works at a coffee shop',
+      source: 'sms',
+    });
+    const memories = await state.recall({ limit: 10 });
+    const ctx = formatMemoryContext(memories);
+    expect(ctx).toContain('via web');
+    expect(ctx).toContain('via sms');
+  });
+
+  it('formatMemoryContext omits source when not present', async () => {
+    const state = createJsonFilePersistentState({ filePath });
+    await state.remember({
+      type: 'observation',
+      subject: 'user',
+      content: 'likes hiking',
+    });
+    const memories = await state.recall({ limit: 10 });
+    const ctx = formatMemoryContext(memories);
+    expect(ctx).toContain('likes hiking');
+    expect(ctx).not.toContain('via');
+  });
+
   it('isContradiction detects negation', () => {
     expect(isContradiction('Tyler likes Python', 'Tyler does not like Python')).toBe(true);
     expect(isContradiction('Tyler likes Python', 'Tyler likes Python a lot')).toBe(false);
